@@ -15,7 +15,7 @@ def test_catalogo_real_do_repositorio_e_valido():
     ids = [f.id for f in catalogo.fontes]
     assert {"ibge-localidades", "bcb-sgs", "bcb-ifdata", "camara-dados-abertos"} <= set(ids)
     ifdata = next(f for f in catalogo.fontes if f.id == "bcb-ifdata")
-    assert ifdata.url_teste is None
+    assert ifdata.url_teste == "https://olinda.bcb.gov.br/olinda/servico/IFDATA/versao/v1/odata"
     datajud = next(f for f in catalogo.fontes if f.id == "datajud")
     assert datajud.url_documentacao is None
 
