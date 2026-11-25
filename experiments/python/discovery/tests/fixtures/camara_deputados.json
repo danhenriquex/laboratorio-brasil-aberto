@@ -1,0 +1,9 @@
+{
+  "dados": [
+    {"id": 900001, "uri": "https://exemplo.invalid/deputados/900001", "nome": "Deputada Ficticia Exemplar", "siglaPartido": "PXX", "siglaUf": "PB", "idLegislatura": 57, "urlFoto": "https://exemplo.invalid/foto/900001.jpg", "email": "dep.ficticia.exemplar@teste.invalid"},
+    {"id": 900002, "uri": "https://exemplo.invalid/deputados/900002", "nome": "Deputado Inventado Silvestre", "siglaPartido": "PYY", "siglaUf": "SP", "idLegislatura": 57, "urlFoto": null, "email": "dep.inventado.silvestre@teste.invalid"}
+  ],
+  "links": [
+    {"rel": "self", "href": "https://exemplo.invalid/api/v2/deputados?itens=2"}
+  ]
+}
