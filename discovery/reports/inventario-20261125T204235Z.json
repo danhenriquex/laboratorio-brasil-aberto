@@ -1,0 +1,292 @@
+{
+  "versao_relatorio": 1,
+  "ferramenta": "inventario-fontes 0.1.0",
+  "catalogo": {
+    "caminho": "discovery/sources.json",
+    "schema_version": 1
+  },
+  "iniciada_em": "2026-11-25T20:42:35.190Z",
+  "finalizada_em": "2026-11-25T20:42:39.851Z",
+  "interrompida": false,
+  "filtros": {
+    "rodadas": [
+      1
+    ],
+    "fontes": []
+  },
+  "configuracao": {
+    "intervalo_s": 2.0,
+    "tempo_limite_s": 15.0,
+    "teto_bytes": 1048576,
+    "max_redirecionamentos": 5
+  },
+  "aviso": "A sondagem mostra a conectividade de um endereço numa data; licença, limites e termos de uso só se confirmam na documentação oficial.",
+  "resumo": {
+    "total": 4,
+    "responderam": 3,
+    "falharam": 0,
+    "falhas_por_causa": {},
+    "sem_teste": 1,
+    "nao_executadas": 0,
+    "com_divergencia": 0
+  },
+  "resultados": [
+    {
+      "fonte_id": "ibge-localidades",
+      "nome": "IBGE - API de localidades",
+      "dominio": "geografia",
+      "url_documentacao": "https://servicodados.ibge.gov.br/api/docs/",
+      "rodada": 1,
+      "hipotese_acesso": "facil",
+      "auth_esperada": "nenhuma (hipótese)",
+      "verificacao_catalogo": "parcial",
+      "verificacao_sugerida": "confirmado",
+      "justificativa_verificacao": "Observação direta do endpoint oficial confirma conectividade e autenticação nesta data; licença, limites e termos de uso dependem da documentação oficial.",
+      "situacao": "respondeu",
+      "causa": null,
+      "detalhe_causa": null,
+      "url_teste": "https://servicodados.ibge.gov.br/api/v1/localidades/estados",
+      "url_final": "https://servicodados.ibge.gov.br/api/v1/localidades/estados",
+      "redirecionamentos": [],
+      "status_http": 200,
+      "latencia_ms": 160.6,
+      "coletado_em": "2026-11-25T20:42:35.190Z",
+      "formato_declarado": "application/json",
+      "formato_detectado": "json",
+      "formato_divergente": false,
+      "tamanho_bytes": 2446,
+      "tamanho_declarado_bytes": null,
+      "truncada": false,
+      "auth_observada": "nao_exige",
+      "indicio_autenticacao": null,
+      "retry_after": null,
+      "amostra": {
+        "registros_inspecionados": 5,
+        "caminho_registros": null,
+        "campos": [
+          {
+            "caminho": "id",
+            "tipos": [
+              "inteiro"
+            ]
+          },
+          {
+            "caminho": "nome",
+            "tipos": [
+              "texto"
+            ]
+          },
+          {
+            "caminho": "regiao",
+            "tipos": [
+              "objeto"
+            ]
+          },
+          {
+            "caminho": "regiao.id",
+            "tipos": [
+              "inteiro"
+            ]
+          },
+          {
+            "caminho": "regiao.nome",
+            "tipos": [
+              "texto"
+            ]
+          },
+          {
+            "caminho": "regiao.sigla",
+            "tipos": [
+              "texto"
+            ]
+          },
+          {
+            "caminho": "sigla",
+            "tipos": [
+              "texto"
+            ]
+          }
+        ],
+        "vazia": false,
+        "indisponivel_motivo": null
+      },
+      "divergencias": []
+    },
+    {
+      "fonte_id": "bcb-sgs",
+      "nome": "Banco Central - séries temporais (SGS)",
+      "dominio": "economia",
+      "url_documentacao": "https://api.bcb.gov.br/",
+      "rodada": 1,
+      "hipotese_acesso": "facil",
+      "auth_esperada": "nenhuma (hipótese)",
+      "verificacao_catalogo": "parcial",
+      "verificacao_sugerida": "confirmado",
+      "justificativa_verificacao": "Observação direta do endpoint oficial confirma conectividade e autenticação nesta data; licença, limites e termos de uso dependem da documentação oficial.",
+      "situacao": "respondeu",
+      "causa": null,
+      "detalhe_causa": null,
+      "url_teste": "https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json",
+      "url_final": "https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json",
+      "redirecionamentos": [],
+      "status_http": 200,
+      "latencia_ms": 206.0,
+      "coletado_em": "2026-11-25T20:42:37.356Z",
+      "formato_declarado": "application/json",
+      "formato_detectado": "json",
+      "formato_divergente": false,
+      "tamanho_bytes": 39,
+      "tamanho_declarado_bytes": 39,
+      "truncada": false,
+      "auth_observada": "nao_exige",
+      "indicio_autenticacao": null,
+      "retry_after": null,
+      "amostra": {
+        "registros_inspecionados": 1,
+        "caminho_registros": null,
+        "campos": [
+          {
+            "caminho": "data",
+            "tipos": [
+              "data"
+            ]
+          },
+          {
+            "caminho": "valor",
+            "tipos": [
+              "texto"
+            ]
+          }
+        ],
+        "vazia": false,
+        "indisponivel_motivo": null
+      },
+      "divergencias": []
+    },
+    {
+      "fonte_id": "bcb-ifdata",
+      "nome": "Banco Central - IFData (instituições financeiras)",
+      "dominio": "economia",
+      "url_documentacao": "https://olinda.bcb.gov.br/olinda/servico/IFDATA/versao/v1/aplicacao",
+      "rodada": 1,
+      "hipotese_acesso": "facil",
+      "auth_esperada": "nenhuma",
+      "verificacao_catalogo": "confirmado",
+      "verificacao_sugerida": "confirmado",
+      "justificativa_verificacao": "Sem teste automatizado: verificar manualmente na documentação oficial.",
+      "situacao": "sem_teste",
+      "causa": null,
+      "detalhe_causa": null,
+      "url_teste": null,
+      "url_final": null,
+      "redirecionamentos": [],
+      "status_http": null,
+      "latencia_ms": null,
+      "coletado_em": null,
+      "formato_declarado": null,
+      "formato_detectado": null,
+      "formato_divergente": false,
+      "tamanho_bytes": null,
+      "tamanho_declarado_bytes": null,
+      "truncada": false,
+      "auth_observada": "indeterminado",
+      "indicio_autenticacao": null,
+      "retry_after": null,
+      "amostra": null,
+      "divergencias": []
+    },
+    {
+      "fonte_id": "camara-dados-abertos",
+      "nome": "Câmara dos Deputados - dados abertos",
+      "dominio": "estado",
+      "url_documentacao": "https://dadosabertos.camara.leg.br/swagger/api.html",
+      "rodada": 1,
+      "hipotese_acesso": "facil",
+      "auth_esperada": "nenhuma (hipótese)",
+      "verificacao_catalogo": "parcial",
+      "verificacao_sugerida": "confirmado",
+      "justificativa_verificacao": "Observação direta do endpoint oficial confirma conectividade e autenticação nesta data; licença, limites e termos de uso dependem da documentação oficial.",
+      "situacao": "respondeu",
+      "causa": null,
+      "detalhe_causa": null,
+      "url_teste": "https://dadosabertos.camara.leg.br/api/v2/deputados?itens=1",
+      "url_final": "https://dadosabertos.camara.leg.br/api/v2/deputados?itens=1",
+      "redirecionamentos": [],
+      "status_http": 200,
+      "latencia_ms": 284.9,
+      "coletado_em": "2026-11-25T20:42:39.566Z",
+      "formato_declarado": "application/json",
+      "formato_detectado": "json",
+      "formato_divergente": false,
+      "tamanho_bytes": 736,
+      "tamanho_declarado_bytes": null,
+      "truncada": false,
+      "auth_observada": "nao_exige",
+      "indicio_autenticacao": null,
+      "retry_after": null,
+      "amostra": {
+        "registros_inspecionados": 1,
+        "caminho_registros": "dados",
+        "campos": [
+          {
+            "caminho": "email",
+            "tipos": [
+              "texto"
+            ]
+          },
+          {
+            "caminho": "id",
+            "tipos": [
+              "inteiro"
+            ]
+          },
+          {
+            "caminho": "idLegislatura",
+            "tipos": [
+              "inteiro"
+            ]
+          },
+          {
+            "caminho": "nome",
+            "tipos": [
+              "texto"
+            ]
+          },
+          {
+            "caminho": "siglaPartido",
+            "tipos": [
+              "texto"
+            ]
+          },
+          {
+            "caminho": "siglaUf",
+            "tipos": [
+              "texto"
+            ]
+          },
+          {
+            "caminho": "uri",
+            "tipos": [
+              "texto"
+            ]
+          },
+          {
+            "caminho": "uriPartido",
+            "tipos": [
+              "texto"
+            ]
+          },
+          {
+            "caminho": "urlFoto",
+            "tipos": [
+              "texto"
+            ]
+          }
+        ],
+        "vazia": false,
+        "indisponivel_motivo": null
+      },
+      "divergencias": []
+    }
+  ]
+}
