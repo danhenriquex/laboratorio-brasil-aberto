@@ -85,9 +85,10 @@ Estruturas observadas (só nomes e tipos):
 - O teto de leitura de 1 MiB impede inferir a estrutura de JSON grande (fica "indisponível, resposta truncada").
 - O XML é lido com `xml.etree` da biblioteca padrão, sem `defusedxml`. Basta para sondagem, mas deve ser revisto se uma fonte XML entrar com volume.
 - Só as fontes da rodada 1 foram sondadas. As rodadas 2 e 3 continuam sem `probe_url`.
-- Pendências de verificação manual:
-  - **T031:** rodar a suíte com a rede desligada. Os testes já bloqueiam sockets, então a execução sem rede é só a confirmação formal.
-  - **T033:** ler o relatório HTML e responder às perguntas do SC-006.
+
+## Verificações finais
+- **SC-007 (testes sem rede):** em 2026-11-25, a suíte rodou dentro de um sandbox do macOS que nega todo acesso à rede (`sandbox-exec -p '(version 1)(allow default)(deny network*)' uv run --offline ...`). Primeiro, confirmei que uma chamada real ao IBGE falha dentro do sandbox. Depois, os **155 testes passaram**.
+- **SC-006 (leitura do relatório):** o relatório HTML da rodada 1 foi lido pelo usuário em 2026-11-25, e dele se tira, para cada fonte, se responde, se exige autenticação, o formato e as divergências.
 
 ## Checklist de conclusão
 - [x] A fonte foi identificada e documentada (4 fichas da rodada 1)
