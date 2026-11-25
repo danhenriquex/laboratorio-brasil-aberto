@@ -99,7 +99,7 @@ description: "Lista de tarefas do E0 — Inventário e conectividade das fontes"
 
 > Escreva estes testes primeiro e confirme que falham.
 
-- [ ] T010 [P] [US1] Escrever `experiments/python/discovery/tests/unit/test_formato.py` (R4):
+- [X] T010 [P] [US1] Escrever `experiments/python/discovery/tests/unit/test_formato.py` (R4):
   - `{`/`[` dão `json`, inclusive com BOM UTF-8 e espaços iniciais;
   - `<?xml` e `<raiz>` dão `xml`;
   - `<!DOCTYPE html>` e `<html` dão `html`, sem diferenciar maiúsculas;
@@ -107,7 +107,7 @@ description: "Lista de tarefas do E0 — Inventário e conectividade das fontes"
   - bytes vazios dão `vazio`, e bytes binários não decodificáveis dão `outro`;
   - `formato_declarado("application/json; charset=utf-8") == "application/json"`;
   - `divergente` verdadeiro quando o declarado é JSON e o detectado é HTML, e falso para `text/csv` × `csv`.
-- [ ] T011 [P] [US1] Escrever `experiments/python/discovery/tests/unit/test_sonda.py` com `respx`, um teste por linha da tabela R3:
+- [X] T011 [P] [US1] Escrever `experiments/python/discovery/tests/unit/test_sonda.py` com `respx`, um teste por linha da tabela R3:
   - 200 JSON dá `respondeu`, com `status_http`, `latencia_ms` ≥ 0, `coletado_em` em UTC, `tamanho_bytes` e `tamanho_declarado_bytes`;
   - `httpx.ConnectTimeout`/`ReadTimeout` dá `tempo_esgotado`;
   - `httpx.ConnectError` dá `indisponivel`;
@@ -126,23 +126,23 @@ description: "Lista de tarefas do E0 — Inventário e conectividade das fontes"
   - a requisição enviada tem `User-Agent` iniciado por `laboratorio-brasil-aberto-inventario/` e nenhum cabeçalho `Authorization` ou `Cookie`;
   - `route.call_count == 1` em todos os casos (sem nova tentativa);
   - `detalhe_causa` nunca contém o corpo da resposta.
-- [ ] T012 [P] [US1] Escrever `experiments/python/discovery/tests/unit/test_avaliacao.py`.
+- [X] T012 [P] [US1] Escrever `experiments/python/discovery/tests/unit/test_avaliacao.py`.
   - **Grau sugerido (R11)**: `respondeu` dá `confirmado`, com justificativa mencionando "conectividade e autenticação"; `exige_autenticacao`, `acesso_negado` e `limite_requisicoes` dão `confirmado`; `tempo_esgotado`, `indisponivel`, `erro_fonte`, `erro_tls`, `erro_requisicao` e `resposta_invalida` mantêm o grau do catálogo com justificativa; `sem_teste` e `nao_executada` mantêm o grau do catálogo.
   - **Divergências (R12)**: hipótese `nao_exige` com observado `exige` gera `Divergencia(autenticacao, "nao_exige", "exige (status 401)")`; observado `indeterminado` não gera divergência de autenticação; `falhou` gera `Divergencia(disponibilidade, "responde", "<causa>")`; `formato_divergente` gera `Divergencia(formato, <declarado>, <detectado>)`; `respondeu` sem divergência gera lista vazia.
-- [ ] T013 [P] [US1] Escrever `experiments/python/discovery/tests/integration/test_execucao.py` com `respx` e a fixture `relogio`:
+- [X] T013 [P] [US1] Escrever `experiments/python/discovery/tests/integration/test_execucao.py` com `respx` e a fixture `relogio`:
   - catálogo com 4 fontes (200 JSON, timeout, 401, sem `probe_url`) gera 4 resultados na ordem do catálogo, e a fonte após o timeout é consultada;
   - a fonte sem `probe_url` não gera requisição e não consome intervalo;
   - com 3 sondas, `relogio.esperas` garante intervalo ≥ `intervalo_s` entre o fim de uma consulta e o início da seguinte (SC-005), e cada rota tem `call_count == 1`;
   - `KeyboardInterrupt` lançado pelo mock na 2ª consulta dá `interrompida=True`, 1ª fonte preservada e as demais como `nao_executada`;
   - `Resumo` respeita a invariante e `falhas_por_causa` traz só causas com contagem ≥ 1;
   - todas as fontes falhando ainda gera execução completa.
-- [ ] T014 [P] [US1] Escrever `experiments/python/discovery/tests/contract/test_relatorio_schema.py`:
+- [X] T014 [P] [US1] Escrever `experiments/python/discovery/tests/contract/test_relatorio_schema.py`:
   - carregar `specs/001-inventario-fontes/contracts/relatorio.schema.json` a partir de `Path(__file__).resolve().parents[5]`;
   - gerar uma execução com `respx` cobrindo `respondeu`, cada `Causa`, `sem_teste` e `nao_executada`;
   - serializar e validar com `jsonschema.Draft202012Validator`;
   - verificar datas no padrão `...Z`;
   - verificar o nome do arquivo `inventario-AAAAMMDDTHHMMSSZ.json` e o sufixo `-2` quando o arquivo já existe, sem nunca sobrescrever.
-- [ ] T015 [P] [US1] Escrever `experiments/python/discovery/tests/integration/test_cli.py`, chamando `cli.main([...])` com `respx` e `catalogo_tmp`:
+- [X] T015 [P] [US1] Escrever `experiments/python/discovery/tests/integration/test_cli.py`, chamando `cli.main([...])` com `respx` e `catalogo_tmp`:
   - código `0` com fontes falhando, e o relatório JSON criado em `--saida`;
   - `stdout` com uma linha por fonte no formato de `contracts/cli.md` (`[i/n] id .... situacao status formato N ms`) e o resumo final com o caminho dos relatórios;
   - catálogo inexistente ou inválido dá código `1`, mensagem no `stderr`, nenhuma requisição e nenhum arquivo em `--saida`;
@@ -153,13 +153,13 @@ description: "Lista de tarefas do E0 — Inventário e conectividade das fontes"
 
 ### Implementation for User Story 1
 
-- [ ] T016 [P] [US1] Implementar `experiments/python/discovery/src/inventario_fontes/formato.py` (R4):
+- [X] T016 [P] [US1] Implementar `experiments/python/discovery/src/inventario_fontes/formato.py` (R4):
   - `formato_declarado(content_type: str | None) -> str | None`;
   - `detectar_formato(corpo: bytes) -> Formato`, que ignora BOM e espaços, usa `csv.Sniffer` sobre as primeiras linhas e exige mais de uma coluna para dar `csv`;
   - `divergente(declarado, detectado) -> bool`, com o mapa `application/json`/`+json` → json, `text/csv` → csv, `application/xml`/`text/xml`/`+xml` → xml, `text/html` → html e `text/plain` → texto. Tipo declarado ausente ou desconhecido não conta como divergência.
 
   Fazer T010 passar.
-- [ ] T017 [US1] Implementar `experiments/python/discovery/src/inventario_fontes/sonda.py`:
+- [X] T017 [US1] Implementar `experiments/python/discovery/src/inventario_fontes/sonda.py`:
   - **Assinatura**: `sondar(fonte: Fonte, cliente: httpx.Client, config: Configuracao, relogio) -> ResultadoSondagem`.
   - **Leitura (R1)**: `cliente.stream("GET", url)` e leitura com `iter_bytes()` até `config.teto_bytes`, fechando a resposta ao atingir o teto e marcando `truncada`.
   - **Redirecionamentos e login (R2)**: `history` vira `redirecionamentos`; há indício de login quando o host da URL final é `sso.acesso.gov.br` ou o caminho contém `login`, `signin`, `auth`, `oauth` ou `sso`.
@@ -170,8 +170,8 @@ description: "Lista de tarefas do E0 — Inventário e conectividade das fontes"
   - **Privacidade**: `detalhe_causa` é uma mensagem curta, sem conteúdo do corpo, e nenhum corpo é gravado em disco (FR-016).
 
   Fazer T011 passar.
-- [ ] T018 [P] [US1] Implementar `experiments/python/discovery/src/inventario_fontes/avaliacao.py`: `grau_sugerido(fonte, resultado) -> tuple[Grau, str]` (R11) e `divergencias(fonte, resultado) -> tuple[Divergencia, ...]` (R12). A hipótese textual `hipotese_acesso` não é comparada. Fazer T012 passar.
-- [ ] T019 [US1] Implementar `experiments/python/discovery/src/inventario_fontes/execucao.py`:
+- [X] T018 [P] [US1] Implementar `experiments/python/discovery/src/inventario_fontes/avaliacao.py`: `grau_sugerido(fonte, resultado) -> tuple[Grau, str]` (R11) e `divergencias(fonte, resultado) -> tuple[Divergencia, ...]` (R12). A hipótese textual `hipotese_acesso` não é comparada. Fazer T012 passar.
+- [X] T019 [US1] Implementar `experiments/python/discovery/src/inventario_fontes/execucao.py`:
   - **Assinatura**: `executar(catalogo, fontes, config, cliente, relogio, ao_progresso=None, filtros=None) -> Execucao`.
   - **Ritmo**: laço sequencial; antes de cada sonda (exceto a primeira com URL), espera `max(0, intervalo_s - (monotonic() - fim_anterior))` via `relogio.esperar`. Fontes sem `url_teste` viram `sem_teste` sem consulta e sem espera.
   - **Avaliação**: aplica `avaliacao` a cada resultado.
@@ -179,13 +179,13 @@ description: "Lista de tarefas do E0 — Inventário e conectividade das fontes"
   - **Execução**: preenche `iniciada_em`/`finalizada_em`, `resumo`, `configuracao`, `aviso` (texto da FR-020: "A sondagem mostra a conectividade de um endereço numa data; licença, limites e termos de uso só se confirmam na documentação oficial.") e `ferramenta = "inventario-fontes <versão>"`.
 
   Fazer T013 passar.
-- [ ] T020 [P] [US1] Implementar `experiments/python/discovery/src/inventario_fontes/relatorio/json_.py`:
+- [X] T020 [P] [US1] Implementar `experiments/python/discovery/src/inventario_fontes/relatorio/json_.py`:
   - `para_dict(execucao) -> dict`, com enums como valor e datas UTC em ISO com milissegundos e sufixo `Z`;
   - `caminho_relatorio(saida: Path, iniciada_em, extensao) -> Path`, no formato `inventario-AAAAMMDDTHHMMSSZ.<ext>` com sufixo `-2`, `-3`... se o arquivo existir;
   - `gravar_json(execucao, caminho)`, com UTF-8, `ensure_ascii=False` e `indent=2`.
 
   Fazer T014 passar.
-- [ ] T021 [US1] Implementar `experiments/python/discovery/src/inventario_fontes/cli.py`:
+- [X] T021 [US1] Implementar `experiments/python/discovery/src/inventario_fontes/cli.py`:
   - **Argumentos**: `main(argv=None) -> int` com `argparse`, seguindo `contracts/cli.md`: `--catalogo`, `--saida`, `--intervalo`, `--tempo-limite` e `--versao`. Os filtros entram na US4.
   - **Erros de entrada**: erro de `Configuracao` dá código 2; `ErroCatalogo` vai para o `stderr` e dá código 1, antes de criar o cliente.
   - **Cliente HTTP**: `httpx.Client(timeout=tempo_limite_s, follow_redirects=True, max_redirects=5, headers={"User-Agent": f"laboratorio-brasil-aberto-inventario/{__version__}"})`, sem retries, usado como context manager.
