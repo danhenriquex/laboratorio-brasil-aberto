@@ -1,0 +1,97 @@
+{
+  "versao_relatorio": 1,
+  "ferramenta": "inventario-fontes 0.1.0",
+  "catalogo": {
+    "caminho": "discovery/sources.json",
+    "schema_version": 1
+  },
+  "iniciada_em": "2026-11-25T20:52:22.673Z",
+  "finalizada_em": "2026-11-25T20:52:23.011Z",
+  "interrompida": false,
+  "filtros": {
+    "rodadas": [],
+    "fontes": [
+      "bcb-ifdata"
+    ]
+  },
+  "configuracao": {
+    "intervalo_s": 2.0,
+    "tempo_limite_s": 15.0,
+    "teto_bytes": 1048576,
+    "max_redirecionamentos": 5
+  },
+  "aviso": "A sondagem mostra a conectividade de um endereço numa data; licença, limites e termos de uso só se confirmam na documentação oficial.",
+  "resumo": {
+    "total": 1,
+    "responderam": 1,
+    "falharam": 0,
+    "falhas_por_causa": {},
+    "sem_teste": 0,
+    "nao_executadas": 0,
+    "com_divergencia": 0
+  },
+  "resultados": [
+    {
+      "fonte_id": "bcb-ifdata",
+      "nome": "Banco Central - IFData (instituições financeiras)",
+      "dominio": "economia",
+      "url_documentacao": "https://olinda.bcb.gov.br/olinda/servico/IFDATA/versao/v1/aplicacao",
+      "rodada": 1,
+      "hipotese_acesso": "facil",
+      "auth_esperada": "nenhuma",
+      "verificacao_catalogo": "confirmado",
+      "verificacao_sugerida": "confirmado",
+      "justificativa_verificacao": "Observação direta do endpoint oficial confirma conectividade e autenticação nesta data; licença, limites e termos de uso dependem da documentação oficial.",
+      "situacao": "respondeu",
+      "causa": null,
+      "detalhe_causa": null,
+      "url_teste": "https://olinda.bcb.gov.br/olinda/servico/IFDATA/versao/v1/odata",
+      "url_final": "https://olinda.bcb.gov.br/olinda/servico/IFDATA/versao/v1/odata/",
+      "redirecionamentos": [
+        {
+          "status": 307,
+          "url": "https://olinda.bcb.gov.br/olinda/servico/IFDATA/versao/v1/odata/"
+        }
+      ],
+      "status_http": 200,
+      "latencia_ms": 336.7,
+      "coletado_em": "2026-11-25T20:52:22.673Z",
+      "formato_declarado": "application/json",
+      "formato_detectado": "json",
+      "formato_divergente": false,
+      "tamanho_bytes": 480,
+      "tamanho_declarado_bytes": null,
+      "truncada": false,
+      "auth_observada": "nao_exige",
+      "indicio_autenticacao": null,
+      "retry_after": null,
+      "amostra": {
+        "registros_inspecionados": 5,
+        "caminho_registros": "value",
+        "campos": [
+          {
+            "caminho": "kind",
+            "tipos": [
+              "texto"
+            ]
+          },
+          {
+            "caminho": "name",
+            "tipos": [
+              "texto"
+            ]
+          },
+          {
+            "caminho": "url",
+            "tipos": [
+              "texto"
+            ]
+          }
+        ],
+        "vazia": false,
+        "indisponivel_motivo": null
+      },
+      "divergencias": []
+    }
+  ]
+}

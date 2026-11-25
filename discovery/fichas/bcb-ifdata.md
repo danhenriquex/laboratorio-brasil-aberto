@@ -3,7 +3,7 @@
 - **Domínio:** economia
 - **Documentação oficial:** https://olinda.bcb.gov.br/olinda/servico/IFDATA/versao/v1/documentacao e `$metadata` em https://olinda.bcb.gov.br/olinda/servico/IFDATA/versao/v1/odata/$metadata
 - **Última verificação:** 2026-11-25
-- **Acesso:** facil (hipótese do catálogo; sem sondagem automatizada até agora)
+- **Acesso:** facil (conectividade confirmada pela sondagem; parâmetros dos recursos ainda não documentados)
 
 Marque cada campo com o grau de verificação: **[confirmado]** (documentação oficial ou observação direta do endpoint oficial), **[parcial]** (indício de terceiros) ou **[não verificado]**.
 
@@ -15,7 +15,7 @@ Marque cada campo com o grau de verificação: **[confirmado]** (documentação 
 |---|---|---|
 | Existe API pública? | Sim: serviço OData v4 em `https://olinda.bcb.gov.br/olinda/servico/IFDATA/versao/v1/odata`. A raiz respondeu 200 em JSON. | [confirmado] leitura da documentação em 2026-11-25 |
 | Há documentação oficial? | Sim: a página `/documentacao` lista os parâmetros OData, e o `$metadata` descreve recursos e campos. Não explica os códigos. | [confirmado] |
-| Exige cadastro, token ou chave? | Não encontrado na documentação. A raiz respondeu sem credenciais. | [parcial] |
+| Exige cadastro, token ou chave? | Não: a raiz do serviço respondeu 200 sem credenciais. A documentação não menciona autenticação. | [confirmado] sondagem E0 em 2026-11-25 |
 | Limites de requisição? | Não encontrado. | [não verificado] |
 | Paginação e filtros? | `$top`, `$skip`, `$filter`, `$orderby`, `$select`, `$format`. Tamanho máximo de página não declarado. | [confirmado] `/documentacao` |
 | Recursos e parâmetros obrigatórios | `IfDataCadastro(AnoMes)`; `IfDataValores(AnoMes, TipoInstituicao, Relatorio)`; `ListaDeRelatorio()`, sem parâmetros. Os valores válidos de `TipoInstituicao` e `Relatorio` não estão documentados. | [confirmado] `$metadata`; códigos [não verificado] |
@@ -29,9 +29,13 @@ Marque cada campo com o grau de verificação: **[confirmado]** (documentação 
 | O dado identifica uma pessoa? | Identifica pessoas jurídicas (instituições e CNPJ); pessoas físicas não aparecem no esquema. | [confirmado] `$metadata` |
 
 ## Resultado do teste de conectividade
-- **Data e hora:** 2026-11-25. Sem teste automatizado no E0 (`probe_url: null`), e o relatório marca a fonte como "sem teste automatizado". Durante a leitura da documentação, a raiz do serviço respondeu uma vez.
-- **Status HTTP e latência:** raiz `/odata` com 200 e `application/json` (latência não medida).
-- **Observações:** a raiz devolve `@odata.context` e a lista de recursos, sem exigir parâmetros. A chamada composta a `ListaDeRelatorio` com `$top`/`$format` deu 400 e precisa ser investigada antes de qualquer uso.
+- **Data e hora:** 2026-11-25 20:52:22 UTC (relatório `discovery/reports/inventario-20261125T205222Z.json`). Na rodada 1 (20:42) a fonte ainda não tinha `probe_url` e apareceu como "sem teste automatizado"; a sonda foi adicionada a partir desta ficha.
+- **Status HTTP e latência:** 200, 337 ms, sem autenticação
+- **Endereço:** `https://olinda.bcb.gov.br/olinda/servico/IFDATA/versao/v1/odata` (raiz do serviço OData), sem redirecionamento
+- **Observações:**
+  - JSON, declarado e detectado;
+  - os registros ficam em `value`, com `kind`, `name` e `url` (a lista de recursos do serviço);
+  - a chamada composta a `ListaDeRelatorio` com `$top`/`$format`, feita durante a leitura da documentação, deu 400 e precisa ser investigada antes de qualquer uso dos dados.
 
 ## Decisão
 - **Consumir por API, baixar arquivos ou ingerir de forma agendada?** Ingestão agendada por data-base (`AnoMes`), quando houver experimento para ela; hoje está fora do roteiro E1–E6.
@@ -39,4 +43,4 @@ Marque cada campo com o grau de verificação: **[confirmado]** (documentação 
   - códigos de `TipoInstituicao` e `Relatorio` não documentados;
   - página do conjunto inacessível a ferramentas automáticas;
   - a sintaxe exata das chamadas de função ainda não foi validada.
-- **Próximo passo:** adicionar `probe_url` = raiz do serviço OData (`https://olinda.bcb.gov.br/olinda/servico/IFDATA/versao/v1/odata`), para que a próxima rodada do inventário teste a conectividade. Antes de consumir os dados, descobrir os valores válidos dos parâmetros.
+- **Próximo passo:** antes de consumir os dados, descobrir os valores válidos de `TipoInstituicao` e `Relatorio` e a sintaxe correta das chamadas de função (o `probe_url` já aponta para a raiz do serviço).
