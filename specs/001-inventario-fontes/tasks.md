@@ -206,7 +206,7 @@ description: "Lista de tarefas do E0 — Inventário e conectividade das fontes"
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T022 [P] [US2] Escrever `experiments/python/discovery/tests/unit/test_amostra.py` (R5):
+- [X] T022 [P] [US2] Escrever `experiments/python/discovery/tests/unit/test_amostra.py` (R5):
   - **JSON em lista**: `ibge_estados.json` dá `caminho_registros=None`, os campos `id`, `nome`, `sigla`, `regiao`, `regiao.id`, `regiao.nome`, `regiao.sigla` e `registros_inspecionados == 3`.
   - **Limite de registros**: lista de 27 registros dá `registros_inspecionados == 5`.
   - **JSON em objeto**: `camara_deputados.json` dá `caminho_registros == "dados"` e campos como `email` com tipo `texto`.
@@ -217,11 +217,11 @@ description: "Lista de tarefas do E0 — Inventário e conectividade das fontes"
   - **CSV e XML**: `dados.csv` dá as colunas com os tipos inferidos; `dados.xml` dá o caminho dos elementos filhos.
   - **Entrada malformada**: JSON quebrado lança `ErroAmostra`.
   - **Sem valores**: nenhuma string do resultado (`repr` da estrutura) contém valores da fixture.
-- [ ] T023 [P] [US2] Escrever `experiments/python/discovery/tests/integration/test_privacidade.py` (SC-004): `respx` serve `pessoas_ficticias.json` e `camara_deputados.json`; roda `executar` e `para_dict`. Coleta todos os valores folha (strings com 4 ou mais caracteres e números) das fixtures que não são nomes de chave, e verifica que nenhum aparece no JSON serializado.
+- [X] T023 [P] [US2] Escrever `experiments/python/discovery/tests/integration/test_privacidade.py` (SC-004): `respx` serve `pessoas_ficticias.json` e `camara_deputados.json`; roda `executar` e `para_dict`. Coleta todos os valores folha (strings com 4 ou mais caracteres e números) das fixtures que não são nomes de chave, e verifica que nenhum aparece no JSON serializado.
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Implementar `experiments/python/discovery/src/inventario_fontes/amostra.py`:
+- [X] T024 [US2] Implementar `experiments/python/discovery/src/inventario_fontes/amostra.py`:
   - **Assinatura**: `inferir_estrutura(corpo: bytes, formato: Formato, truncada: bool) -> EstruturaAmostra | None` (devolve `None` para `html`, `texto`, `vazio` e `outro`).
   - **JSON**: lista, ou objeto com chave cujo valor é lista de objetos (registrar `caminho_registros`).
   - **CSV**: `csv.reader` com o dialeto do `Sniffer`, cabeçalho e 5 linhas; o tipo de cada coluna é inferido do texto.
@@ -231,7 +231,7 @@ description: "Lista de tarefas do E0 — Inventário e conectividade das fontes"
   - **Falhas**: lança `ErroAmostra` se o conteúdo não se interpreta.
 
   Fazer T022 passar.
-- [ ] T025 [US2] Integrar a amostra em `experiments/python/discovery/src/inventario_fontes/sonda.py`. Para 2xx com formato `json`, `csv` ou `xml`, chamar `inferir_estrutura`; `ErroAmostra` dá `falhou/resposta_invalida`, substituindo a checagem de JSON da T017. Para resposta truncada, a amostra traz `indisponivel_motivo`, sem falha. Depois, rodar de novo T011, T014 e T023.
+- [X] T025 [US2] Integrar a amostra em `experiments/python/discovery/src/inventario_fontes/sonda.py`. Para 2xx com formato `json`, `csv` ou `xml`, chamar `inferir_estrutura`; `ErroAmostra` dá `falhou/resposta_invalida`, substituindo a checagem de JSON da T017. Para resposta truncada, a amostra traz `indisponivel_motivo`, sem falha. Depois, rodar de novo T011, T014 e T023.
 
 **Checkpoint**: relatório JSON com a estrutura da amostra; as US1 e US2 funcionam.
 
