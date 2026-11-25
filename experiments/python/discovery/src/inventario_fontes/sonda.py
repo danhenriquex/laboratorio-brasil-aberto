@@ -6,7 +6,6 @@ R3 (causas). Nenhuma nova tentativa, nenhuma credencial, nenhum corpo gravado em
 
 from __future__ import annotations
 
-import json
 import re
 import ssl
 from typing import Protocol
@@ -15,13 +14,13 @@ from urllib.parse import urlsplit
 import httpx
 
 from inventario_fontes import __version__
+from inventario_fontes.amostra import ErroAmostra, inferir_estrutura
 from inventario_fontes.formato import detectar_formato, divergente, formato_declarado
 from inventario_fontes.modelos import (
     Auth,
     Causa,
     Configuracao,
     Fonte,
-    Formato,
     Redirecionamento,
     ResultadoSondagem,
     Situacao,
@@ -158,6 +157,7 @@ def sondar(fonte: Fonte, cliente: httpx.Client, config: Configuracao, relogio: R
     causa: Causa | None = None
     detalhe: str | None = None
     retry_after: str | None = None
+    amostra = None
     if indicio:
         causa, detalhe = Causa.EXIGE_AUTENTICACAO, indicio
     elif status == 403:
@@ -169,14 +169,14 @@ def sondar(fonte: Fonte, cliente: httpx.Client, config: Configuracao, relogio: R
         causa, detalhe = Causa.ERRO_FONTE, f"status {status}"
     elif status >= 300:
         causa, detalhe = Causa.ERRO_REQUISICAO, f"status {status}"
-    elif detectado is Formato.JSON and not truncada:
+    else:
         try:
-            json.loads(corpo)
-        except (json.JSONDecodeError, UnicodeDecodeError) as erro:
-            causa, detalhe = Causa.RESPOSTA_INVALIDA, f"JSON inválido: {erro.msg if hasattr(erro, 'msg') else erro}"[:200]
+            amostra = inferir_estrutura(corpo, detectado, truncada)
+        except ErroAmostra as erro:
+            causa, detalhe = Causa.RESPOSTA_INVALIDA, str(erro)[:200]
 
     if causa is None:
-        return ResultadoSondagem.base(fonte, Situacao.RESPONDEU, **comum)
+        return ResultadoSondagem.base(fonte, Situacao.RESPONDEU, amostra=amostra, **comum)
     return ResultadoSondagem.base(
         fonte, Situacao.FALHOU, causa=causa, detalhe_causa=detalhe, retry_after=retry_after, **comum
     )
