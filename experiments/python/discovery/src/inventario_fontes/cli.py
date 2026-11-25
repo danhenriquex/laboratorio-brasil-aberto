@@ -15,6 +15,7 @@ from inventario_fontes import __version__
 from inventario_fontes.catalogo import ErroCatalogo, carregar_catalogo
 from inventario_fontes.execucao import RelogioSistema, executar
 from inventario_fontes.modelos import Configuracao, Execucao, ResultadoSondagem, Situacao
+from inventario_fontes.relatorio.html import gravar_html
 from inventario_fontes.relatorio.json_ import base_relatorio, gravar_json
 from inventario_fontes.sonda import Relogio, criar_cliente
 
@@ -94,7 +95,9 @@ def main(argv: Sequence[str] | None = None, *, relogio: Relogio | None = None) -
     saida.mkdir(parents=True, exist_ok=True)
     base = base_relatorio(saida, execucao.iniciada_em)
     caminho_json = base.with_suffix(".json")
+    caminho_html = base.with_suffix(".html")
     gravar_json(execucao, caminho_json)
-    print(_resumo(execucao, [caminho_json]))
+    gravar_html(execucao, caminho_html)
+    print(_resumo(execucao, [caminho_json, caminho_html]))
 
     return SAIDA_INTERROMPIDA if execucao.interrompida else SAIDA_OK
