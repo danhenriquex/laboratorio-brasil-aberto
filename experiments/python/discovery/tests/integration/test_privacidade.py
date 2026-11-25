@@ -8,6 +8,7 @@ import respx
 from inventario_fontes.catalogo import carregar_catalogo
 from inventario_fontes.execucao import executar
 from inventario_fontes.modelos import Configuracao, Situacao
+from inventario_fontes.relatorio.html import renderizar_html
 from inventario_fontes.relatorio.json_ import para_dict
 from inventario_fontes.sonda import criar_cliente
 from tests.conftest import fonte_dict, ler_fixture
@@ -62,3 +63,15 @@ def test_relatorio_json_nao_contem_valores(catalogo_tmp, relogio):
     assert vazados == set()
     # os nomes dos campos aparecem
     assert '"email"' in serializado and '"cpf"' in serializado
+
+
+def test_relatorio_html_nao_contem_valores(catalogo_tmp, relogio):
+    execucao = executar_com_fixtures(catalogo_tmp, relogio)
+    html = renderizar_html(execucao)
+    chaves: set[str] = set()
+    valores: set[str] = set()
+    for nome in FIXTURES:
+        valores |= valores_folha(json.loads(ler_fixture(nome)), chaves)
+    vazados = {v for v in valores - chaves if v in html}
+    assert vazados == set()
+    assert "email" in html and "cpf" in html

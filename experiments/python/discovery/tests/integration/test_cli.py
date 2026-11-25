@@ -42,6 +42,9 @@ def test_execucao_normal_com_falha_sai_com_zero(catalogo, tmp_path, relogio, cap
     assert codigo == 0
     relatorios = sorted(saida.glob("inventario-*.json"))
     assert len(relatorios) == 1
+    html = relatorios[0].with_suffix(".html")
+    assert html.exists()
+    assert html.read_text(encoding="utf-8").count("data-fonte=") == 3
     dados = json.loads(relatorios[0].read_text(encoding="utf-8"))
     assert dados["resumo"]["total"] == 3
 
@@ -53,6 +56,7 @@ def test_execucao_normal_com_falha_sai_com_zero(catalogo, tmp_path, relogio, cap
     assert linhas[2].startswith("[3/3] sem-probe ") and "sem teste automatizado" in linhas[2]
     assert "3 fontes: 1 responderam, 1 falharam, 1 sem teste" in out
     assert str(relatorios[0]) in out
+    assert str(html) in out
 
 
 def test_catalogo_inexistente_sai_com_um(tmp_path, relogio, capsys):

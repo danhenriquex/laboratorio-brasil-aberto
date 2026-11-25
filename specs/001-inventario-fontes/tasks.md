@@ -245,7 +245,7 @@ description: "Lista de tarefas do E0 — Inventário e conectividade das fontes"
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T026 [P] [US3] Escrever `experiments/python/discovery/tests/unit/test_relatorio_html.py`, com uma `Execucao` montada à mão:
+- [X] T026 [P] [US3] Escrever `experiments/python/discovery/tests/unit/test_relatorio_html.py`, com uma `Execucao` montada à mão:
   - cada fonte vira uma linha com `data-fonte="<id>"`, contendo nome, domínio, grau do catálogo, grau sugerido, hipótese de acesso, resultado observado e link da documentação;
   - a linha com divergência de autenticação tem a classe `divergente` e mostra hipótese e observado;
   - `coletado_em` aparece em UTC e em horário de Brasília (`America/Sao_Paulo`);
@@ -258,14 +258,14 @@ description: "Lista de tarefas do E0 — Inventário e conectividade das fontes"
 
 ### Implementation for User Story 3
 
-- [ ] T027 [US3] Implementar `experiments/python/discovery/src/inventario_fontes/relatorio/html.py` (R7):
+- [X] T027 [US3] Implementar `experiments/python/discovery/src/inventario_fontes/relatorio/html.py` (R7):
   - `renderizar_html(execucao) -> str` com `string.Template`, CSS inline e sem JavaScript;
   - uma função `_e()` centralizando o `html.escape` de todo texto vindo do catálogo ou da observação;
   - uma tabela por fonte, com destaque visual para `falhou` e `divergente` e um bloco expansível `<details>` para a amostra;
   - `gravar_html(execucao, caminho)`.
 
   Fazer T026 passar.
-- [ ] T028 [US3] Atualizar `experiments/python/discovery/src/inventario_fontes/cli.py` para gravar também o HTML, com o mesmo nome-base do JSON (FR-017, usando `caminho_relatorio` com a extensão `html` e o mesmo sufixo, se houver), e imprimir os dois caminhos (FR-021). Atualizar `tests/integration/test_cli.py` para exigir os dois arquivos e `tests/integration/test_privacidade.py` para checar também o HTML.
+- [X] T028 [US3] Atualizar `experiments/python/discovery/src/inventario_fontes/cli.py` para gravar também o HTML, com o mesmo nome-base do JSON (FR-017, usando `caminho_relatorio` com a extensão `html` e o mesmo sufixo, se houver), e imprimir os dois caminhos (FR-021). Atualizar `tests/integration/test_cli.py` para exigir os dois arquivos e `tests/integration/test_privacidade.py` para checar também o HTML.
 
 **Checkpoint**: execução gera JSON e HTML; as US1, US2 e US3 funcionam.
 
