@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Sequence
 from pathlib import Path
 
 from inventario_fontes.modelos import Catalogo, Fonte, Grau
@@ -114,3 +115,15 @@ def _validar_fonte(i: int, item: object, vistos: set[str]) -> tuple[Fonte | None
         ),
         [],
     )
+
+
+def filtrar(fontes: Sequence[Fonte], rodadas: Sequence[int], ids: Sequence[str]) -> list[Fonte]:
+    """Fontes do catálogo, na ordem do catálogo, que atendem às rodadas e aos ids (interseção).
+
+    Listas vazias não filtram. Ids que não existem no catálogo são erro (ValueError).
+    """
+    conhecidos = {f.id for f in fontes}
+    inexistentes = [i for i in ids if i not in conhecidos]
+    if inexistentes:
+        raise ValueError(f"fontes não encontradas no catálogo: {', '.join(inexistentes)}")
+    return [f for f in fontes if (not rodadas or f.rodada in rodadas) and (not ids or f.id in ids)]

@@ -279,7 +279,7 @@ description: "Lista de tarefas do E0 — Inventário e conectividade das fontes"
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T029 [P] [US4] Escrever `experiments/python/discovery/tests/integration/test_filtros.py`, via `cli.main`, com `respx` e `catalogo_tmp`:
+- [X] T029 [P] [US4] Escrever `experiments/python/discovery/tests/integration/test_filtros.py`, via `cli.main`, com `respx` e `catalogo_tmp`:
   - `--rodada 1` consulta só a rodada 1, sem chamadas às rotas da rodada 2;
   - `--rodada 1 --rodada 2` consulta as duas;
   - `--fonte a --fonte b` consulta só `a` e `b`;
@@ -291,7 +291,7 @@ description: "Lista de tarefas do E0 — Inventário e conectividade das fontes"
 
 ### Implementation for User Story 4
 
-- [ ] T030 [US4] Adicionar `filtrar(fontes, rodadas: list[int], ids: list[str]) -> list[Fonte]` em `experiments/python/discovery/src/inventario_fontes/catalogo.py`, lançando `ValueError` com os ids inexistentes. Adicionar `--rodada` (`action="append"`, `type=int`) e `--fonte` (`action="append"`) em `experiments/python/discovery/src/inventario_fontes/cli.py`, repassando `filtros` a `executar`. Fazer T029 passar.
+- [X] T030 [US4] Adicionar `filtrar(fontes, rodadas: list[int], ids: list[str]) -> list[Fonte]` em `experiments/python/discovery/src/inventario_fontes/catalogo.py`, lançando `ValueError` com os ids inexistentes. Adicionar `--rodada` (`action="append"`, `type=int`) e `--fonte` (`action="append"`) em `experiments/python/discovery/src/inventario_fontes/cli.py`, repassando `filtros` a `executar`. Fazer T029 passar.
 
 **Checkpoint**: todas as histórias funcionam de forma independente.
 

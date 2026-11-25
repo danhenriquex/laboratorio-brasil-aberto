@@ -12,7 +12,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from inventario_fontes import __version__
-from inventario_fontes.catalogo import ErroCatalogo, carregar_catalogo
+from inventario_fontes.catalogo import ErroCatalogo, carregar_catalogo, filtrar
 from inventario_fontes.execucao import RelogioSistema, executar
 from inventario_fontes.modelos import Configuracao, Execucao, ResultadoSondagem, Situacao
 from inventario_fontes.relatorio.html import gravar_html
@@ -32,6 +32,12 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--catalogo", default="discovery/sources.json", help="catálogo de fontes")
     parser.add_argument("--saida", default="discovery/reports", help="diretório dos relatórios")
+    parser.add_argument(
+        "--rodada", type=int, action="append", default=[], metavar="N", help="limita a uma rodada (repetível)"
+    )
+    parser.add_argument(
+        "--fonte", action="append", default=[], metavar="ID", help="limita a uma fonte pelo id (repetível)"
+    )
     parser.add_argument("--intervalo", type=float, default=2.0, help="segundos entre consultas (mínimo 1)")
     parser.add_argument("--tempo-limite", type=float, default=15.0, help="tempo limite por consulta, de 1 a 60 s")
     parser.add_argument("--versao", action="version", version=f"inventario-fontes {__version__}")
@@ -82,14 +88,30 @@ def main(argv: Sequence[str] | None = None, *, relogio: Relogio | None = None) -
         print(f"inventario: {erro}", file=sys.stderr)
         return SAIDA_CATALOGO
 
-    fontes = list(catalogo.fontes)
+    try:
+        fontes = filtrar(catalogo.fontes, args.rodada, args.fonte)
+    except ValueError as erro:
+        print(f"inventario: {erro}", file=sys.stderr)
+        return SAIDA_USO
+    if not fontes:
+        print("inventario: nenhuma fonte do catálogo atende aos filtros", file=sys.stderr)
+        return SAIDA_USO
     relogio = relogio or RelogioSistema()
 
     def progresso(i: int, n: int, resultado: ResultadoSondagem) -> None:
         print(_linha(i, n, resultado), flush=True)
 
     with criar_cliente(config) as cliente:
-        execucao = executar(catalogo, fontes, config, cliente, relogio, ao_progresso=progresso)
+        execucao = executar(
+            catalogo,
+            fontes,
+            config,
+            cliente,
+            relogio,
+            ao_progresso=progresso,
+            filtro_rodadas=args.rodada,
+            filtro_fontes=args.fonte,
+        )
 
     saida = Path(args.saida)
     saida.mkdir(parents=True, exist_ok=True)
