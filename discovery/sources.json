@@ -10,9 +10,10 @@
       "probe_url": "https://servicodados.ibge.gov.br/api/v1/localidades/estados",
       "data_type": ["api"],
       "access_hypothesis": "facil",
-      "auth": "nenhuma (hipótese)",
-      "verification": "parcial",
-      "round": 1
+      "auth": "nenhuma",
+      "verification": "confirmado",
+      "round": 1,
+      "notes": "Conectividade e ausência de autenticação confirmadas pela sondagem do E0 em 2026-11-25 (discovery/reports/inventario-20261125T204235Z.json); licença e limites conforme a ficha discovery/fichas/ibge-localidades.md."
     },
     {
       "id": "bcb-sgs",
@@ -22,10 +23,10 @@
       "probe_url": "https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json",
       "data_type": ["api"],
       "access_hypothesis": "facil",
-      "auth": "nenhuma (hipótese)",
-      "verification": "parcial",
+      "auth": "nenhuma",
+      "verification": "confirmado",
       "round": 1,
-      "notes": "A série 432 é a meta Selic; confirme o código no catálogo do SGS."
+      "notes": "A série 432 é a meta Selic; confirme o código no catálogo do SGS. Conectividade e ausência de autenticação confirmadas pela sondagem do E0 em 2026-11-25 (discovery/reports/inventario-20261125T204235Z.json); licença e limites conforme a ficha discovery/fichas/bcb-sgs.md."
     },
     {
       "id": "bcb-ifdata",
@@ -48,9 +49,10 @@
       "probe_url": "https://dadosabertos.camara.leg.br/api/v2/deputados?itens=1",
       "data_type": ["api"],
       "access_hypothesis": "facil",
-      "auth": "nenhuma (hipótese)",
-      "verification": "parcial",
-      "round": 1
+      "auth": "nenhuma",
+      "verification": "confirmado",
+      "round": 1,
+      "notes": "Conectividade e ausência de autenticação confirmadas pela sondagem do E0 em 2026-11-25 (discovery/reports/inventario-20261125T204235Z.json); licença e limites conforme a ficha discovery/fichas/camara-dados-abertos.md. A resposta contém dados pessoais de parlamentares (nome, e-mail)."
     },
     {
       "id": "senado-dados-abertos",
