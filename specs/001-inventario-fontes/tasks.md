@@ -31,10 +31,10 @@ description: "Lista de tarefas do E0 — Inventário e conectividade das fontes"
 
 **Purpose**: criar o projeto `uv` e o esqueleto do pacote.
 
-- [ ] T001 Criar `experiments/python/discovery/pyproject.toml`: projeto `inventario-fontes` versão `0.1.0`, `requires-python = ">=3.11"`, build backend `hatchling` com layout `src/`, dependência de runtime `httpx`, grupo de dev (`[dependency-groups] dev`) com `pytest`, `respx` e `jsonschema`, script `inventario = "inventario_fontes.cli:main"` e `[tool.pytest.ini_options]` com `testpaths = ["tests"]`
-- [ ] T002 Criar o esqueleto do pacote e dos testes: `experiments/python/discovery/src/inventario_fontes/__init__.py` (com `__version__ = "0.1.0"`), `src/inventario_fontes/__main__.py` (chama `cli.main()` e repassa o código de saída a `sys.exit`), `src/inventario_fontes/relatorio/__init__.py` e as pastas `tests/unit/`, `tests/integration/`, `tests/contract/` e `tests/fixtures/`, todas em `experiments/python/discovery/`
-- [ ] T003 [P] Criar `experiments/python/discovery/README.md` com propósito (pergunta do E0), comando de testes, comando de execução real e link para `specs/001-inventario-fontes/quickstart.md`
-- [ ] T004 Rodar `uv sync --project experiments/python/discovery` e versionar o `experiments/python/discovery/uv.lock` gerado
+- [X] T001 Criar `experiments/python/discovery/pyproject.toml`: projeto `inventario-fontes` versão `0.1.0`, `requires-python = ">=3.11"`, build backend `hatchling` com layout `src/`, dependência de runtime `httpx`, grupo de dev (`[dependency-groups] dev`) com `pytest`, `respx` e `jsonschema`, script `inventario = "inventario_fontes.cli:main"` e `[tool.pytest.ini_options]` com `testpaths = ["tests"]`
+- [X] T002 Criar o esqueleto do pacote e dos testes: `experiments/python/discovery/src/inventario_fontes/__init__.py` (com `__version__ = "0.1.0"`), `src/inventario_fontes/__main__.py` (chama `cli.main()` e repassa o código de saída a `sys.exit`), `src/inventario_fontes/relatorio/__init__.py` e as pastas `tests/unit/`, `tests/integration/`, `tests/contract/` e `tests/fixtures/`, todas em `experiments/python/discovery/`
+- [X] T003 [P] Criar `experiments/python/discovery/README.md` com propósito (pergunta do E0), comando de testes, comando de execução real e link para `specs/001-inventario-fontes/quickstart.md`
+- [X] T004 Rodar `uv sync --project experiments/python/discovery` e versionar o `experiments/python/discovery/uv.lock` gerado
 
 ---
 
@@ -44,7 +44,7 @@ description: "Lista de tarefas do E0 — Inventário e conectividade das fontes"
 
 **⚠️ CRITICAL**: nenhuma história começa antes desta fase terminar.
 
-- [ ] T005 Implementar os modelos em `experiments/python/discovery/src/inventario_fontes/modelos.py`, conforme `data-model.md`, como `@dataclass(frozen=True)`:
+- [X] T005 Implementar os modelos em `experiments/python/discovery/src/inventario_fontes/modelos.py`, conforme `data-model.md`, como `@dataclass(frozen=True)`:
   - **Enums (`StrEnum`)**:
     - `Grau` (`confirmado` | `parcial` | `nao_verificado`)
     - `Situacao` (`respondeu` | `falhou` | `sem_teste` | `nao_executada`)
@@ -59,25 +59,25 @@ description: "Lista de tarefas do E0 — Inventário e conectividade das fontes"
     - `CampoAmostra` tem **somente** `caminho` e `tipos`: "Não há atributo para valor, exemplo ou enumeração".
     - `Fonte` expõe a propriedade `hipotese_auth`: "`nao_exige` se `auth_esperada` começa com 'nenhuma' (sem diferenciar maiúsculas); senão `exige`".
     - `Resumo.de_resultados(resultados)` calcula os contadores e garante "`total = responderam + falharam + sem_teste + nao_executadas`".
-- [ ] T006 [P] Criar `experiments/python/discovery/tests/conftest.py` com:
+- [X] T006 [P] Criar `experiments/python/discovery/tests/conftest.py` com:
   - fixture `autouse` que bloqueia rede real, fazendo `monkeypatch` de `socket.socket.connect` e `socket.create_connection` para lançar `RuntimeError("rede bloqueada nos testes")`;
   - fixture `relogio`: objeto `RelogioFalso` com `agora()` (datetime UTC controlável), `monotonic()` e `esperar(segundos)`, que avança o relógio e registra cada espera em `esperas: list[float]`;
   - fixture `catalogo_tmp`: fábrica que recebe uma lista de dicts de fonte e grava `sources.json` (`schema_version: 1`) em `tmp_path`, devolvendo o caminho;
   - função auxiliar `fonte_dict(**overrides)`, com uma fonte válida padrão.
-- [ ] T007 [P] Criar as fixtures em `experiments/python/discovery/tests/fixtures/`. Todos os dados pessoais são **fictícios**.
+- [X] T007 [P] Criar as fixtures em `experiments/python/discovery/tests/fixtures/`. Todos os dados pessoais são **fictícios**.
   - `ibge_estados.json`: lista com 3 estados no formato da API de localidades: `id`, `sigla`, `nome`, `regiao{id,sigla,nome}`.
   - `bcb_sgs_432.json`: `[{"data": "dd/mm/aaaa", "valor": "..."}]`.
   - `camara_deputados.json`: objeto com `dados` (2 deputados fictícios, com `id`, `nome`, `siglaPartido`, `siglaUf`, `email`, `urlFoto`) e `links`.
   - `pessoas_ficticias.json`: lista com nomes, e-mails e CPFs inventados, como `"Fulana Exemplo Teste"`, `"fulana.exemplo@teste.invalid"` e `"000.111.222-33"`.
   - `erro.html` (página de erro com `<!DOCTYPE html>`), `dados.csv` (cabeçalho e 6 linhas; colunas texto, inteiro, decimal e data), `dados.xml` (raiz com 6 elementos repetidos), `json_quebrado.txt` (`{"a": [1, 2`) e `vazia.json` (`[]`).
-- [ ] T008 [P] Escrever `experiments/python/discovery/tests/unit/test_catalogo.py`:
+- [X] T008 [P] Escrever `experiments/python/discovery/tests/unit/test_catalogo.py`:
   - leitura do formato real (copiar 3 fontes de `discovery/sources.json`), com `probe_url: null` virando `url_teste=None`;
   - erros reportados no formato "`fonte[i] (id): campo X ...`", cobrindo `id` duplicado ou fora de `[a-z0-9-]+`, campo obrigatório ausente, `docs_url`/`probe_url` sem `http(s)://`, `data_type` vazio, `verification` fora do enum e `round` < 1;
   - vários problemas reportados de uma vez;
   - arquivo ausente e JSON inválido;
   - campos desconhecidos ignorados;
   - `hipotese_auth` de `"nenhuma (hipótese)"` dá `nao_exige`, e de `"chave de API..."` dá `exige`.
-- [ ] T009 Implementar `experiments/python/discovery/src/inventario_fontes/catalogo.py`:
+- [X] T009 Implementar `experiments/python/discovery/src/inventario_fontes/catalogo.py`:
   - `carregar_catalogo(caminho) -> Catalogo(caminho, schema_version, fontes)`, que valida o catálogo inteiro antes de devolver;
   - `ErroCatalogo(problemas: list[str])` para qualquer problema;
   - mapeamento dos campos do catálogo para atributos de `Fonte` conforme a tabela do data-model;

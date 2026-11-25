@@ -1,0 +1,4 @@
+[
+  {"nome": "Fulana Exemplo Teste", "email": "fulana.exemplo@teste.invalid", "cpf": "000.111.222-33", "nascimento": "1990-04-12", "renda": 4321.5, "ativo": true},
+  {"nome": "Beltrano Ficticio Souza", "email": "beltrano.ficticio@teste.invalid", "cpf": "444.555.666-77", "nascimento": "1985-09-30", "renda": 8765.25, "ativo": false}
+]
