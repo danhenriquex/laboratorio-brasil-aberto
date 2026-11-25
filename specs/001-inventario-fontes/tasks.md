@@ -389,3 +389,10 @@ Task: "T020 relatorio/json_.py"
 - Fixtures só com dados sintéticos ou respostas reais reduzidas, sem dados pessoais reais.
 - O `tasks.md` é a fonte da verdade. As issues do GitHub Project nº 6 espelham as fases (uma issue por fase/história) e são sincronizadas após cada `/speckit-implement` ou `/speckit-converge`.
 - Faça commit após cada tarefa ou grupo lógico, sem atribuição ao Claude nas mensagens.
+
+---
+
+## Phase 8: Convergence
+
+- [ ] T037 CRITICAL: Impedir que uma fonte com defeito derrube a execução. Em `experiments/python/discovery/src/inventario_fontes/sonda.py`, tratar `httpx.DecodingError` (corpo comprimido corrompido) como `resposta_invalida`. Em `experiments/python/discovery/src/inventario_fontes/amostra.py`, converter `RecursionError` (JSON aninhado demais) em `ErroAmostra`. Em `experiments/python/discovery/src/inventario_fontes/execucao.py`, envolver cada sonda numa proteção que transforme qualquer outra exceção inesperada (exceto `KeyboardInterrupt`) em `falhou`/`resposta_invalida` daquela fonte, com `detalhe_causa` curto e sem corpo, e seguir para a próxima. Cobrir os três casos com testes `respx` em `tests/unit/test_sonda.py` e `tests/integration/test_execucao.py`, incluindo um em que a fonte com defeito é seguida por uma fonte normal que ainda é consultada, per Constitution V / FR-010 / SC-003 (contradicts)
+- [ ] T038 Impor um prazo total por consulta: hoje `criar_cliente` passa `timeout=15` ao httpx, que limita cada fase (conexão, cada leitura), não a consulta inteira. Em `experiments/python/discovery/src/inventario_fontes/sonda.py`, interromper a leitura em `_ler_limitado` quando `relogio.monotonic() - inicio` passar de `config.tempo_limite_s` e classificar como `tempo_esgotado`, com `detalhe_causa` indicando prazo total excedido. Manter o timeout por fase do httpx como proteção para conexões paradas. Testar em `tests/unit/test_sonda.py` com o relógio falso avançando a cada bloco lido, per FR-006 / plan R8 / SC-001 (partial)
