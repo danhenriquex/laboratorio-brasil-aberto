@@ -58,6 +58,11 @@ Escolhas de base vindas de `docs/prompts/E0-inventario-fontes.md` (seção 2): P
   - **XML**: o elemento raiz e os filhos dos 5 primeiros elementos repetidos.
 
   Cada campo vira `{caminho, tipos}`, com caminho em notação de pontos (`regiao.sigla`, `itens[].id`). `tipos` é a união dos tipos vistos na amostra: `texto`, `inteiro`, `decimal`, `booleano`, `nulo`, `data` (texto no padrão ISO `AAAA-MM-DD`, com ou sem hora), `objeto`, `lista`. A profundidade vai até 5 níveis.
+
+  Ajustes feitos na implementação (US2):
+  - `data` também reconhece `dd/mm/aaaa`, formato usado pelo BCB/SGS.
+  - Chaves de objeto que parecem dados (só dígitos, pontos, hífens, barras ou dois-pontos, como um CPF ou uma data usados como chave) aparecem como `<chave>`, para que valores não vazem pelo nome do campo.
+  - Em CSV truncado, a última linha é descartada, porque pode estar partida.
 - **Rationale**: o tipo é inferido do valor, e o valor é descartado na hora. Nada do conteúdo chega ao modelo de resultado, o que torna FR-015 verificável por construção: o tipo `CampoAmostra` não tem campo para valor.
 - **Alternatives considered**: gerar JSON Schema completo com `genson` (dependência a mais, e o esquema pode carregar `enum`/`examples` com valores).
 
