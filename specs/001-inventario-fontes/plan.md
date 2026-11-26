@@ -26,7 +26,7 @@ Abordagem: Python com `httpx` em modo streaming, com teto de leitura de 1 MiB. F
 
 **Project Type**: CLI (um pacote Python gerenciado por `uv`)
 
-**Performance Goals**: rodada 1 em < 1 min (SC-001). Pior caso, com 3 sondas: 3 × 15 s + 2 × 2 s = 49 s
+**Performance Goals**: rodada 1 em < 1 min (SC-001). Com 3 sondas esgotando o tempo limite: 3 × 15 s + 2 × 2 s = 49 s. Pior caso patológico (conexão lenta e servidor parado antes do primeiro bloco): ≈ 94 s, aceito e registrado no R8 do research.md
 
 **Constraints**: 1 consulta por fonte por execução, sem paralelismo nem nova tentativa; intervalo ≥ 1 s (padrão 2 s); tempo limite ≤ 60 s (padrão 15 s); leitura ≤ 1 MiB por resposta; no máximo 5 redirecionamentos; nenhum valor de resposta nos relatórios
 

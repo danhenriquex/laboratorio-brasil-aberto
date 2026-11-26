@@ -85,6 +85,12 @@ Estruturas observadas (só nomes e tipos):
 - O teto de leitura de 1 MiB impede inferir a estrutura de JSON grande (fica "indisponível, resposta truncada").
 - O XML é lido com `xml.etree` da biblioteca padrão, sem `defusedxml`. Basta para sondagem, mas deve ser revisto se uma fonte XML entrar com volume.
 - Só as fontes da rodada 1 foram sondadas. As rodadas 2 e 3 continuam sem `probe_url`.
+- O tempo limite (15 s) é conferido no total da consulta só depois de cada bloco lido; antes do primeiro bloco valem os limites por fase do httpx. Numa conexão lenta seguida de servidor parado, uma consulta pode durar cerca de 2× o tempo limite, e uma rodada de 3 fontes nessas condições passaria de 1 minuto. É aceito para uma ferramenta de sondagem (detalhes no R8 de [research.md](research.md)).
+
+## Convergência
+O `/speckit-converge` rodou duas vezes depois da implementação:
+- **1ª rodada:** encontrou um problema crítico. Uma fonte com defeito (corpo comprimido corrompido ou JSON aninhado demais) derrubava a execução inteira, contra o princípio V da constituição. Também mostrou que o tempo limite valia por fase, e não por consulta. Os dois foram corrigidos nas tarefas T037 e T038 (PR #15).
+- **2ª rodada:** sobrou só o limite efetivo do tempo limite, documentado acima (T039).
 
 ## Verificações finais
 - **SC-007 (testes sem rede):** em 2026-11-25, a suíte rodou dentro de um sandbox do macOS que nega todo acesso à rede (`sandbox-exec -p '(version 1)(allow default)(deny network*)' uv run --offline ...`). Primeiro, confirmei que uma chamada real ao IBGE falha dentro do sandbox. Depois, os **155 testes passaram**.
