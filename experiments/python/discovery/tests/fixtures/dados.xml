@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<registros>
+  <registro><codigo>1</codigo><nome>Alfa</nome><situacao>ativo</situacao></registro>
+  <registro><codigo>2</codigo><nome>Beta</nome><situacao>ativo</situacao></registro>
+  <registro><codigo>3</codigo><nome>Gama</nome><situacao>inativo</situacao></registro>
+  <registro><codigo>4</codigo><nome>Delta</nome><situacao>ativo</situacao></registro>
+  <registro><codigo>5</codigo><nome>Epsilon</nome><situacao>ativo</situacao></registro>
+  <registro><codigo>6</codigo><nome>Zeta</nome><situacao>ativo</situacao></registro>
+</registros>

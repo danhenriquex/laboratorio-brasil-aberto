@@ -58,6 +58,11 @@ Escolhas de base vindas de `docs/prompts/E0-inventario-fontes.md` (seção 2): P
   - **XML**: o elemento raiz e os filhos dos 5 primeiros elementos repetidos.
 
   Cada campo vira `{caminho, tipos}`, com caminho em notação de pontos (`regiao.sigla`, `itens[].id`). `tipos` é a união dos tipos vistos na amostra: `texto`, `inteiro`, `decimal`, `booleano`, `nulo`, `data` (texto no padrão ISO `AAAA-MM-DD`, com ou sem hora), `objeto`, `lista`. A profundidade vai até 5 níveis.
+
+  Ajustes feitos na implementação (US2):
+  - `data` também reconhece `dd/mm/aaaa`, formato usado pelo BCB/SGS.
+  - Chaves de objeto que parecem dados (só dígitos, pontos, hífens, barras ou dois-pontos, como um CPF ou uma data usados como chave) aparecem como `<chave>`, para que valores não vazem pelo nome do campo.
+  - Em CSV truncado, a última linha é descartada, porque pode estar partida.
 - **Rationale**: o tipo é inferido do valor, e o valor é descartado na hora. Nada do conteúdo chega ao modelo de resultado, o que torna FR-015 verificável por construção: o tipo `CampoAmostra` não tem campo para valor.
 - **Alternatives considered**: gerar JSON Schema completo com `genson` (dependência a mais, e o esquema pode carregar `enum`/`examples` com valores).
 
@@ -76,11 +81,12 @@ Escolhas de base vindas de `docs/prompts/E0-inventario-fontes.md` (seção 2): P
 ## R8. Ritmo, tempo limite e identificação (FR-004 a FR-008)
 
 - **Decision**:
-  - um único `httpx.Client` por execução, sem retries (`transport` padrão), timeout total configurável (padrão 15 s) e `User-Agent: laboratorio-brasil-aberto-inventario/<versão>`;
+  - um único `httpx.Client` por execução, sem retries (`transport` padrão), tempo limite configurável (padrão 15 s) e `User-Agent: laboratorio-brasil-aberto-inventario/<versão>`;
+  - **como o tempo limite é aplicado** (revisto na convergência, T038 e T039): o httpx aplica o valor a cada fase (conexão e cada espera de leitura); a sonda confere o prazo total da consulta depois de cada bloco lido e, se ele foi excedido, encerra com `tempo_esgotado`. O prazo total só é conferido quando chega um bloco. Por isso, no pior caso (conexão lenta seguida de servidor parado antes do primeiro bloco), uma consulta pode durar cerca de **2× o tempo limite** (~30 s com o padrão). Garantir um prazo rígido exigiria rodar a consulta em outra thread, complexidade que não se justifica numa ferramenta de sondagem (Constituição X);
   - o intervalo entre consultas (padrão 2 s) é medido com `time.monotonic()` desde o fim da consulta anterior;
   - a função de espera e o relógio são injetáveis, para os testes verificarem SC-005 sem esperar de verdade;
   - fontes sem endereço de teste não consomem intervalo.
-- **Rationale**: execução sequencial é o modo mais respeitoso e o mais fácil de testar. Com 3 sondas, o pior caso é 3 × 15 s + 2 × 2 s = 49 s, dentro do SC-001 (< 1 min).
+- **Rationale**: execução sequencial é o modo mais respeitoso e o mais fácil de testar. Com 3 sondas, o caso comum de falha (cada fonte esgotando o tempo limite uma vez) é 3 × 15 s + 2 × 2 s = 49 s, dentro do SC-001 (< 1 min). O pior caso patológico, com as três fontes conectando devagar e travando antes do primeiro bloco, é 3 × ~30 s + 2 × 2 s ≈ 94 s e passaria do SC-001. Esse cenário é aceito e fica registrado como limitação. A execução real da rodada 1 levou 4,9 s.
 
 ## R9. Datas e fuso (FR-009, princípio II)
 

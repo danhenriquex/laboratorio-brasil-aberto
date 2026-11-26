@@ -11,3 +11,5 @@ build/
 .gradle/
 node_modules/
 discovery/reports/*.html
+dist/
+*.pyc

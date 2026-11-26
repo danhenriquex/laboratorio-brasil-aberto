@@ -13,7 +13,7 @@ Lida de `discovery/sources.json` (`schema_version: 1`). A ferramenta nunca escre
 | `id` | `id` | texto | sim | único no catálogo; `[a-z0-9-]+` |
 | `name` | `nome` | texto | sim | não vazio |
 | `domain` | `dominio` | texto | sim | não vazio |
-| `docs_url` | `url_documentacao` | URL | sim | `http(s)://` |
+| `docs_url` | `url_documentacao` | URL ou nulo | sim (pode ser `null`) | se presente, `http(s)://`; nulo = documentação oficial ainda não localizada (ex.: `datajud`), exibido como tal no relatório |
 | `probe_url` | `url_teste` | URL ou nulo | não | se presente, `http(s)://` |
 | `data_type` | `tipos_dado` | lista de texto | sim | não vazia |
 | `access_hypothesis` | `hipotese_acesso` | texto | sim | exibida, não comparada (R12) |
