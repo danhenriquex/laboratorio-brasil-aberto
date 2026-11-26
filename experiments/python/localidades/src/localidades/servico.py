@@ -12,10 +12,12 @@ from localidades.config import Configuracao
 from localidades.dominio import (
     Pagina,
     Uf,
+    filtrar_por_nome,
     ordenar,
     paginar,
     resolver_uf,
     validar_codigo_municipio,
+    validar_nome,
     validar_paginacao,
 )
 from localidades.erros import RespostaInesperadaDaFonte
@@ -103,13 +105,16 @@ class ServicoLocalidades:
             raise RespostaInesperadaDaFonte(f"a UF {codigo} não veio na lista de UFs do IBGE")
         return Resultado(dados=uf, meta=obtido.meta, cache=obtido.cache)
 
-    async def listar_municipios(self, param_uf: str, pagina: int = 1, itens: int = 100) -> Resultado:
+    async def listar_municipios(
+        self, param_uf: str, pagina: int = 1, itens: int = 100, nome: str | None = None
+    ) -> Resultado:
         validar_paginacao(pagina, itens, self._config.itens_max)
+        nome = validar_nome(nome) if nome is not None else None
         codigo = resolver_uf(param_uf)
         obtido = await self._obter(
             f"estados/{codigo}/municipios", lambda: self._ibge.obter_municipios_da_uf(codigo)
         )
-        selecionados = ordenar(obtido.dados)
+        selecionados = ordenar(filtrar_por_nome(obtido.dados, nome) if nome else obtido.dados)
         pagina_: Pagina = paginar(selecionados, pagina, itens)
         return Resultado(dados=pagina_.itens, meta=obtido.meta, paginacao=pagina_, cache=obtido.cache)
 

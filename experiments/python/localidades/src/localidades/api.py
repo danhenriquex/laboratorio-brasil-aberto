@@ -139,6 +139,7 @@ def criar_app(config: Configuracao, *, cliente_ibge: ClienteIBGE | None = None, 
                 uf,
                 pagina=_inteiro("pagina", q.get("pagina"), 1),
                 itens=_inteiro("itens", q.get("itens"), 100),
+                nome=q.get("nome"),
             ),
             request,
         )

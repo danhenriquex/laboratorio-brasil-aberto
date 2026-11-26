@@ -401,17 +401,17 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T035 [P] [US4] Escrever `experiments/python/localidades/tests/integration/test_api_busca.py`, cobrindo:
+- [X] T035 [P] [US4] Escrever `experiments/python/localidades/tests/integration/test_api_busca.py`, cobrindo:
   - **acerto:** `RJ?nome=niteroi` e `RJ?nome=NITERÓI` devolvem só `{codigo: "3303302", nome: "Niterói"}`;
   - **várias respostas:** `RJ?nome=são` devolve todos os municípios do RJ cujo nome dobrado contém "sao", em ordem, com `total` igual à contagem filtrada;
   - **busca sem resultado:** devolve `dados: []`, `total: 0` e `paginas: 0`;
   - **entrada inválida:** `nome=a`, `nome=%20a%20` e 61 caracteres devolvem 400, e o `detail` cita o mínimo de 2 ou o máximo de 60;
   - **consultas à fonte:** duas buscas na mesma UF geram 1 chamada ao IBGE.
-- [ ] T036 [P] [US4] Escrever `contracts/localidades/verificacao/tests/test_us4_busca.py`, com os cenários 1 a 3 da US4 (`SP?nome=são`, como na spec) validados contra o contrato.
+- [X] T036 [P] [US4] Escrever `contracts/localidades/verificacao/tests/test_us4_busca.py`, com os cenários 1 a 3 da US4 (`SP?nome=são`, como na spec) validados contra o contrato.
 
 ### Implementation for User Story 4
 
-- [ ] T037 [US4] Acrescentar o parâmetro opcional `nome` a `listar_municipios` em `experiments/python/localidades/src/localidades/servico.py` (`validar_nome`, depois `filtrar_por_nome` e, por fim, `paginar`) e à rota em `experiments/python/localidades/src/localidades/api.py`. Ao final, T035 e T036 passam.
+- [X] T037 [US4] Acrescentar o parâmetro opcional `nome` a `listar_municipios` em `experiments/python/localidades/src/localidades/servico.py` (`validar_nome`, depois `filtrar_por_nome` e, por fim, `paginar`) e à rota em `experiments/python/localidades/src/localidades/api.py`. Ao final, T035 e T036 passam.
 
 **Checkpoint**: busca por nome funcionando sobre a cópia guardada.
 
