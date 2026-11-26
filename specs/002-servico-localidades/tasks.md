@@ -579,3 +579,7 @@ Task: "T033 cache.py em experiments/python/localidades/src/localidades/"
 ## Phase 9: Convergence
 
 - [X] T048 Recusar em `experiments/python/localidades/src/localidades/fonte_ibge.py` (`_codigo`) todo `id` do IBGE cuja quantidade de dígitos seja diferente da esperada ("`^\d{7}$`" para município, 6 para região imediata, 4 para intermediária, 2 para UF, 1 para região), levantando `RespostaInesperadaDaFonte` em vez de completar com zeros à esquerda, e cobrir com testes em `experiments/python/localidades/tests/unit/test_fonte_ibge.py` (id de 5 dígitos na lista de municípios e id de 1 dígito numa UF) per data-model: validação da resposta do IBGE, R7 e Constitution II (partial)
+
+## Phase 10: Convergence
+
+- [X] T049 Validar em `experiments/python/localidades/src/localidades/fonte_ibge.py` as siglas vindas do IBGE contra as regras do data-model (UF e UF do município: "`^[A-Z]{2}$`"; grande região: "`^[A-Z]{1,2}$`"), levantando `RespostaInesperadaDaFonte` quando não casarem, em vez de repassá-las; cobrir com testes em `experiments/python/localidades/tests/unit/test_fonte_ibge.py` (UF com sigla `rj`, região com sigla `Sudeste`, UF do município com sigla `R J`) per data-model: entidades Regiao, UF e UFResumida, FR-019 e SC-002 (partial)

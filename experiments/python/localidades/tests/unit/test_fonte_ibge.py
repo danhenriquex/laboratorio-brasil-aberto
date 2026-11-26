@@ -157,3 +157,30 @@ def test_regiao_imediata_com_id_curto_e_inesperada(mock_ibge):
     mock_ibge.get("/municipios/3304557").mock(return_value=httpx.Response(200, json=item))
     with pytest.raises(RespostaInesperadaDaFonte, match="6 dígitos"):
         executar(lambda c: c.obter_municipio("3304557"))
+
+
+# --- Convergência 2 (T049): siglas fora do formato ---
+
+
+def test_uf_com_sigla_minuscula_e_inesperada(mock_ibge):
+    estados = fixture_json("estados.json")
+    next(u for u in estados if u["sigla"] == "RJ")["sigla"] = "rj"
+    mock_ibge.get("/estados").mock(return_value=httpx.Response(200, json=estados))
+    with pytest.raises(RespostaInesperadaDaFonte, match="sigla"):
+        executar(lambda c: c.obter_estados())
+
+
+def test_regiao_com_sigla_por_extenso_e_inesperada(mock_ibge):
+    estados = fixture_json("estados.json")
+    estados[0]["regiao"]["sigla"] = "Norte"
+    mock_ibge.get("/estados").mock(return_value=httpx.Response(200, json=estados))
+    with pytest.raises(RespostaInesperadaDaFonte, match="sigla"):
+        executar(lambda c: c.obter_estados())
+
+
+def test_uf_do_municipio_com_sigla_invalida_e_inesperada(mock_ibge):
+    item = item_da_uf("33", 3304557)
+    item["regiao-imediata"]["regiao-intermediaria"]["UF"]["sigla"] = "R J"
+    mock_ibge.get("/municipios/3304557").mock(return_value=httpx.Response(200, json=item))
+    with pytest.raises(RespostaInesperadaDaFonte, match="sigla"):
+        executar(lambda c: c.obter_municipio("3304557"))
