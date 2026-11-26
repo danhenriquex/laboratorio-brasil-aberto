@@ -9,6 +9,8 @@ from __future__ import annotations
 import re
 import uuid
 from contextlib import asynccontextmanager
+from dataclasses import asdict
+from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -18,7 +20,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from localidades.config import Configuracao
 from localidades.erros import EntradaInvalida, ErroDominio, ErroInterno, NaoEncontrado
 from localidades.fonte_ibge import ClienteIBGE
-from localidades.servico import RelogioSistema, ServicoLocalidades
+from localidades.servico import RelogioSistema, Resultado, ServicoLocalidades
 
 CABECALHO_CORRELACAO = "X-Correlation-Id"
 _CORRELACAO_VALIDA = re.compile(r"[A-Za-z0-9._-]{1,64}", re.ASCII)
@@ -43,6 +45,29 @@ def problema(erro: ErroDominio, correlacao_id: str) -> JSONResponse:
         },
         headers={CABECALHO_CORRELACAO: correlacao_id},
     )
+
+
+def _inteiro(nome: str, valor: str | None, padrao: int) -> int:
+    """Parâmetros de paginação são validados pelo domínio, para o detalhe citar o limite configurado."""
+    if valor is None or valor.strip() == "":
+        return padrao
+    try:
+        return int(valor)
+    except ValueError:
+        raise EntradaInvalida(f"{nome} precisa ser um número inteiro, recebi {valor!r}") from None
+
+
+def envelope(resultado: Resultado, request: Request) -> dict[str, Any]:
+    dados = resultado.dados
+    corpo: dict[str, Any] = {
+        "dados": [asdict(x) for x in dados] if isinstance(dados, list) else asdict(dados),
+    }
+    if resultado.paginacao is not None:
+        p = resultado.paginacao
+        corpo["paginacao"] = {"pagina": p.pagina, "itens": p.tamanho, "total": p.total, "paginas": p.paginas}
+    corpo["meta"] = resultado.meta.para_dict()
+    request.state.cache = resultado.cache
+    return corpo
 
 
 def _correlacao(request: Request) -> str:
@@ -95,6 +120,28 @@ def criar_app(config: Configuracao, *, cliente_ibge: ClienteIBGE | None = None, 
         if erro.status_code in (404, 405):
             return problema(NaoEncontrado(f"a rota {request.url.path} não existe"), _correlacao(request))
         return problema(ErroInterno("erro interno do serviço"), _correlacao(request))
+
+    servico: ServicoLocalidades = app.state.servico
+
+    @app.get("/v1/ufs")
+    async def listar_ufs(request: Request):
+        return envelope(await servico.listar_ufs(), request)
+
+    @app.get("/v1/ufs/{uf}")
+    async def obter_uf(uf: str, request: Request):
+        return envelope(await servico.obter_uf(uf), request)
+
+    @app.get("/v1/ufs/{uf}/municipios")
+    async def listar_municipios(uf: str, request: Request):
+        q = request.query_params
+        return envelope(
+            await servico.listar_municipios(
+                uf,
+                pagina=_inteiro("pagina", q.get("pagina"), 1),
+                itens=_inteiro("itens", q.get("itens"), 100),
+            ),
+            request,
+        )
 
     @app.get("/health", include_in_schema=False)
     async def saude():

@@ -261,7 +261,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T021 [P] [US1] Escrever `experiments/python/localidades/tests/integration/test_api_ufs.py` (`TestClient` + `respx`), cobrindo:
+- [X] T021 [P] [US1] Escrever `experiments/python/localidades/tests/integration/test_api_ufs.py` (`TestClient` + `respx`), cobrindo:
   - **`/v1/ufs`:** 27 UFs ordenadas por `dobrar(nome)` (Acre primeiro), códigos em texto, `meta` completo, e `coletado_em` casando com `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$`;
   - **`/v1/ufs/{uf}`:**
     - `/v1/ufs/rj`, `/v1/ufs/33` e `/v1/ufs/%20RJ%20` devolvem o RJ;
@@ -275,7 +275,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
     - `itens=0`, `itens=501` e `pagina=0` devolvem 400, e o `detail` cita o limite;
     - `[]` do IBGE para o RJ devolve 502 `resposta-inesperada-da-fonte`;
   - **consultas à fonte:** cada pedido válido faz exatamente 1 chamada ao IBGE.
-- [ ] T022 [P] [US1] Escrever `contracts/localidades/verificacao/tests/test_us1_ufs_municipios.py`, com cada resposta validada por `contrato.validar(...)`:
+- [X] T022 [P] [US1] Escrever `contracts/localidades/verificacao/tests/test_us1_ufs_municipios.py`, com cada resposta validada por `contrato.validar(...)`:
   - os cenários de aceitação 1 a 4 da US1;
   - os casos de borda:
     - DF, com 1 município (`5300108`);
@@ -286,7 +286,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Implementation for User Story 1
 
-- [ ] T023 [US1] Em `experiments/python/localidades/src/localidades/servico.py`, implementar:
+- [X] T023 [US1] Em `experiments/python/localidades/src/localidades/servico.py`, implementar:
   - `listar_ufs()`: ordenadas;
   - `obter_uf(param)`: `resolver_uf` e depois a busca na lista do IBGE. Uma UF ausente da lista vira `RespostaInesperadaDaFonte`;
   - `listar_municipios(param_uf, pagina, itens)`:
@@ -295,7 +295,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
     3. busca `estados/{codigo}/municipios`;
     4. ordena;
     5. pagina.
-- [ ] T024 [US1] Em `experiments/python/localidades/src/localidades/api.py`, criar as rotas `GET /v1/ufs`, `GET /v1/ufs/{uf}` e `GET /v1/ufs/{uf}/municipios`:
+- [X] T024 [US1] Em `experiments/python/localidades/src/localidades/api.py`, criar as rotas `GET /v1/ufs`, `GET /v1/ufs/{uf}` e `GET /v1/ufs/{uf}/municipios`:
   - os parâmetros `pagina` e `itens` são inteiros opcionais, validados pelo domínio e não pelo FastAPI, para que o `detail` cite `itens_max`;
   - os envelopes seguem `{dados, meta}` e `{dados, paginacao, meta}`, como no data-model.
 

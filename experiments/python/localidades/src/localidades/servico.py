@@ -8,6 +8,15 @@ from datetime import UTC, datetime
 from typing import Any
 
 from localidades.config import Configuracao
+from localidades.dominio import (
+    Pagina,
+    Uf,
+    ordenar,
+    paginar,
+    resolver_uf,
+    validar_paginacao,
+)
+from localidades.erros import RespostaInesperadaDaFonte
 
 FONTE = "IBGE — API de localidades"
 URL_DOCUMENTACAO = "https://servicodados.ibge.gov.br/api/docs/localidades"
@@ -76,3 +85,27 @@ class ServicoLocalidades:
         coletado_em = self._relogio.agora()
         dados, url_fonte = await buscar()
         return Obtido(dados=dados, meta=Meta(url_fonte=url_fonte, coletado_em=coletado_em))
+
+    # --- US1 ---
+
+    async def listar_ufs(self) -> Resultado:
+        obtido = await self._obter("estados", self._ibge.obter_estados)
+        return Resultado(dados=ordenar(obtido.dados), meta=obtido.meta, cache=obtido.cache)
+
+    async def obter_uf(self, param: str) -> Resultado:
+        codigo = resolver_uf(param)
+        obtido = await self._obter("estados", self._ibge.obter_estados)
+        uf: Uf | None = next((u for u in obtido.dados if u.codigo == codigo), None)
+        if uf is None:
+            raise RespostaInesperadaDaFonte(f"a UF {codigo} não veio na lista de UFs do IBGE")
+        return Resultado(dados=uf, meta=obtido.meta, cache=obtido.cache)
+
+    async def listar_municipios(self, param_uf: str, pagina: int = 1, itens: int = 100) -> Resultado:
+        validar_paginacao(pagina, itens, self._config.itens_max)
+        codigo = resolver_uf(param_uf)
+        obtido = await self._obter(
+            f"estados/{codigo}/municipios", lambda: self._ibge.obter_municipios_da_uf(codigo)
+        )
+        selecionados = ordenar(obtido.dados)
+        pagina_: Pagina = paginar(selecionados, pagina, itens)
+        return Resultado(dados=pagina_.itens, meta=obtido.meta, paginacao=pagina_, cache=obtido.cache)
