@@ -313,7 +313,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T025 [P] [US2] Escrever `experiments/python/localidades/tests/integration/test_api_municipio.py`, cobrindo:
+- [X] T025 [P] [US2] Escrever `experiments/python/localidades/tests/integration/test_api_municipio.py`, cobrindo:
   - **código existente** (`3304557`, montado a partir do item de `municipios-uf-33.json`): `codigo`, `nome`, `uf{codigo: "33", sigla: "RJ", nome}`, `regiao_imediata{codigo de 6 dígitos, nome}` e `regiao_intermediaria{codigo de 4 dígitos, nome}`;
   - **casos de erro e de formato:**
     - `9999999`, com o IBGE respondendo `[]`, devolve 404;
@@ -321,12 +321,12 @@ Em cada história, escreva os testes primeiro e confirme que falham.
     - um município de SP com apóstrofo no nome sai idêntico ao da fixture;
     - `5101837` responde 200;
     - `municipio-sem-regiao-imediata.json` devolve 502.
-- [ ] T026 [P] [US2] Escrever `contracts/localidades/verificacao/tests/test_us2_municipio.py`, com os cenários 1 a 4 da US2 validados contra o contrato. Os códigos vêm das listas de RJ e SP das fixtures.
+- [X] T026 [P] [US2] Escrever `contracts/localidades/verificacao/tests/test_us2_municipio.py`, com os cenários 1 a 4 da US2 validados contra o contrato. Os códigos vêm das listas de RJ e SP das fixtures.
 
 ### Implementation for User Story 2
 
-- [ ] T027 [US2] Em `experiments/python/localidades/src/localidades/servico.py`, implementar `obter_municipio(codigo)`: `validar_codigo_municipio`, depois a chave `municipios/{codigo}` e `NaoEncontrado` quando a fonte devolver `[]`.
-- [ ] T028 [US2] Em `experiments/python/localidades/src/localidades/api.py`, criar a rota `GET /v1/municipios/{codigo}` com o envelope `{dados, meta}`. Ao final, T025 e T026 passam.
+- [X] T027 [US2] Em `experiments/python/localidades/src/localidades/servico.py`, implementar `obter_municipio(codigo)`: `validar_codigo_municipio`, depois a chave `municipios/{codigo}` e `NaoEncontrado` quando a fonte devolver `[]`.
+- [X] T028 [US2] Em `experiments/python/localidades/src/localidades/api.py`, criar a rota `GET /v1/municipios/{codigo}` com o envelope `{dados, meta}`. Ao final, T025 e T026 passam.
 
 **Checkpoint**: US1 e US2 funcionam de forma independente.
 

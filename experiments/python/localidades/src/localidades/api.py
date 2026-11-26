@@ -143,6 +143,10 @@ def criar_app(config: Configuracao, *, cliente_ibge: ClienteIBGE | None = None, 
             request,
         )
 
+    @app.get("/v1/municipios/{codigo}")
+    async def obter_municipio(codigo: str, request: Request):
+        return envelope(await servico.obter_municipio(codigo), request)
+
     @app.get("/health", include_in_schema=False)
     async def saude():
         return {"status": "ok"}

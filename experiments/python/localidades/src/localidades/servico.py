@@ -14,6 +14,7 @@ from localidades.dominio import (
     ordenar,
     paginar,
     resolver_uf,
+    validar_codigo_municipio,
     validar_paginacao,
 )
 from localidades.erros import RespostaInesperadaDaFonte
@@ -109,3 +110,10 @@ class ServicoLocalidades:
         selecionados = ordenar(obtido.dados)
         pagina_: Pagina = paginar(selecionados, pagina, itens)
         return Resultado(dados=pagina_.itens, meta=obtido.meta, paginacao=pagina_, cache=obtido.cache)
+
+    # --- US2 ---
+
+    async def obter_municipio(self, codigo: str) -> Resultado:
+        codigo = validar_codigo_municipio(codigo)
+        obtido = await self._obter(f"municipios/{codigo}", lambda: self._ibge.obter_municipio(codigo))
+        return Resultado(dados=obtido.dados, meta=obtido.meta, cache=obtido.cache)
