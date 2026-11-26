@@ -107,6 +107,8 @@ def _json(corpo: bytes, truncada: bool) -> EstruturaAmostra:
         dado = json.loads(corpo)
     except (json.JSONDecodeError, UnicodeDecodeError) as erro:
         raise ErroAmostra(f"JSON inválido: {getattr(erro, 'msg', erro)}") from None
+    except RecursionError:
+        raise ErroAmostra("JSON aninhado demais para inspeção") from None
     registros, caminho = _registros_json(dado)
     amostra = registros[:MAX_REGISTROS]
     coletor = _Coletor()

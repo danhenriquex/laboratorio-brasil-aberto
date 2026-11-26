@@ -16,6 +16,7 @@ from inventario_fontes import __version__
 from inventario_fontes.avaliacao import avaliar
 from inventario_fontes.modelos import (
     Catalogo,
+    Causa,
     Configuracao,
     Execucao,
     Fonte,
@@ -69,7 +70,16 @@ def executar(
                     espera = config.intervalo_s - (relogio.monotonic() - fim_anterior)
                     if espera > 0:
                         relogio.esperar(espera)
-                resultado = sondar(fonte, cliente, config, relogio)
+                try:
+                    resultado = sondar(fonte, cliente, config, relogio)
+                except Exception as erro:  # noqa: BLE001 - uma fonte com defeito não derruba as demais (Constituição V)
+                    resultado = ResultadoSondagem.base(
+                        fonte,
+                        Situacao.FALHOU,
+                        causa=Causa.RESPOSTA_INVALIDA,
+                        detalhe_causa=f"erro inesperado ao processar a fonte ({type(erro).__name__}: {erro})"[:200],
+                        coletado_em=relogio.agora(),
+                    )
                 fim_anterior = relogio.monotonic()
         except KeyboardInterrupt:
             interrompida = True

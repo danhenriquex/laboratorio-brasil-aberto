@@ -129,3 +129,40 @@ def test_execucao_registra_procedencia(catalogo, relogio):
     assert execucao.catalogo_schema_version == 1
     assert execucao.iniciada_em <= execucao.finalizada_em
     assert "documentação oficial" in execucao.aviso
+
+
+# --- Convergência (T037) ---
+
+
+def test_erro_inesperado_numa_fonte_nao_derruba_a_execucao(catalogo, relogio, monkeypatch):
+    import inventario_fontes.execucao as execucao_mod
+
+    sondar_original = execucao_mod.sondar
+
+    def sondar_com_defeito(fonte, *args, **kwargs):
+        if fonte.id == "lenta":
+            raise ValueError("defeito inesperado")
+        return sondar_original(fonte, *args, **kwargs)
+
+    monkeypatch.setattr(execucao_mod, "sondar", sondar_com_defeito)
+    with respx.mock(assert_all_called=False) as mock:
+        rota_seguinte = mock.get(url("chave")).mock(return_value=httpx.Response(200, json=[]))
+        mock.get(url("ok")).mock(return_value=httpx.Response(200, json=[]))
+        execucao = rodar(catalogo, relogio)
+
+    defeito = next(r for r in execucao.resultados if r.fonte_id == "lenta")
+    assert (defeito.situacao, defeito.causa) == (Situacao.FALHOU, Causa.RESPOSTA_INVALIDA)
+    assert "ValueError" in defeito.detalhe_causa
+    assert rota_seguinte.call_count == 1  # a fonte seguinte ainda foi consultada
+    assert execucao.resumo.total == 4
+
+
+def test_fonte_com_gzip_corrompido_seguida_de_fonte_normal(catalogo, relogio):
+    with respx.mock(assert_all_called=False) as mock:
+        mock.get(url("ok")).mock(side_effect=httpx.DecodingError("gzip corrompido"))
+        seguinte = mock.get(url("lenta")).mock(return_value=httpx.Response(200, json=[]))
+        mock.get(url("chave")).mock(return_value=httpx.Response(200, json=[]))
+        execucao = rodar(catalogo, relogio)
+    assert execucao.resultados[0].causa is Causa.RESPOSTA_INVALIDA
+    assert seguinte.call_count == 1
+    assert execucao.resultados[1].situacao is Situacao.RESPONDEU

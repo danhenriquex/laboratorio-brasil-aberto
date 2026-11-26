@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import re
 import ssl
+from collections.abc import Callable
 from typing import Protocol
 from urllib.parse import urlsplit
 
@@ -49,7 +50,14 @@ def criar_cliente(config: Configuracao) -> httpx.Client:
     )
 
 
-def _ler_limitado(resposta: httpx.Response, teto: int) -> tuple[bytes, bool]:
+class _PrazoExcedido(Exception):
+    """A consulta passou do tempo limite total enquanto o corpo era lido (R8)."""
+
+
+def _ler_limitado(
+    resposta: httpx.Response, teto: int, prazo_excedido: Callable[[], bool] = lambda: False
+) -> tuple[bytes, bool]:
+    """Lê até `teto` bytes. O timeout do httpx vale por fase; o prazo total é conferido a cada bloco."""
     partes: list[bytes] = []
     total = 0
     for bloco in resposta.iter_bytes():
@@ -58,6 +66,8 @@ def _ler_limitado(resposta: httpx.Response, teto: int) -> tuple[bytes, bool]:
             return b"".join(partes), True
         partes.append(bloco)
         total += len(bloco)
+        if prazo_excedido():
+            raise _PrazoExcedido
     return b"".join(partes), False
 
 
@@ -100,9 +110,16 @@ def sondar(fonte: Fonte, cliente: httpx.Client, config: Configuracao, relogio: R
             fonte, Situacao.FALHOU, causa=causa, detalhe_causa=detalhe, coletado_em=coletado_em, latencia_ms=latencia()
         )
 
+    def prazo_excedido() -> bool:
+        return relogio.monotonic() - inicio > config.tempo_limite_s
+
     try:
         with cliente.stream("GET", fonte.url_teste) as resposta:
-            corpo, truncada = _ler_limitado(resposta, config.teto_bytes)
+            corpo, truncada = _ler_limitado(resposta, config.teto_bytes, prazo_excedido)
+    except _PrazoExcedido:
+        return falha(Causa.TEMPO_ESGOTADO, f"prazo total de {config.tempo_limite_s:g} s excedido durante a leitura")
+    except httpx.DecodingError as erro:
+        return falha(Causa.RESPOSTA_INVALIDA, _detalhe(erro))
     except httpx.TooManyRedirects:
         return falha(Causa.ERRO_REQUISICAO, f"mais de {config.max_redirecionamentos} redirecionamentos")
     except httpx.TimeoutException as erro:
