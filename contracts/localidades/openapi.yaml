@@ -1,0 +1,380 @@
+openapi: 3.1.0
+info:
+  title: Serviço de localidades (IBGE)
+  version: 1.0.0
+  summary: Unidades federativas e municípios do Brasil, com procedência, a partir da API de localidades do IBGE.
+  description: |
+    Contrato compartilhado entre o E1 (Python) e o E4 (Java) do Laboratório Brasil Aberto.
+    Especificação: specs/002-servico-localidades/spec.md. Decisões: specs/002-servico-localidades/research.md.
+
+    - Todos os códigos são texto de tamanho fixo.
+    - Toda resposta com dados traz `meta` (procedência). `coletado_em` é o momento da consulta original ao IBGE.
+    - Listas de municípios são ordenadas pelo nome sem acentos e sem diferença de maiúsculas (NFKD, sem marcas
+      diacríticas, casefold), com desempate pelo código.
+    - Erros seguem `application/problem+json` (RFC 9457).
+    - Todo pedido aceita o cabeçalho `X-Correlation-Id`, e toda resposta o devolve.
+    - Licença dos dados: a documentação de localidades do IBGE não declara licença nem termos (ficha da fonte, verificada em 2026-11-25).
+servers:
+  - url: http://127.0.0.1:8000
+    description: execução local (LOCALIDADES_HOST e LOCALIDADES_PORTA)
+tags:
+  - name: localidades
+  - name: operacao
+
+paths:
+  /v1/ufs:
+    get:
+      tags: [localidades]
+      operationId: listarUfs
+      summary: Lista as 27 unidades federativas (não paginada).
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: As 27 UFs, ordenadas pelo nome.
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RespostaUfs' }
+        '502': { $ref: '#/components/responses/ErroFonte' }
+        '504': { $ref: '#/components/responses/FonteLenta' }
+        '500': { $ref: '#/components/responses/ErroInterno' }
+
+  /v1/ufs/{uf}:
+    get:
+      tags: [localidades]
+      operationId: obterUf
+      summary: Uma UF pela sigla (sem diferenciar maiúsculas) ou pelo código de 2 dígitos.
+      parameters:
+        - $ref: '#/components/parameters/Uf'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: A UF pedida.
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RespostaUf' }
+        '400': { $ref: '#/components/responses/EntradaInvalida' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '502': { $ref: '#/components/responses/ErroFonte' }
+        '504': { $ref: '#/components/responses/FonteLenta' }
+        '500': { $ref: '#/components/responses/ErroInterno' }
+
+  /v1/ufs/{uf}/municipios:
+    get:
+      tags: [localidades]
+      operationId: listarMunicipiosDaUf
+      summary: Municípios de uma UF, paginados, com filtro opcional por parte do nome.
+      parameters:
+        - $ref: '#/components/parameters/Uf'
+        - name: nome
+          in: query
+          required: false
+          description: Parte do nome, sem diferenciar maiúsculas nem acentos. É aparado nas pontas e precisa ter de 2 a 60 caracteres.
+          schema: { type: string, minLength: 2, maxLength: 60 }
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/Itens'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Uma página de municípios. Uma página além do fim devolve `dados` vazio com o total correto.
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RespostaMunicipios' }
+        '400': { $ref: '#/components/responses/EntradaInvalida' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '502': { $ref: '#/components/responses/ErroFonte' }
+        '504': { $ref: '#/components/responses/FonteLenta' }
+        '500': { $ref: '#/components/responses/ErroInterno' }
+
+  /v1/municipios/{codigo}:
+    get:
+      tags: [localidades]
+      operationId: obterMunicipio
+      summary: Um município pelo código oficial de 7 dígitos.
+      parameters:
+        - name: codigo
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/CodigoMunicipio' }
+          example: '3304557'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: O município pedido.
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RespostaMunicipio' }
+        '400': { $ref: '#/components/responses/EntradaInvalida' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '502': { $ref: '#/components/responses/ErroFonte' }
+        '504': { $ref: '#/components/responses/FonteLenta' }
+        '500': { $ref: '#/components/responses/ErroInterno' }
+
+  /health:
+    get:
+      tags: [operacao]
+      operationId: saude
+      summary: Indica que o serviço está no ar. Nunca consulta o IBGE.
+      responses:
+        '200':
+          description: Serviço no ar.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                additionalProperties: false
+                properties:
+                  status: { const: ok }
+
+  /metrics:
+    get:
+      tags: [operacao]
+      operationId: metricas
+      summary: Métricas no formato texto do Prometheus.
+      description: |
+        Métricas obrigatórias (nomes compartilhados entre implementações):
+        - `localidades_pedidos_total{rota,status}`: contador; `rota` é o modelo da rota, por exemplo `/v1/municipios/{codigo}`.
+        - `localidades_erros_total{tipo}`: contador; `tipo` é o final do URN do problema, por exemplo `fonte-lenta`.
+        - `localidades_cache_total{resultado}`: contador; `resultado` é `acerto`, `falta` ou `desatualizado`.
+        - `localidades_fonte_duracao_segundos{recurso}`: histograma das consultas ao IBGE; `recurso` é `estados`, `municipios_da_uf` ou `municipio`.
+      responses:
+        '200':
+          description: Métricas.
+          content:
+            text/plain:
+              schema: { type: string }
+
+components:
+  parameters:
+    Uf:
+      name: uf
+      in: path
+      required: true
+      description: Sigla da UF (`RJ`, `rj`) ou código de 2 dígitos (`33`). Espaços nas pontas são ignorados.
+      schema: { type: string }
+      example: RJ
+    Pagina:
+      name: pagina
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, default: 1 }
+    Itens:
+      name: itens
+      in: query
+      required: false
+      description: Tamanho da página. O máximo é 500, configurável por LOCALIDADES_ITENS_MAX; mudar esse valor sai do contrato v1.
+      schema: { type: integer, minimum: 1, maximum: 500, default: 100 }
+    CorrelationId:
+      name: X-Correlation-Id
+      in: header
+      required: false
+      description: Identificador de correlação. É aceito se tiver de 1 a 64 caracteres em [A-Za-z0-9._-]; caso contrário, o serviço gera um UUID v4.
+      schema: { type: string }
+
+  headers:
+    CorrelationId:
+      description: O identificador recebido ou o gerado pelo serviço.
+      required: true
+      schema: { type: string, pattern: '^[A-Za-z0-9._-]{1,64}$' }
+
+  responses:
+    EntradaInvalida:
+      description: Parâmetro mal formado ou fora dos limites. O IBGE não é consultado.
+      headers:
+        X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problema' }
+    NaoEncontrado:
+      description: A UF ou o município não existem, ou a rota não existe.
+      headers:
+        X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problema' }
+    ErroFonte:
+      description: O IBGE está indisponível ou respondeu algo inesperado, e não havia cópia guardada para servir.
+      headers:
+        X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problema' }
+    FonteLenta:
+      description: O IBGE não respondeu dentro do prazo, e não havia cópia guardada para servir.
+      headers:
+        X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problema' }
+    ErroInterno:
+      description: Falha inesperada do próprio serviço.
+      headers:
+        X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problema' }
+
+  schemas:
+    CodigoRegiao: { type: string, pattern: '^[0-9]$' }
+    CodigoUf: { type: string, pattern: '^[0-9]{2}$' }
+    CodigoRegiaoIntermediaria: { type: string, pattern: '^[0-9]{4}$' }
+    CodigoRegiaoImediata: { type: string, pattern: '^[0-9]{6}$' }
+    CodigoMunicipio: { type: string, pattern: '^[0-9]{7}$' }
+    SiglaUf: { type: string, pattern: '^[A-Z]{2}$' }
+    Nome: { type: string, minLength: 1 }
+
+    Regiao:
+      type: object
+      required: [codigo, sigla, nome]
+      additionalProperties: false
+      properties:
+        codigo: { $ref: '#/components/schemas/CodigoRegiao' }
+        sigla: { type: string, pattern: '^[A-Z]{1,2}$' }
+        nome: { $ref: '#/components/schemas/Nome' }
+
+    Uf:
+      type: object
+      required: [codigo, sigla, nome, regiao]
+      additionalProperties: false
+      properties:
+        codigo: { $ref: '#/components/schemas/CodigoUf' }
+        sigla: { $ref: '#/components/schemas/SiglaUf' }
+        nome: { $ref: '#/components/schemas/Nome' }
+        regiao: { $ref: '#/components/schemas/Regiao' }
+
+    UfResumida:
+      type: object
+      required: [codigo, sigla, nome]
+      additionalProperties: false
+      properties:
+        codigo: { $ref: '#/components/schemas/CodigoUf' }
+        sigla: { $ref: '#/components/schemas/SiglaUf' }
+        nome: { $ref: '#/components/schemas/Nome' }
+
+    RegiaoIntermediaria:
+      type: object
+      required: [codigo, nome]
+      additionalProperties: false
+      properties:
+        codigo: { $ref: '#/components/schemas/CodigoRegiaoIntermediaria' }
+        nome: { $ref: '#/components/schemas/Nome' }
+
+    RegiaoImediata:
+      type: object
+      required: [codigo, nome]
+      additionalProperties: false
+      properties:
+        codigo: { $ref: '#/components/schemas/CodigoRegiaoImediata' }
+        nome: { $ref: '#/components/schemas/Nome' }
+
+    MunicipioResumido:
+      type: object
+      required: [codigo, nome]
+      additionalProperties: false
+      properties:
+        codigo: { $ref: '#/components/schemas/CodigoMunicipio' }
+        nome: { $ref: '#/components/schemas/Nome' }
+
+    Municipio:
+      type: object
+      required: [codigo, nome, uf, regiao_imediata, regiao_intermediaria]
+      additionalProperties: false
+      properties:
+        codigo: { $ref: '#/components/schemas/CodigoMunicipio' }
+        nome: { $ref: '#/components/schemas/Nome' }
+        uf: { $ref: '#/components/schemas/UfResumida' }
+        regiao_imediata: { $ref: '#/components/schemas/RegiaoImediata' }
+        regiao_intermediaria: { $ref: '#/components/schemas/RegiaoIntermediaria' }
+
+    Meta:
+      type: object
+      description: Procedência do dado (Constituição II).
+      required: [fonte, url_fonte, url_documentacao, coletado_em, desatualizado]
+      additionalProperties: false
+      properties:
+        fonte: { const: IBGE — API de localidades }
+        url_fonte: { type: string, format: uri }
+        url_documentacao: { const: 'https://servicodados.ibge.gov.br/api/docs/localidades' }
+        coletado_em:
+          type: string
+          format: date-time
+          pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$'
+        desatualizado:
+          type: boolean
+          description: true somente quando uma cópia vencida foi servida porque o IBGE falhou.
+
+    Paginacao:
+      type: object
+      required: [pagina, itens, total, paginas]
+      additionalProperties: false
+      properties:
+        pagina: { type: integer, minimum: 1 }
+        itens: { type: integer, minimum: 1 }
+        total: { type: integer, minimum: 0 }
+        paginas: { type: integer, minimum: 0 }
+
+    RespostaUfs:
+      type: object
+      required: [dados, meta]
+      additionalProperties: false
+      properties:
+        dados:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/Uf' }
+        meta: { $ref: '#/components/schemas/Meta' }
+
+    RespostaUf:
+      type: object
+      required: [dados, meta]
+      additionalProperties: false
+      properties:
+        dados: { $ref: '#/components/schemas/Uf' }
+        meta: { $ref: '#/components/schemas/Meta' }
+
+    RespostaMunicipios:
+      type: object
+      required: [dados, paginacao, meta]
+      additionalProperties: false
+      properties:
+        dados:
+          type: array
+          items: { $ref: '#/components/schemas/MunicipioResumido' }
+        paginacao: { $ref: '#/components/schemas/Paginacao' }
+        meta: { $ref: '#/components/schemas/Meta' }
+
+    RespostaMunicipio:
+      type: object
+      required: [dados, meta]
+      additionalProperties: false
+      properties:
+        dados: { $ref: '#/components/schemas/Municipio' }
+        meta: { $ref: '#/components/schemas/Meta' }
+
+    Problema:
+      type: object
+      description: RFC 9457.
+      required: [type, title, status, detail, correlacao_id]
+      properties:
+        type:
+          type: string
+          enum:
+            - urn:brasil-aberto:problema:entrada-invalida
+            - urn:brasil-aberto:problema:nao-encontrado
+            - urn:brasil-aberto:problema:fonte-indisponivel
+            - urn:brasil-aberto:problema:fonte-lenta
+            - urn:brasil-aberto:problema:resposta-inesperada-da-fonte
+            - urn:brasil-aberto:problema:erro-interno
+        title: { type: string, minLength: 1 }
+        status: { type: integer, enum: [400, 404, 500, 502, 504] }
+        detail: { type: string, minLength: 1 }
+        correlacao_id: { type: string, pattern: '^[A-Za-z0-9._-]{1,64}$' }
