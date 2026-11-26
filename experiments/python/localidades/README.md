@@ -12,7 +12,7 @@ Todos os comandos partem da raiz do repositório.
 uv sync --project experiments/python/localidades
 
 # testes da implementação (sem rede externa)
-uv run --project experiments/python/localidades pytest
+uv run --directory experiments/python/localidades pytest
 
 # verificação de caixa-preta do contrato (IBGE falso + serviço + suíte)
 contracts/localidades/verificacao/verificar.sh "uv run --project experiments/python/localidades localidades"

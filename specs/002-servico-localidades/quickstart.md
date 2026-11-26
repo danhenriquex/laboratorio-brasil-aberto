@@ -15,8 +15,10 @@ uv sync --project contracts/localidades/verificacao
 ## 1. Testes da implementação (sem rede)
 
 ```bash
-uv run --project experiments/python/localidades pytest
+uv run --directory experiments/python/localidades pytest
 ```
+
+Use `--directory`, e não `--project`: rodado da raiz, o pytest procuraria testes em todo o repositório.
 
 **Esperado**: todos passam. O `conftest` recusa conexões fora do loopback, e o IBGE é simulado com `respx` (FR-027).
 
@@ -48,9 +50,9 @@ O script faz quatro coisas:
 ## 3. Testes com a rede externa bloqueada (SC-006)
 
 ```bash
-sandbox-exec -p '(version 1)(allow default)(deny network*)(allow network* (remote ip "localhost:*"))' \
-  uv run --offline --project experiments/python/localidades pytest
-sandbox-exec -p '(version 1)(allow default)(deny network*)(allow network* (remote ip "localhost:*"))' \
+sandbox-exec -p '(version 1)(allow default)(deny network*)(allow network* (local ip "localhost:*"))(allow network* (remote ip "localhost:*"))' \
+  uv run --offline --directory experiments/python/localidades pytest
+UV_OFFLINE=1 sandbox-exec -p '(version 1)(allow default)(deny network*)(allow network* (local ip "localhost:*"))(allow network* (remote ip "localhost:*"))' \
   contracts/localidades/verificacao/verificar.sh "uv run --offline --project experiments/python/localidades localidades"
 ```
 

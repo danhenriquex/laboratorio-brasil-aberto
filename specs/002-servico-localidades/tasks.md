@@ -249,7 +249,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
   O script respeita `UV_OFFLINE`, quando estiver definida.
 
-**Checkpoint**: `uv run --project experiments/python/localidades pytest` passa (domínio, configuração, fonte e base da API), e o `verificar.sh` sobe tudo e passa no `test_contrato_valido.py`.
+**Checkpoint**: `uv run --directory experiments/python/localidades pytest` passa (domínio, configuração, fonte e base da API), e o `verificar.sh` sobe tudo e passa no `test_contrato_valido.py`.
 
 ---
 
@@ -261,7 +261,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T021 [P] [US1] Escrever `experiments/python/localidades/tests/integration/test_api_ufs.py` (`TestClient` + `respx`), cobrindo:
+- [X] T021 [P] [US1] Escrever `experiments/python/localidades/tests/integration/test_api_ufs.py` (`TestClient` + `respx`), cobrindo:
   - **`/v1/ufs`:** 27 UFs ordenadas por `dobrar(nome)` (Acre primeiro), códigos em texto, `meta` completo, e `coletado_em` casando com `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$`;
   - **`/v1/ufs/{uf}`:**
     - `/v1/ufs/rj`, `/v1/ufs/33` e `/v1/ufs/%20RJ%20` devolvem o RJ;
@@ -275,7 +275,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
     - `itens=0`, `itens=501` e `pagina=0` devolvem 400, e o `detail` cita o limite;
     - `[]` do IBGE para o RJ devolve 502 `resposta-inesperada-da-fonte`;
   - **consultas à fonte:** cada pedido válido faz exatamente 1 chamada ao IBGE.
-- [ ] T022 [P] [US1] Escrever `contracts/localidades/verificacao/tests/test_us1_ufs_municipios.py`, com cada resposta validada por `contrato.validar(...)`:
+- [X] T022 [P] [US1] Escrever `contracts/localidades/verificacao/tests/test_us1_ufs_municipios.py`, com cada resposta validada por `contrato.validar(...)`:
   - os cenários de aceitação 1 a 4 da US1;
   - os casos de borda:
     - DF, com 1 município (`5300108`);
@@ -286,7 +286,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Implementation for User Story 1
 
-- [ ] T023 [US1] Em `experiments/python/localidades/src/localidades/servico.py`, implementar:
+- [X] T023 [US1] Em `experiments/python/localidades/src/localidades/servico.py`, implementar:
   - `listar_ufs()`: ordenadas;
   - `obter_uf(param)`: `resolver_uf` e depois a busca na lista do IBGE. Uma UF ausente da lista vira `RespostaInesperadaDaFonte`;
   - `listar_municipios(param_uf, pagina, itens)`:
@@ -295,7 +295,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
     3. busca `estados/{codigo}/municipios`;
     4. ordena;
     5. pagina.
-- [ ] T024 [US1] Em `experiments/python/localidades/src/localidades/api.py`, criar as rotas `GET /v1/ufs`, `GET /v1/ufs/{uf}` e `GET /v1/ufs/{uf}/municipios`:
+- [X] T024 [US1] Em `experiments/python/localidades/src/localidades/api.py`, criar as rotas `GET /v1/ufs`, `GET /v1/ufs/{uf}` e `GET /v1/ufs/{uf}/municipios`:
   - os parâmetros `pagina` e `itens` são inteiros opcionais, validados pelo domínio e não pelo FastAPI, para que o `detail` cite `itens_max`;
   - os envelopes seguem `{dados, meta}` e `{dados, paginacao, meta}`, como no data-model.
 
@@ -313,7 +313,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T025 [P] [US2] Escrever `experiments/python/localidades/tests/integration/test_api_municipio.py`, cobrindo:
+- [X] T025 [P] [US2] Escrever `experiments/python/localidades/tests/integration/test_api_municipio.py`, cobrindo:
   - **código existente** (`3304557`, montado a partir do item de `municipios-uf-33.json`): `codigo`, `nome`, `uf{codigo: "33", sigla: "RJ", nome}`, `regiao_imediata{codigo de 6 dígitos, nome}` e `regiao_intermediaria{codigo de 4 dígitos, nome}`;
   - **casos de erro e de formato:**
     - `9999999`, com o IBGE respondendo `[]`, devolve 404;
@@ -321,12 +321,12 @@ Em cada história, escreva os testes primeiro e confirme que falham.
     - um município de SP com apóstrofo no nome sai idêntico ao da fixture;
     - `5101837` responde 200;
     - `municipio-sem-regiao-imediata.json` devolve 502.
-- [ ] T026 [P] [US2] Escrever `contracts/localidades/verificacao/tests/test_us2_municipio.py`, com os cenários 1 a 4 da US2 validados contra o contrato. Os códigos vêm das listas de RJ e SP das fixtures.
+- [X] T026 [P] [US2] Escrever `contracts/localidades/verificacao/tests/test_us2_municipio.py`, com os cenários 1 a 4 da US2 validados contra o contrato. Os códigos vêm das listas de RJ e SP das fixtures.
 
 ### Implementation for User Story 2
 
-- [ ] T027 [US2] Em `experiments/python/localidades/src/localidades/servico.py`, implementar `obter_municipio(codigo)`: `validar_codigo_municipio`, depois a chave `municipios/{codigo}` e `NaoEncontrado` quando a fonte devolver `[]`.
-- [ ] T028 [US2] Em `experiments/python/localidades/src/localidades/api.py`, criar a rota `GET /v1/municipios/{codigo}` com o envelope `{dados, meta}`. Ao final, T025 e T026 passam.
+- [X] T027 [US2] Em `experiments/python/localidades/src/localidades/servico.py`, implementar `obter_municipio(codigo)`: `validar_codigo_municipio`, depois a chave `municipios/{codigo}` e `NaoEncontrado` quando a fonte devolver `[]`.
+- [X] T028 [US2] Em `experiments/python/localidades/src/localidades/api.py`, criar a rota `GET /v1/municipios/{codigo}` com o envelope `{dados, meta}`. Ao final, T025 e T026 passam.
 
 **Checkpoint**: US1 e US2 funcionam de forma independente.
 
@@ -340,7 +340,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T029 [P] [US3] Escrever `experiments/python/localidades/tests/unit/test_cache.py`, com `RelogioFalso` e uma função `buscar` falsa que conta as chamadas:
+- [X] T029 [P] [US3] Escrever `experiments/python/localidades/tests/unit/test_cache.py`, com `RelogioFalso` e uma função `buscar` falsa que conta as chamadas:
   - **entrada válida:** atende sem chamar `buscar`;
   - **entrada vencida:**
     - se `buscar` der certo, renova o `coletado_em`;
@@ -348,7 +348,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
   - **entrada ausente com falha:** propaga o erro;
   - **o que não é guardado:** `NaoEncontrado` (a chamada seguinte consulta de novo) e os erros;
   - **consulta única por chave:** 10 chamadas simultâneas, com `asyncio.gather` dentro de `asyncio.run` e uma `buscar` que dorme 0,05 s, fazem `buscar` ser chamada 1 vez.
-- [ ] T030 [P] [US3] Escrever `experiments/python/localidades/tests/integration/test_api_falhas.py` (`TestClient` + `respx`), cobrindo:
+- [X] T030 [P] [US3] Escrever `experiments/python/localidades/tests/integration/test_api_falhas.py` (`TestClient` + `respx`), cobrindo:
   - **sem cópia guardada:**
     - fonte fora (`ConnectError`) devolve 502 `fonte-indisponivel`;
     - fonte lenta devolve 504 `fonte-lenta`;
@@ -358,7 +358,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
     - com a cópia vencida (`RelogioFalso.avancar(validade + 1)`), a fonte fora devolve 200, `meta.desatualizado: true` e o `coletado_em` original;
     - dois pedidos dentro da validade geram 1 chamada ao IBGE;
   - **isolamento:** depois de uma falha, o pedido seguinte para outro recurso funciona (FR-018).
-- [ ] T031 [P] [US3] Escrever `contracts/localidades/verificacao/tests/test_us3_falhas.py`, com cada resposta validada contra o contrato e cada cenário usando um código de município diferente, porque o serviço guarda cópias entre testes:
+- [X] T031 [P] [US3] Escrever `contracts/localidades/verificacao/tests/test_us3_falhas.py`, com cada resposta validada contra o contrato e cada cenário usando um código de município diferente, porque o serviço guarda cópias entre testes:
   - **SC-004:** dois pedidos iguais seguidos geram 1 consulta em `/_controle/contagem`;
   - **SC-003:** o pedido repetido responde em menos de 0,5 s;
   - **SC-005:** nos modos `fora`, `lento` (3 s) e `invalido`, sem cópia, a resposta é 502, 504 ou 502 em menos de 2 s, com o prazo de 1 s;
@@ -368,7 +368,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Implementation for User Story 3
 
-- [ ] T032 [US3] Acrescentar o controle a `contracts/localidades/verificacao/src/ibge_falso/servidor.py`:
+- [X] T032 [US3] Acrescentar o controle a `contracts/localidades/verificacao/src/ibge_falso/servidor.py`:
   - **`POST /_controle`**, com o corpo `{"modo": "normal" | "fora" | "lento" | "invalido", "segundos": float}`:
     - `fora` responde 503;
     - `lento` espera `segundos` antes de responder normalmente;
@@ -376,13 +376,13 @@ Em cada história, escreva os testes primeiro e confirme que falham.
   - **`GET /_controle/contagem`:** devolve `{caminho: n}`;
   - **`POST /_controle/zerar`:** zera as contagens;
   - **concorrência:** o estado é protegido por `threading.Lock`.
-- [ ] T033 [US3] Implementar `experiments/python/localidades/src/localidades/cache.py`, conforme os estados do data-model (ausente, válida, vencida), para fazer T029 passar:
+- [X] T033 [US3] Implementar `experiments/python/localidades/src/localidades/cache.py`, conforme os estados do data-model (ausente, válida, vencida), para fazer T029 passar:
   - `CacheComValidade(relogio, validade_s)`;
   - `async obter(chave, buscar) -> Entrada(dados, url_fonte, coletado_em, desatualizado, resultado)`, em que `resultado` é `acerto`, `falta` ou `desatualizado`;
   - um `asyncio.Lock` por chave;
   - `NaoEncontrado` e erros nunca entram na cópia;
   - um erro de `ERROS_DE_FONTE` com uma entrada vencida devolve a cópia com `desatualizado=True`.
-- [ ] T034 [US3] Em `experiments/python/localidades/src/localidades/servico.py`, trocar o `_obter` para usar a `CacheComValidade`:
+- [X] T034 [US3] Em `experiments/python/localidades/src/localidades/servico.py`, trocar o `_obter` para usar a `CacheComValidade`:
   - o `meta.coletado_em` passa a vir da entrada guardada;
   - o `meta.desatualizado` também;
   - o `resultado` do cache é exposto para as métricas da US5.
@@ -401,17 +401,17 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T035 [P] [US4] Escrever `experiments/python/localidades/tests/integration/test_api_busca.py`, cobrindo:
+- [X] T035 [P] [US4] Escrever `experiments/python/localidades/tests/integration/test_api_busca.py`, cobrindo:
   - **acerto:** `RJ?nome=niteroi` e `RJ?nome=NITERÓI` devolvem só `{codigo: "3303302", nome: "Niterói"}`;
   - **várias respostas:** `RJ?nome=são` devolve todos os municípios do RJ cujo nome dobrado contém "sao", em ordem, com `total` igual à contagem filtrada;
   - **busca sem resultado:** devolve `dados: []`, `total: 0` e `paginas: 0`;
   - **entrada inválida:** `nome=a`, `nome=%20a%20` e 61 caracteres devolvem 400, e o `detail` cita o mínimo de 2 ou o máximo de 60;
   - **consultas à fonte:** duas buscas na mesma UF geram 1 chamada ao IBGE.
-- [ ] T036 [P] [US4] Escrever `contracts/localidades/verificacao/tests/test_us4_busca.py`, com os cenários 1 a 3 da US4 (`SP?nome=são`, como na spec) validados contra o contrato.
+- [X] T036 [P] [US4] Escrever `contracts/localidades/verificacao/tests/test_us4_busca.py`, com os cenários 1 a 3 da US4 (`SP?nome=são`, como na spec) validados contra o contrato.
 
 ### Implementation for User Story 4
 
-- [ ] T037 [US4] Acrescentar o parâmetro opcional `nome` a `listar_municipios` em `experiments/python/localidades/src/localidades/servico.py` (`validar_nome`, depois `filtrar_por_nome` e, por fim, `paginar`) e à rota em `experiments/python/localidades/src/localidades/api.py`. Ao final, T035 e T036 passam.
+- [X] T037 [US4] Acrescentar o parâmetro opcional `nome` a `listar_municipios` em `experiments/python/localidades/src/localidades/servico.py` (`validar_nome`, depois `filtrar_por_nome` e, por fim, `paginar`) e à rota em `experiments/python/localidades/src/localidades/api.py`. Ao final, T035 e T036 passam.
 
 **Checkpoint**: busca por nome funcionando sobre a cópia guardada.
 
@@ -425,7 +425,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Tests for User Story 5 ⚠️
 
-- [ ] T038 [P] [US5] Escrever `experiments/python/localidades/tests/integration/test_api_operacao.py`, cobrindo:
+- [X] T038 [P] [US5] Escrever `experiments/python/localidades/tests/integration/test_api_operacao.py`, cobrindo:
   - **`/health`:** responde 200 com o IBGE fora, e o `respx` não registra nenhuma chamada;
   - **`/metrics`**, depois de um acerto, uma falta, um `desatualizado` e um `fonte-lenta`, contém:
     - `localidades_pedidos_total{rota="/v1/municipios/{codigo}",status="200"}`;
@@ -433,7 +433,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
     - `localidades_cache_total{resultado="acerto"}`, `{resultado="falta"}` e `{resultado="desatualizado"}`;
     - `localidades_fonte_duracao_segundos_count{recurso="municipio"}`;
   - **registro:** cada pedido gera uma linha JSON com `momento`, `nivel`, `correlacao_id`, `metodo`, `rota`, `status`, `duracao_ms`, `cache` e `fonte_ms`, sem IP nem outros cabeçalhos.
-- [ ] T039 [P] [US5] Escrever `contracts/localidades/verificacao/tests/test_us5_operacao.py`, cobrindo:
+- [X] T039 [P] [US5] Escrever `contracts/localidades/verificacao/tests/test_us5_operacao.py`, cobrindo:
   - **`/health`:** valida contra o contrato;
   - **`/metrics`:** responde `text/plain` e contém os 4 nomes de métrica;
   - **correlação:**
@@ -443,14 +443,14 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Implementation for User Story 5
 
-- [ ] T040 [P] [US5] Implementar `experiments/python/localidades/src/localidades/metricas.py`:
+- [X] T040 [P] [US5] Implementar `experiments/python/localidades/src/localidades/metricas.py`:
   - um `CollectorRegistry` próprio por app, para não haver duplicação entre testes;
   - as 4 métricas de R12, com os rótulos do contrato;
   - a função `exportar()`, que devolve o texto e o `content-type` do Prometheus.
-- [ ] T041 [P] [US5] Implementar `experiments/python/localidades/src/localidades/registro.py`:
+- [X] T041 [P] [US5] Implementar `experiments/python/localidades/src/localidades/registro.py`:
   - um `logging.Formatter` em JSON com os campos de R12, no stdout;
   - a função `registrar_pedido(...)`.
-- [ ] T042 [US5] Integrar a operação em `experiments/python/localidades/src/localidades/api.py`:
+- [X] T042 [US5] Integrar a operação em `experiments/python/localidades/src/localidades/api.py`:
   - **`GET /metrics`;**
   - **middleware de medição**, que obtém o modelo da rota de `request.scope["route"].path` (ou `nao-encontrado` para rotas inexistentes) e atualiza `localidades_pedidos_total`, `localidades_erros_total` (pelo tipo do problema) e `localidades_cache_total` (pelo `resultado` exposto pelo serviço em `request.state`);
   - **duração da fonte:** o `ClienteIBGE` recebe `ao_medir=metricas.observar_fonte`;
@@ -464,23 +464,23 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ## Phase 8: Polish & Fechamento do experimento
 
-- [ ] T043 Rodar `uv run --project experiments/python/localidades pytest` e `contracts/localidades/verificacao/verificar.sh "uv run --project experiments/python/localidades localidades"` e registrar o número de testes de cada camada. Os dois precisam passar inteiros.
-- [ ] T044 Executar a verificação com a rede externa bloqueada (SC-006), conforme o quickstart §3:
-  - confirmar que um `curl` ao IBGE falha dentro do sandbox `(deny network*)(allow network* (remote ip "localhost:*"))`;
+- [X] T043 Rodar `uv run --directory experiments/python/localidades pytest` e `contracts/localidades/verificacao/verificar.sh "uv run --project experiments/python/localidades localidades"` e registrar o número de testes de cada camada. Os dois precisam passar inteiros.
+- [X] T044 Executar a verificação com a rede externa bloqueada (SC-006), conforme o quickstart §3:
+  - confirmar que um `curl` ao IBGE falha dentro do sandbox `(deny network*)(allow network* (local ip "localhost:*"))(allow network* (remote ip "localhost:*"))`;
   - rodar as duas camadas de teste dentro dele;
   - registrar a data e o resultado.
-- [ ] T045 Fazer a execução real manual contra o IBGE, conforme o quickstart §4:
+- [X] T045 Fazer a execução real manual contra o IBGE, conforme o quickstart §4:
   - registrar data e hora UTC;
   - medir a latência da primeira chamada e da repetida (SC-003);
   - conferir que MG tem `total` 853;
   - comparar com as fixtures;
   - medir o tempo do repositório clonado até a primeira resposta (SC-007).
-- [ ] T046 [P] Atualizar `docs/adr/0001-convencoes-comuns-de-api.md`:
+- [X] T046 [P] Atualizar `docs/adr/0001-convencoes-comuns-de-api.md`:
   - status: aceita no E1, a confirmar no E4;
   - os itens 3, 5 e 6 passam a refletir R10 (nomes do `meta` e `codigo` como identificador do registro), R9 (`itens` de 1 a 500, padrão 100), R11 (URNs dos problemas e mapeamento 502/504) e R12 (nomes das métricas e regras do `X-Correlation-Id`);
   - a nova decisão de códigos em texto (R7);
   - os pontos que ficam para o E4.
-- [ ] T047 Escrever `specs/002-servico-localidades/RESULTS.md` a partir de `docs/templates/RESULTS.md`, com:
+- [X] T047 Escrever `specs/002-servico-localidades/RESULTS.md` a partir de `docs/templates/RESULTS.md`, com:
   - a resposta à pergunta do experimento;
   - o que funcionou e o que surpreendeu, incluindo o "não encontrado" com status 200 e a chave da documentação;
   - as limitações: cache só em memória e por processo, e a tabela fixa de UFs;

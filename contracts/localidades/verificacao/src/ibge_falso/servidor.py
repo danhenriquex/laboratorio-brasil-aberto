@@ -8,6 +8,9 @@ from __future__ import annotations
 
 import json
 import re
+import threading
+import time
+from collections import Counter
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -46,11 +49,28 @@ class Fixtures:
         return None
 
 
+MODOS = {"normal", "fora", "lento", "invalido"}
+
+
 class Estado:
-    """Estado compartilhado entre as threads do servidor."""
+    """Estado compartilhado entre as threads do servidor, controlado por /_controle."""
 
     def __init__(self, fixtures: Fixtures) -> None:
         self.fixtures = fixtures
+        self.erro_html = (fixtures.pasta / "erro.html").read_bytes()
+        self.trava = threading.Lock()
+        self.modo = "normal"
+        self.segundos = 0.0
+        self.contagem: Counter[str] = Counter()
+
+    def definir(self, modo: str, segundos: float) -> None:
+        with self.trava:
+            self.modo, self.segundos = modo, segundos
+
+    def registrar(self, caminho: str) -> tuple[str, float]:
+        with self.trava:
+            self.contagem[caminho] += 1
+            return self.modo, self.segundos
 
 
 def _criar_manipulador(estado: Estado):
@@ -70,11 +90,48 @@ def _criar_manipulador(estado: Estado):
 
         def do_GET(self):
             caminho = self.path.split("?", 1)[0]
+            if caminho == "/_controle/contagem":
+                with estado.trava:
+                    corpo = json.dumps(dict(estado.contagem)).encode()
+                return self._responder(200, corpo)
+            if not caminho.startswith(PREFIXO):
+                return self._responder(404, b'{"erro": "rota inexistente no IBGE falso"}')
+
+            modo, segundos = estado.registrar(caminho)
+            if modo == "fora":
+                return self._responder(503, b'{"erro": "IBGE falso fora do ar"}')
+            if modo == "invalido":
+                return self._responder(200, estado.erro_html, "text/html; charset=utf-8")
+            if modo == "lento":
+                time.sleep(segundos)
             corpo = estado.fixtures.resolver(caminho)
             if corpo is None:
-                self._responder(404, b'{"erro": "rota inexistente no IBGE falso"}')
-            else:
+                return self._responder(404, b'{"erro": "rota inexistente no IBGE falso"}')
+            try:
                 self._responder(200, corpo)
+            except (BrokenPipeError, ConnectionResetError):
+                pass  # o serviço desistiu antes (prazo esgotado)
+
+        def do_POST(self):
+            caminho = self.path.split("?", 1)[0]
+            tamanho = int(self.headers.get("Content-Length") or 0)
+            bruto = self.rfile.read(tamanho) if tamanho else b"{}"
+            if caminho == "/_controle/zerar":
+                with estado.trava:
+                    estado.contagem.clear()
+                return self._responder(200, b'{"ok": true}')
+            if caminho != "/_controle":
+                return self._responder(404, b'{"erro": "rota de controle inexistente"}')
+            try:
+                pedido = json.loads(bruto or b"{}")
+                modo = pedido.get("modo", "normal")
+                segundos = float(pedido.get("segundos", 0) or 0)
+            except (ValueError, AttributeError, TypeError):
+                return self._responder(400, b'{"erro": "corpo invalido"}')
+            if modo not in MODOS:
+                return self._responder(400, json.dumps({"erro": f"modo desconhecido: {modo}"}).encode())
+            estado.definir(modo, segundos)
+            return self._responder(200, json.dumps({"modo": modo, "segundos": segundos}).encode())
 
     return Manipulador
 
