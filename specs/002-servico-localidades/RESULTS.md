@@ -34,7 +34,7 @@ A partir da raiz do repositório:
 
 ```bash
 uv sync --project experiments/python/localidades
-uv run --directory experiments/python/localidades pytest                                                  # 132 testes
+uv run --directory experiments/python/localidades pytest                                                  # 135 testes
 contracts/localidades/verificacao/verificar.sh "uv run --project experiments/python/localidades localidades"  # 47 cenários
 uv run --project experiments/python/localidades localidades                                               # execução real em :8000
 ```
@@ -108,6 +108,9 @@ As consultas ao IBGE, pelo `/metrics`, levaram 138 ms em `estados`, uma média d
 - **Página máxima:** `LOCALIDADES_ITENS_MAX` é configurável, mas um valor diferente de 500 sai do contrato v1.
 - **Fixtures:** são uma foto de 2026-11-26. Se o IBGE mudar, os testes continuam passando até as fixtures serem regravadas.
 - **SC-007:** foi medido com o cache do `uv` já populado. Numa máquina nova, o tempo inclui baixar as dependências.
+
+## Convergência
+O `/speckit-converge` rodou depois da implementação e achou uma lacuna, MEDIUM: o cliente do IBGE completava com zeros à esquerda um `id` mais curto que o esperado. Um município com `id` 33045 saía como `"0033045"`, um código que não existe, com status 200. Agora um `id` com quantidade de dígitos errada vira "resposta inesperada da fonte". Foi corrigido na tarefa T048 (issue #29), com 3 testes novos.
 
 ## Verificações finais
 - **SC-006 (testes sem rede):** em 2026-11-26 16:17 UTC, dentro de `sandbox-exec -p '(version 1)(allow default)(deny network*)(allow network* (local ip "localhost:*"))(allow network* (remote ip "localhost:*"))'`:
