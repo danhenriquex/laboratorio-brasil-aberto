@@ -12,7 +12,7 @@ Guia para validar a feature de ponta a ponta. Os detalhes estão em [contracts/c
 
 ```bash
 uv sync --project experiments/python/discovery
-uv run --project experiments/python/discovery pytest
+uv run --directory experiments/python/discovery pytest
 ```
 
 **Esperado**: todos os testes passam. Para comprovar SC-007, rode com a rede desligada e confira que o resultado é o mesmo.

@@ -231,7 +231,7 @@ Constatações:
     - o `conftest` bloqueia conexões a endereços que não sejam de loopback, como fazia o E0.
   - **Suíte de verificação:** fala só com `127.0.0.1`, onde ficam o serviço e o IBGE falso.
   - **Fixtures:** respostas reais do IBGE, gravadas uma vez numa verificação manual datada (estados, municípios de RJ, DF e SP, e alguns municípios por código), mais casos sintéticos (HTML de erro, campo ausente). São dados públicos, sem dados pessoais.
-  - **SC-006:** a suíte roda num sandbox do macOS que nega a rede externa e permite o loopback: `(deny network*) (allow network* (remote ip "localhost:*"))`.
+  - **SC-006:** a suíte roda num sandbox do macOS que nega a rede externa e permite o loopback: `(deny network*)(allow network* (local ip "localhost:*"))(allow network* (remote ip "localhost:*"))`. A regra `local` libera o IBGE falso e o serviço a escutar no loopback.
 - **Alternatives considered**: o `(deny network*)` do E0 bloqueia também o loopback e impediria a suíte de caixa-preta.
 
 ## R14. Configuração comum **(contrato)**

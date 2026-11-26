@@ -249,7 +249,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
   O script respeita `UV_OFFLINE`, quando estiver definida.
 
-**Checkpoint**: `uv run --project experiments/python/localidades pytest` passa (domínio, configuração, fonte e base da API), e o `verificar.sh` sobe tudo e passa no `test_contrato_valido.py`.
+**Checkpoint**: `uv run --directory experiments/python/localidades pytest` passa (domínio, configuração, fonte e base da API), e o `verificar.sh` sobe tudo e passa no `test_contrato_valido.py`.
 
 ---
 
@@ -464,23 +464,23 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ## Phase 8: Polish & Fechamento do experimento
 
-- [ ] T043 Rodar `uv run --project experiments/python/localidades pytest` e `contracts/localidades/verificacao/verificar.sh "uv run --project experiments/python/localidades localidades"` e registrar o número de testes de cada camada. Os dois precisam passar inteiros.
-- [ ] T044 Executar a verificação com a rede externa bloqueada (SC-006), conforme o quickstart §3:
-  - confirmar que um `curl` ao IBGE falha dentro do sandbox `(deny network*)(allow network* (remote ip "localhost:*"))`;
+- [X] T043 Rodar `uv run --directory experiments/python/localidades pytest` e `contracts/localidades/verificacao/verificar.sh "uv run --project experiments/python/localidades localidades"` e registrar o número de testes de cada camada. Os dois precisam passar inteiros.
+- [X] T044 Executar a verificação com a rede externa bloqueada (SC-006), conforme o quickstart §3:
+  - confirmar que um `curl` ao IBGE falha dentro do sandbox `(deny network*)(allow network* (local ip "localhost:*"))(allow network* (remote ip "localhost:*"))`;
   - rodar as duas camadas de teste dentro dele;
   - registrar a data e o resultado.
-- [ ] T045 Fazer a execução real manual contra o IBGE, conforme o quickstart §4:
+- [X] T045 Fazer a execução real manual contra o IBGE, conforme o quickstart §4:
   - registrar data e hora UTC;
   - medir a latência da primeira chamada e da repetida (SC-003);
   - conferir que MG tem `total` 853;
   - comparar com as fixtures;
   - medir o tempo do repositório clonado até a primeira resposta (SC-007).
-- [ ] T046 [P] Atualizar `docs/adr/0001-convencoes-comuns-de-api.md`:
+- [X] T046 [P] Atualizar `docs/adr/0001-convencoes-comuns-de-api.md`:
   - status: aceita no E1, a confirmar no E4;
   - os itens 3, 5 e 6 passam a refletir R10 (nomes do `meta` e `codigo` como identificador do registro), R9 (`itens` de 1 a 500, padrão 100), R11 (URNs dos problemas e mapeamento 502/504) e R12 (nomes das métricas e regras do `X-Correlation-Id`);
   - a nova decisão de códigos em texto (R7);
   - os pontos que ficam para o E4.
-- [ ] T047 Escrever `specs/002-servico-localidades/RESULTS.md` a partir de `docs/templates/RESULTS.md`, com:
+- [X] T047 Escrever `specs/002-servico-localidades/RESULTS.md` a partir de `docs/templates/RESULTS.md`, com:
   - a resposta à pergunta do experimento;
   - o que funcionou e o que surpreendeu, incluindo o "não encontrado" com status 200 e a chave da documentação;
   - as limitações: cache só em memória e por processo, e a tabela fixa de UFs;
