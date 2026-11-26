@@ -225,3 +225,44 @@ def test_latencia_medida_pelo_relogio(mock, relogio):
     r = sondar_com(relogio)
     assert r.latencia_ms == pytest.approx(250.0)
     assert r.coletado_em == inicio
+
+
+# --- Convergência (T037, T038) ---
+
+
+def test_corpo_comprimido_corrompido_e_resposta_invalida(mock, relogio):
+    mock.get(URL).mock(side_effect=httpx.DecodingError("Error -3 while decompressing data: incorrect header check"))
+    r = sondar_com(relogio)
+    assert (r.situacao, r.causa) == (Situacao.FALHOU, Causa.RESPOSTA_INVALIDA)
+    assert "DecodingError" in r.detalhe_causa
+
+
+def test_json_aninhado_demais_e_resposta_invalida(mock, relogio):
+    corpo = b"[" * 200_000 + b"]" * 200_000
+    mock.get(URL).mock(return_value=httpx.Response(200, content=corpo, headers={"Content-Type": "application/json"}))
+    r = sondar_com(relogio)
+    assert (r.situacao, r.causa) == (Situacao.FALHOU, Causa.RESPOSTA_INVALIDA)
+    assert "aninhad" in r.detalhe_causa
+
+
+def test_prazo_total_excedido_durante_a_leitura(mock, relogio):
+    def gotejando():
+        for _ in range(100):
+            relogio.avancar(1.0)  # cada bloco chega 1 s depois do anterior
+            yield b"x" * 10
+
+    mock.get(URL).mock(return_value=httpx.Response(200, content=gotejando()))
+    r = sondar_com(relogio)
+    assert (r.situacao, r.causa) == (Situacao.FALHOU, Causa.TEMPO_ESGOTADO)
+    assert "prazo total" in r.detalhe_causa
+    assert r.latencia_ms <= (CONFIG.tempo_limite_s + 1) * 1000
+
+
+def test_leitura_dentro_do_prazo_nao_e_interrompida(mock, relogio):
+    def rapido():
+        for _ in range(5):
+            relogio.avancar(1.0)
+            yield b'[1]' if _ == 0 else b""
+
+    mock.get(URL).mock(return_value=httpx.Response(200, content=rapido(), headers={"Content-Type": "application/json"}))
+    assert sondar_com(relogio).situacao is Situacao.RESPONDEU
