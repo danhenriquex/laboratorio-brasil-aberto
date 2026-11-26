@@ -340,7 +340,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T029 [P] [US3] Escrever `experiments/python/localidades/tests/unit/test_cache.py`, com `RelogioFalso` e uma função `buscar` falsa que conta as chamadas:
+- [X] T029 [P] [US3] Escrever `experiments/python/localidades/tests/unit/test_cache.py`, com `RelogioFalso` e uma função `buscar` falsa que conta as chamadas:
   - **entrada válida:** atende sem chamar `buscar`;
   - **entrada vencida:**
     - se `buscar` der certo, renova o `coletado_em`;
@@ -348,7 +348,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
   - **entrada ausente com falha:** propaga o erro;
   - **o que não é guardado:** `NaoEncontrado` (a chamada seguinte consulta de novo) e os erros;
   - **consulta única por chave:** 10 chamadas simultâneas, com `asyncio.gather` dentro de `asyncio.run` e uma `buscar` que dorme 0,05 s, fazem `buscar` ser chamada 1 vez.
-- [ ] T030 [P] [US3] Escrever `experiments/python/localidades/tests/integration/test_api_falhas.py` (`TestClient` + `respx`), cobrindo:
+- [X] T030 [P] [US3] Escrever `experiments/python/localidades/tests/integration/test_api_falhas.py` (`TestClient` + `respx`), cobrindo:
   - **sem cópia guardada:**
     - fonte fora (`ConnectError`) devolve 502 `fonte-indisponivel`;
     - fonte lenta devolve 504 `fonte-lenta`;
@@ -358,7 +358,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
     - com a cópia vencida (`RelogioFalso.avancar(validade + 1)`), a fonte fora devolve 200, `meta.desatualizado: true` e o `coletado_em` original;
     - dois pedidos dentro da validade geram 1 chamada ao IBGE;
   - **isolamento:** depois de uma falha, o pedido seguinte para outro recurso funciona (FR-018).
-- [ ] T031 [P] [US3] Escrever `contracts/localidades/verificacao/tests/test_us3_falhas.py`, com cada resposta validada contra o contrato e cada cenário usando um código de município diferente, porque o serviço guarda cópias entre testes:
+- [X] T031 [P] [US3] Escrever `contracts/localidades/verificacao/tests/test_us3_falhas.py`, com cada resposta validada contra o contrato e cada cenário usando um código de município diferente, porque o serviço guarda cópias entre testes:
   - **SC-004:** dois pedidos iguais seguidos geram 1 consulta em `/_controle/contagem`;
   - **SC-003:** o pedido repetido responde em menos de 0,5 s;
   - **SC-005:** nos modos `fora`, `lento` (3 s) e `invalido`, sem cópia, a resposta é 502, 504 ou 502 em menos de 2 s, com o prazo de 1 s;
@@ -368,7 +368,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Implementation for User Story 3
 
-- [ ] T032 [US3] Acrescentar o controle a `contracts/localidades/verificacao/src/ibge_falso/servidor.py`:
+- [X] T032 [US3] Acrescentar o controle a `contracts/localidades/verificacao/src/ibge_falso/servidor.py`:
   - **`POST /_controle`**, com o corpo `{"modo": "normal" | "fora" | "lento" | "invalido", "segundos": float}`:
     - `fora` responde 503;
     - `lento` espera `segundos` antes de responder normalmente;
@@ -376,13 +376,13 @@ Em cada história, escreva os testes primeiro e confirme que falham.
   - **`GET /_controle/contagem`:** devolve `{caminho: n}`;
   - **`POST /_controle/zerar`:** zera as contagens;
   - **concorrência:** o estado é protegido por `threading.Lock`.
-- [ ] T033 [US3] Implementar `experiments/python/localidades/src/localidades/cache.py`, conforme os estados do data-model (ausente, válida, vencida), para fazer T029 passar:
+- [X] T033 [US3] Implementar `experiments/python/localidades/src/localidades/cache.py`, conforme os estados do data-model (ausente, válida, vencida), para fazer T029 passar:
   - `CacheComValidade(relogio, validade_s)`;
   - `async obter(chave, buscar) -> Entrada(dados, url_fonte, coletado_em, desatualizado, resultado)`, em que `resultado` é `acerto`, `falta` ou `desatualizado`;
   - um `asyncio.Lock` por chave;
   - `NaoEncontrado` e erros nunca entram na cópia;
   - um erro de `ERROS_DE_FONTE` com uma entrada vencida devolve a cópia com `desatualizado=True`.
-- [ ] T034 [US3] Em `experiments/python/localidades/src/localidades/servico.py`, trocar o `_obter` para usar a `CacheComValidade`:
+- [X] T034 [US3] Em `experiments/python/localidades/src/localidades/servico.py`, trocar o `_obter` para usar a `CacheComValidade`:
   - o `meta.coletado_em` passa a vir da entrada guardada;
   - o `meta.desatualizado` também;
   - o `resultado` do cache é exposto para as métricas da US5.

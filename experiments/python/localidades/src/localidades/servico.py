@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
+from localidades.cache import CacheComValidade
 from localidades.config import Configuracao
 from localidades.dominio import (
     Pagina,
@@ -81,11 +82,12 @@ class ServicoLocalidades:
         self._ibge = cliente_ibge
         self._relogio = relogio
         self._config = config
+        self._cache = CacheComValidade(relogio, config.validade_s)
 
     async def _obter(self, chave: str, buscar: Buscar) -> Obtido:
-        coletado_em = self._relogio.agora()
-        dados, url_fonte = await buscar()
-        return Obtido(dados=dados, meta=Meta(url_fonte=url_fonte, coletado_em=coletado_em))
+        entrada = await self._cache.obter(chave, buscar)
+        meta = Meta(url_fonte=entrada.url_fonte, coletado_em=entrada.coletado_em, desatualizado=entrada.desatualizado)
+        return Obtido(dados=entrada.dados, meta=meta, cache=entrada.resultado)
 
     # --- US1 ---
 
