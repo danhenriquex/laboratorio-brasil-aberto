@@ -40,26 +40,26 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 **Purpose**: criar os dois projetos `uv` e os esqueletos.
 
-- [ ] T001 Criar `experiments/python/localidades/pyproject.toml`:
+- [X] T001 Criar `experiments/python/localidades/pyproject.toml`:
   - projeto `localidades-ibge`, versão `0.1.0`, `requires-python = ">=3.11"`, build `hatchling` com layout `src/`;
   - dependências de runtime: `fastapi`, `uvicorn`, `httpx` e `prometheus-client`;
   - grupo `dev`: `pytest` e `respx`;
   - script `localidades = "localidades.__main__:main"`;
   - `[tool.pytest.ini_options]` com `testpaths = ["tests"]` e `addopts = "-q"`.
-- [ ] T002 Criar o esqueleto em `experiments/python/localidades/`:
+- [X] T002 Criar o esqueleto em `experiments/python/localidades/`:
   - `src/localidades/__init__.py` com `__version__ = "0.1.0"`;
   - `src/localidades/__main__.py` com `main()`, que lê a configuração e chama `uvicorn.run(criar_app(config), host=config.host, port=config.porta)`. Fica como esboço até T011 e T015;
   - as pastas `tests/unit/` e `tests/integration/`.
-- [ ] T003 [P] Criar `contracts/localidades/verificacao/pyproject.toml`:
+- [X] T003 [P] Criar `contracts/localidades/verificacao/pyproject.toml`:
   - projeto `verificacao-localidades`, versão `0.1.0`, `requires-python = ">=3.11"`, `hatchling` com layout `src/`;
   - dependências: `pytest`, `httpx`, `jsonschema`, `pyyaml` e `openapi-spec-validator`;
   - script `ibge-falso = "ibge_falso.__main__:main"`;
   - os arquivos `src/ibge_falso/__init__.py` e `src/ibge_falso/__main__.py` (esboço) e a pasta `tests/`.
-- [ ] T004 [P] Criar `experiments/python/localidades/README.md` com:
+- [X] T004 [P] Criar `experiments/python/localidades/README.md` com:
   - a pergunta do E1;
   - os comandos de teste, de execução e de verificação;
   - a tabela de variáveis `LOCALIDADES_*`, apontando para `contracts/localidades/README.md` e `specs/002-servico-localidades/quickstart.md`.
-- [ ] T005 Rodar `uv sync --project experiments/python/localidades` e `uv sync --project contracts/localidades/verificacao`, e versionar os dois `uv.lock`.
+- [X] T005 Rodar `uv sync --project experiments/python/localidades` e `uv sync --project contracts/localidades/verificacao`, e versionar os dois `uv.lock`.
 
 ---
 
@@ -71,7 +71,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Fixtures do IBGE (verificação manual com chamada real)
 
-- [ ] T006 Gravar as respostas reais do IBGE em `contracts/localidades/fixtures-ibge/`, com o script `contracts/localidades/fixtures-ibge/gravar.py`.
+- [X] T006 Gravar as respostas reais do IBGE em `contracts/localidades/fixtures-ibge/`, com o script `contracts/localidades/fixtures-ibge/gravar.py`.
   - **Como o script consulta:** usa `urllib` da biblioteca padrão, User-Agent `laboratorio-brasil-aberto-localidades/0.1.0`, chamadas em sequência com 2 s de intervalo, e grava o corpo exatamente como recebido. É uma execução manual, fora dos testes (Constituição IV).
   - **Arquivos gravados:**
     - `estados.json`, de `/estados`;
@@ -85,13 +85,13 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Testes da fundação (escrever primeiro)
 
-- [ ] T007 [P] Criar `experiments/python/localidades/tests/conftest.py` com:
+- [X] T007 [P] Criar `experiments/python/localidades/tests/conftest.py` com:
   - **bloqueio de rede:** um monkeypatch de `socket.socket.connect` e `socket.getaddrinfo` que recusa qualquer destino fora de `127.0.0.1`, `::1` e `localhost`;
   - **`RelogioFalso`:** `agora()` devolve um `datetime` UTC, `monotonic()` devolve um `float`, e `avancar(segundos)` adianta os dois;
   - **`ler_fixture(nome)`:** lê de `contracts/localidades/fixtures-ibge/`, localizado a partir de `Path(__file__)` subindo até a raiz do repositório;
   - **constante `IBGE`:** `https://servicodados.ibge.gov.br/api/v1/localidades`;
   - **fixture `mock_ibge`:** `respx.mock(base_url=IBGE, assert_all_called=False)`.
-- [ ] T008 [P] Escrever `experiments/python/localidades/tests/unit/test_dominio.py`, cobrindo:
+- [X] T008 [P] Escrever `experiments/python/localidades/tests/unit/test_dominio.py`, cobrindo:
   - **`dobrar`:** `"Niterói"` vira `"niteroi"`, `"SÃO"` vira `"sao"`, e o apóstrofo é mantido;
   - **ordenação:** pela chave `(dobrar(nome), codigo)`;
   - **`filtrar_por_nome`:** por substring do nome dobrado, depois de aparar;
@@ -105,11 +105,11 @@ Em cada história, escreva os testes primeiro e confirme que falham.
   - **`validar_codigo_municipio`:** `^\d{7}$`;
   - **`validar_paginacao`:** `pagina` ≥ 1 e `itens` de 1 a `itens_max`. Os erros levantam `EntradaInvalida`, e o detalhe cita o limite;
   - **`validar_nome`:** aparado, de 2 a 60 caracteres.
-- [ ] T009 [P] Escrever `experiments/python/localidades/tests/unit/test_config.py`, cobrindo:
+- [X] T009 [P] Escrever `experiments/python/localidades/tests/unit/test_config.py`, cobrindo:
   - os padrões de R14: `127.0.0.1`, `8000`, a URL do IBGE, `10`, `86400` e `500`;
   - a leitura de cada variável `LOCALIDADES_*`;
   - valores não numéricos, zero ou negativos, que levantam `ValueError` com o nome da variável.
-- [ ] T010 [P] Escrever `experiments/python/localidades/tests/unit/test_fonte_ibge.py` com `respx` e as fixtures de T006.
+- [X] T010 [P] Escrever `experiments/python/localidades/tests/unit/test_fonte_ibge.py` com `respx` e as fixtures de T006.
   - **Classificação de R6:**
 
     | Situação simulada | Erro esperado |
@@ -136,11 +136,11 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Implementação da fundação
 
-- [ ] T011 Implementar `experiments/python/localidades/src/localidades/config.py`:
+- [X] T011 Implementar `experiments/python/localidades/src/localidades/config.py`:
   - `Configuracao` como `@dataclass(frozen=True)`, com os campos `host`, `porta`, `ibge_url`, `prazo_fonte_s`, `validade_s` e `itens_max`;
   - `Configuracao.do_ambiente(env=os.environ)`, com os padrões e a validação de R14;
   - mensagens claras de erro com o nome da variável (faz T009 passar).
-- [ ] T012 [P] Implementar `experiments/python/localidades/src/localidades/erros.py`:
+- [X] T012 [P] Implementar `experiments/python/localidades/src/localidades/erros.py`:
   - a base `ErroDominio(detalhe)`, com os atributos de classe `tipo`, `titulo` e `status`;
   - as subclasses:
 
@@ -155,7 +155,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
   - a propriedade `urn`, que devolve `urn:brasil-aberto:problema:{tipo}` (R11);
   - o agrupamento `ERROS_DE_FONTE = (FonteIndisponivel, FonteLenta, RespostaInesperadaDaFonte)`.
-- [ ] T013 Implementar `experiments/python/localidades/src/localidades/dominio.py`, conforme `data-model.md`, para fazer T008 passar:
+- [X] T013 Implementar `experiments/python/localidades/src/localidades/dominio.py`, conforme `data-model.md`, para fazer T008 passar:
   - **dataclasses `frozen`:** `Regiao`, `Uf`, `UfResumida`, `RegiaoImediata`, `RegiaoIntermediaria`, `MunicipioResumido`, `Municipio` e `Pagina(itens, pagina, tamanho, total, paginas)`;
   - **`UFS_OFICIAIS`:** a tabela fixa de 27 códigos e siglas do data-model;
   - **funções:**
@@ -178,7 +178,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
     | `{uf}` | aparado; `^[A-Za-z]{2}$` (sigla, comparada em maiúsculas) ou `^\d{2}$` (código) |
 
   - Este módulo não importa FastAPI nem httpx.
-- [ ] T014 Implementar `experiments/python/localidades/src/localidades/fonte_ibge.py`, para fazer T010 passar:
+- [X] T014 Implementar `experiments/python/localidades/src/localidades/fonte_ibge.py`, para fazer T010 passar:
   - **`ClienteIBGE(config, cliente_http: httpx.AsyncClient | None = None, ao_medir=None)`**, com os métodos assíncronos `obter_estados()`, `obter_municipios_da_uf(codigo_uf)` e `obter_municipio(codigo)`. Cada um devolve `(dados_normalizados, url_fonte)`;
   - **`_buscar_json(recurso)`:**
     - faz uma única chamada GET dentro de `asyncio.timeout(config.prazo_fonte_s)`;
@@ -189,7 +189,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
   - **normalização:** conforme "Validação da resposta do IBGE" do data-model, convertendo os códigos para texto de tamanho fixo (R7);
   - **`microrregiao`:** é ignorada e pode vir `null`;
   - **mensagens de erro:** nunca incluem o corpo da resposta do IBGE.
-- [ ] T015 Implementar a base de `experiments/python/localidades/src/localidades/api.py`, com `criar_app(config, *, cliente_ibge=None, relogio=None) -> FastAPI`:
+- [X] T015 Implementar a base de `experiments/python/localidades/src/localidades/api.py`, com `criar_app(config, *, cliente_ibge=None, relogio=None) -> FastAPI`:
   - **OpenAPI automático desligado:** `openapi_url=None`, `docs_url=None` e `redoc_url=None` (R3);
   - **middleware de correlação (R12):**
     - aceita `X-Correlation-Id` que case com `^[A-Za-z0-9._-]{1,64}$` e, caso contrário, gera um UUID v4;
@@ -201,12 +201,12 @@ Em cada história, escreva os testes primeiro e confirme que falham.
     - `Exception` vira 500 `erro-interno`, com o `detail` genérico "erro interno do serviço";
   - **`GET /health`:** devolve `{"status": "ok"}` sem tocar no IBGE;
   - **respostas JSON:** com `ensure_ascii=False`, ou seja, UTF-8.
-- [ ] T016 Escrever e fazer passar `experiments/python/localidades/tests/integration/test_api_base.py`, cobrindo:
+- [X] T016 Escrever e fazer passar `experiments/python/localidades/tests/integration/test_api_base.py`, cobrindo:
   - `/health` devolve 200;
   - `/v2/ufs`, `/ufs` e `/nada` devolvem 404 `nao-encontrado` em `application/problem+json`;
   - o `X-Correlation-Id` é devolvido igual quando válido e trocado por um UUID v4 quando inválido (65 caracteres ou com espaço);
   - um erro forçado numa rota de teste vira 500 sem rastro de execução no corpo.
-- [ ] T017 Implementar a base de `experiments/python/localidades/src/localidades/servico.py`:
+- [X] T017 Implementar a base de `experiments/python/localidades/src/localidades/servico.py`:
   - **`ServicoLocalidades(cliente_ibge, relogio, config)`:** não importa FastAPI;
   - **`Resultado(dados, meta, paginacao=None)`;**
   - **`Meta`:**
@@ -220,7 +220,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Base da suíte de caixa-preta
 
-- [ ] T018 Implementar o IBGE falso em `contracts/localidades/verificacao/src/ibge_falso/servidor.py` e `__main__.py`:
+- [X] T018 Implementar o IBGE falso em `contracts/localidades/verificacao/src/ibge_falso/servidor.py` e `__main__.py`:
   - **servidor:** `ThreadingHTTPServer` da biblioteca padrão, em `127.0.0.1`, com a porta definida por `--porta` (padrão 8099) e as fixtures em `--fixtures` (padrão `contracts/localidades/fixtures-ibge/`, resolvido a partir do arquivo);
   - **rotas, sob `/api/v1/localidades`:**
     - `/estados` serve `estados.json`;
@@ -228,7 +228,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
     - `/municipios/{c}` procura o item nas listas por UF ou usa `municipio-{c}.json` e, se não achar, devolve `[]`;
   - **demais caminhos:** 404;
   - **respostas:** `Content-Type: application/json; charset=utf-8`.
-- [ ] T019 Criar a base da suíte em `contracts/localidades/verificacao/tests/`:
+- [X] T019 Criar a base da suíte em `contracts/localidades/verificacao/tests/`:
   - **`contrato.py`:**
     - carrega `contracts/localidades/openapi.yaml` com `yaml.safe_load`;
     - `validar(resposta, metodo, rota_modelo)` confere:
@@ -240,7 +240,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
     - `servico = httpx.Client(base_url=os.environ["LOCALIDADES_URL"], timeout=10)`;
     - `ibge = httpx.Client(base_url=os.environ.get("IBGE_FALSO_URL", "http://127.0.0.1:8099"))`;
   - **`test_contrato_valido.py`:** o `openapi-spec-validator` aceita o `openapi.yaml`.
-- [ ] T020 Criar `contracts/localidades/verificacao/verificar.sh` (executável), que recebe o comando do serviço como `$1` e:
+- [X] T020 Criar `contracts/localidades/verificacao/verificar.sh` (executável), que recebe o comando do serviço como `$1` e:
   1. sobe o IBGE falso na porta 8099;
   2. sobe o serviço com `LOCALIDADES_PORTA=8090`, `LOCALIDADES_IBGE_URL=http://127.0.0.1:8099/api/v1/localidades`, `LOCALIDADES_PRAZO_FONTE_S=1` e `LOCALIDADES_VALIDADE_S=2`;
   3. espera o `/health` por até 30 s;
