@@ -48,9 +48,10 @@ def _codigo(objeto: Any, digitos: int) -> str:
     if isinstance(valor, bool) or not isinstance(valor, int | str):
         raise _FormaInesperada("id com tipo inesperado")
     texto = str(valor).strip()
-    if not texto.isascii() or not texto.isdigit() or len(texto) > digitos:
+    # Tamanho exato: completar com zeros inventaria um código que o IBGE não publicou (T048).
+    if not texto.isascii() or not texto.isdigit() or len(texto) != digitos:
         raise _FormaInesperada(f"id fora do formato de {digitos} dígitos")
-    return texto.zfill(digitos)
+    return texto
 
 
 def _texto(objeto: Any, chave: str) -> str:

@@ -575,3 +575,7 @@ Task: "T033 cache.py em experiments/python/localidades/src/localidades/"
 - A suíte de caixa-preta não importa nada de `experiments/python/localidades/`. Ela fala só pela rede, para servir igual ao E4.
 - Os testes nunca chamam o IBGE real. Chamadas reais acontecem só em T006 e T045, com data registrada.
 - Commits pequenos por tarefa ou grupo lógico, em branches a partir da `develop`, sem atribuição ao Claude.
+
+## Phase 9: Convergence
+
+- [X] T048 Recusar em `experiments/python/localidades/src/localidades/fonte_ibge.py` (`_codigo`) todo `id` do IBGE cuja quantidade de dígitos seja diferente da esperada ("`^\d{7}$`" para município, 6 para região imediata, 4 para intermediária, 2 para UF, 1 para região), levantando `RespostaInesperadaDaFonte` em vez de completar com zeros à esquerda, e cobrir com testes em `experiments/python/localidades/tests/unit/test_fonte_ibge.py` (id de 5 dígitos na lista de municípios e id de 1 dígito numa UF) per data-model: validação da resposta do IBGE, R7 e Constitution II (partial)

@@ -132,3 +132,28 @@ def test_prazo_total_esgotado_e_fonte_lenta(mock_ibge):
     with pytest.raises(FonteLenta):
         executar(lambda c: c.obter_estados(), config=Configuracao(prazo_fonte_s=0.05))
     assert time.monotonic() - inicio < 0.3
+
+
+# --- Convergência (T048): códigos com quantidade de dígitos errada ---
+
+
+def test_municipio_da_lista_com_id_curto_e_inesperado(mock_ibge):
+    mock_ibge.get("/estados/33/municipios").mock(return_value=httpx.Response(200, json=[{"id": 33045, "nome": "Curto"}]))
+    with pytest.raises(RespostaInesperadaDaFonte, match="7 dígitos"):
+        executar(lambda c: c.obter_municipios_da_uf("33"))
+
+
+def test_uf_com_id_de_um_digito_e_inesperada(mock_ibge):
+    estados = fixture_json("estados.json")
+    estados[0]["id"] = 1
+    mock_ibge.get("/estados").mock(return_value=httpx.Response(200, json=estados))
+    with pytest.raises(RespostaInesperadaDaFonte, match="2 dígitos"):
+        executar(lambda c: c.obter_estados())
+
+
+def test_regiao_imediata_com_id_curto_e_inesperada(mock_ibge):
+    item = item_da_uf("33", 3304557)
+    item["regiao-imediata"]["id"] = 33001
+    mock_ibge.get("/municipios/3304557").mock(return_value=httpx.Response(200, json=item))
+    with pytest.raises(RespostaInesperadaDaFonte, match="6 dígitos"):
+        executar(lambda c: c.obter_municipio("3304557"))
