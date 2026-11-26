@@ -425,7 +425,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Tests for User Story 5 ⚠️
 
-- [ ] T038 [P] [US5] Escrever `experiments/python/localidades/tests/integration/test_api_operacao.py`, cobrindo:
+- [X] T038 [P] [US5] Escrever `experiments/python/localidades/tests/integration/test_api_operacao.py`, cobrindo:
   - **`/health`:** responde 200 com o IBGE fora, e o `respx` não registra nenhuma chamada;
   - **`/metrics`**, depois de um acerto, uma falta, um `desatualizado` e um `fonte-lenta`, contém:
     - `localidades_pedidos_total{rota="/v1/municipios/{codigo}",status="200"}`;
@@ -433,7 +433,7 @@ Em cada história, escreva os testes primeiro e confirme que falham.
     - `localidades_cache_total{resultado="acerto"}`, `{resultado="falta"}` e `{resultado="desatualizado"}`;
     - `localidades_fonte_duracao_segundos_count{recurso="municipio"}`;
   - **registro:** cada pedido gera uma linha JSON com `momento`, `nivel`, `correlacao_id`, `metodo`, `rota`, `status`, `duracao_ms`, `cache` e `fonte_ms`, sem IP nem outros cabeçalhos.
-- [ ] T039 [P] [US5] Escrever `contracts/localidades/verificacao/tests/test_us5_operacao.py`, cobrindo:
+- [X] T039 [P] [US5] Escrever `contracts/localidades/verificacao/tests/test_us5_operacao.py`, cobrindo:
   - **`/health`:** valida contra o contrato;
   - **`/metrics`:** responde `text/plain` e contém os 4 nomes de métrica;
   - **correlação:**
@@ -443,14 +443,14 @@ Em cada história, escreva os testes primeiro e confirme que falham.
 
 ### Implementation for User Story 5
 
-- [ ] T040 [P] [US5] Implementar `experiments/python/localidades/src/localidades/metricas.py`:
+- [X] T040 [P] [US5] Implementar `experiments/python/localidades/src/localidades/metricas.py`:
   - um `CollectorRegistry` próprio por app, para não haver duplicação entre testes;
   - as 4 métricas de R12, com os rótulos do contrato;
   - a função `exportar()`, que devolve o texto e o `content-type` do Prometheus.
-- [ ] T041 [P] [US5] Implementar `experiments/python/localidades/src/localidades/registro.py`:
+- [X] T041 [P] [US5] Implementar `experiments/python/localidades/src/localidades/registro.py`:
   - um `logging.Formatter` em JSON com os campos de R12, no stdout;
   - a função `registrar_pedido(...)`.
-- [ ] T042 [US5] Integrar a operação em `experiments/python/localidades/src/localidades/api.py`:
+- [X] T042 [US5] Integrar a operação em `experiments/python/localidades/src/localidades/api.py`:
   - **`GET /metrics`;**
   - **middleware de medição**, que obtém o modelo da rota de `request.scope["route"].path` (ou `nao-encontrado` para rotas inexistentes) e atualiza `localidades_pedidos_total`, `localidades_erros_total` (pelo tipo do problema) e `localidades_cache_total` (pelo `resultado` exposto pelo serviço em `request.state`);
   - **duração da fonte:** o `ClienteIBGE` recebe `ao_medir=metricas.observar_fonte`;
