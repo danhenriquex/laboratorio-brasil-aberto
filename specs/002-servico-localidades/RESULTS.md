@@ -34,7 +34,7 @@ A partir da raiz do repositório:
 
 ```bash
 uv sync --project experiments/python/localidades
-uv run --directory experiments/python/localidades pytest                                                  # 135 testes
+uv run --directory experiments/python/localidades pytest                                                  # 138 testes
 contracts/localidades/verificacao/verificar.sh "uv run --project experiments/python/localidades localidades"  # 47 cenários
 uv run --project experiments/python/localidades localidades                                               # execução real em :8000
 ```
@@ -111,6 +111,8 @@ As consultas ao IBGE, pelo `/metrics`, levaram 138 ms em `estados`, uma média d
 
 ## Convergência
 O `/speckit-converge` rodou depois da implementação e achou uma lacuna, MEDIUM: o cliente do IBGE completava com zeros à esquerda um `id` mais curto que o esperado. Um município com `id` 33045 saía como `"0033045"`, um código que não existe, com status 200. Agora um `id` com quantidade de dígitos errada vira "resposta inesperada da fonte". Foi corrigido na tarefa T048 (issue #29), com 3 testes novos.
+
+A segunda rodada achou o mesmo tipo de lacuna nas siglas, LOW: uma UF com sigla `rj` ou uma região com sigla `Sudeste` vindas do IBGE eram repassadas e deixavam a resposta fora do contrato. Agora as siglas são conferidas contra as regras do data-model. Foi corrigido na T049 (issue #31), com mais 3 testes. Com isso, todas as regras de formato do data-model passaram a ser aplicadas também aos dados que chegam do IBGE.
 
 ## Verificações finais
 - **SC-006 (testes sem rede):** em 2026-11-26 16:17 UTC, dentro de `sandbox-exec -p '(version 1)(allow default)(deny network*)(allow network* (local ip "localhost:*"))(allow network* (remote ip "localhost:*"))'`:

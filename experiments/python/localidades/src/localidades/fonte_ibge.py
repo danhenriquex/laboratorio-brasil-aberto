@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 import time
 from collections.abc import Callable
 from typing import Any
@@ -61,6 +62,18 @@ def _texto(objeto: Any, chave: str) -> str:
     return valor
 
 
+# Regras do data-model para as siglas expostas (T049).
+_SIGLA_UF = re.compile(r"[A-Z]{2}", re.ASCII)
+_SIGLA_REGIAO = re.compile(r"[A-Z]{1,2}", re.ASCII)
+
+
+def _sigla(objeto: Any, formato: re.Pattern[str]) -> str:
+    valor = _texto(objeto, "sigla")
+    if not formato.fullmatch(valor):
+        raise _FormaInesperada("sigla fora do formato esperado")
+    return valor
+
+
 def _lista(dados: Any) -> list:
     if not isinstance(dados, list):
         raise _FormaInesperada("esperava uma lista")
@@ -71,9 +84,9 @@ def _uf(objeto: Any) -> Uf:
     regiao = _campo(objeto, "regiao")
     return Uf(
         codigo=_codigo(objeto, 2),
-        sigla=_texto(objeto, "sigla"),
+        sigla=_sigla(objeto, _SIGLA_UF),
         nome=_texto(objeto, "nome"),
-        regiao=Regiao(codigo=_codigo(regiao, 1), sigla=_texto(regiao, "sigla"), nome=_texto(regiao, "nome")),
+        regiao=Regiao(codigo=_codigo(regiao, 1), sigla=_sigla(regiao, _SIGLA_REGIAO), nome=_texto(regiao, "nome")),
     )
 
 
@@ -88,7 +101,7 @@ def _municipio(objeto: Any) -> Municipio:
     return Municipio(
         codigo=_codigo(objeto, 7),
         nome=_texto(objeto, "nome"),
-        uf=UfResumida(codigo=_codigo(uf, 2), sigla=_texto(uf, "sigla"), nome=_texto(uf, "nome")),
+        uf=UfResumida(codigo=_codigo(uf, 2), sigla=_sigla(uf, _SIGLA_UF), nome=_texto(uf, "nome")),
         regiao_imediata=RegiaoImediata(codigo=_codigo(imediata, 6), nome=_texto(imediata, "nome")),
         regiao_intermediaria=RegiaoIntermediaria(codigo=_codigo(intermediaria, 4), nome=_texto(intermediaria, "nome")),
     )
