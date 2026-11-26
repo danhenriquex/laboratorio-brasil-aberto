@@ -91,7 +91,9 @@ Constatações:
     - Válida: atende sem consultar a fonte.
     - Vencida: consulta a fonte. Se der certo, renova. Se falhar, entrega a cópia com `desatualizado: true` (FR-016).
     - Ausente: consulta a fonte. Se falhar, devolve o erro.
-  - **Uma consulta por recurso:** um `asyncio.Lock` por chave faz pedidos simultâneos pelo mesmo recurso esperarem a primeira consulta.
+  - **Uma consulta por recurso:** pedidos simultâneos pelo mesmo recurso aguardam a **mesma** tarefa de consulta (`asyncio.Task` por chave, protegida com `asyncio.shield`) e recebem o mesmo resultado, inclusive a falha.
+    - A primeira versão usava um `asyncio.Lock`. Com a fonte travada, ela serializava os pedidos: o N-ésimo esperava N prazos e a fonte recebia N consultas.
+    - A terceira convergência encontrou o problema, e a T050 corrigiu.
   - **Respostas que não entram na cópia:** "não encontrado" (`[]`) não é guardado, para que um código recém-criado apareça. Erros também não.
   - **Limite de memória:** nenhum além do próprio domínio (27 + 27 listas + 5.571 municípios, cerca de 3 MB no pior caso).
   - **Busca e paginação:** são feitas sobre a lista guardada da UF, então não geram consulta nova.

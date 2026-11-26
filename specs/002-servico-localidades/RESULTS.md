@@ -34,8 +34,8 @@ A partir da raiz do repositório:
 
 ```bash
 uv sync --project experiments/python/localidades
-uv run --directory experiments/python/localidades pytest                                                  # 138 testes
-contracts/localidades/verificacao/verificar.sh "uv run --project experiments/python/localidades localidades"  # 47 cenários
+uv run --directory experiments/python/localidades pytest                                                  # 140 testes
+contracts/localidades/verificacao/verificar.sh "uv run --project experiments/python/localidades localidades"  # 48 cenários
 uv run --project experiments/python/localidades localidades                                               # execução real em :8000
 ```
 
@@ -78,7 +78,7 @@ As consultas ao IBGE, pelo `/metrics`, levaram 138 ms em `estados`, uma média d
   | Critério | Resultado |
   |---|---|
   | **SC-001** | `meta` em 100% das respostas com dados |
-  | **SC-002** | 47 cenários validados contra o `openapi.yaml` |
+  | **SC-002** | 48 cenários validados contra o `openapi.yaml` |
   | **SC-003** | pedido com cópia em 1,3 a 4,6 ms, contra a meta de 500 ms |
   | **SC-004** | zero consultas extras dentro da validade, contadas pelo IBGE falso |
   | **SC-005** | fonte fora, lenta ou inválida responde em menos de 2 s com prazo de 1 s |
@@ -114,6 +114,10 @@ O `/speckit-converge` rodou depois da implementação e achou uma lacuna, MEDIUM
 
 A segunda rodada achou o mesmo tipo de lacuna nas siglas, LOW: uma UF com sigla `rj` ou uma região com sigla `Sudeste` vindas do IBGE eram repassadas e deixavam a resposta fora do contrato. Agora as siglas são conferidas contra as regras do data-model. Foi corrigido na T049 (issue #31), com mais 3 testes. Com isso, todas as regras de formato do data-model passaram a ser aplicadas também aos dados que chegam do IBGE.
 
+A terceira rodada achou um problema mais sério, HIGH. A consulta única por recurso usava uma trava que **enfileirava** os pedidos. Com o IBGE travado e prazo de 1 s, 5 pedidos simultâneos levaram 1, 2, 3, 4 e 5 s e geraram 5 consultas. Com o prazo padrão, 10 pedidos fariam o último esperar cerca de 100 s, contra o SC-005. A suíte não pegou porque o cenário de concorrência usava a fonte lenta, mas dentro do prazo. Agora os pedidos simultâneos aguardam a mesma consulta e recebem o mesmo resultado, inclusive a falha. Foi corrigido na T050 (issue #33), com 2 testes unitários e 1 cenário de caixa-preta.
+
+**Lição:** um teste de concorrência só do caminho feliz não prova a resiliência. Também é preciso testar a concorrência com a fonte falhando.
+
 ## Verificações finais
 - **SC-006 (testes sem rede):** em 2026-11-26 16:17 UTC, dentro de `sandbox-exec -p '(version 1)(allow default)(deny network*)(allow network* (local ip "localhost:*"))(allow network* (remote ip "localhost:*"))'`:
   - o `curl` ao IBGE falhou (`Could not resolve host`);
@@ -143,7 +147,7 @@ A segunda rodada achou o mesmo tipo de lacuna nas siglas, LOW: uma UF com sigla 
   - correlação.
 
   A confirmação vem no E4.
-- **E4 (o mesmo serviço em Java):** pode começar direto no `/speckit-plan`, porque a spec, o contrato, as fixtures e a suíte já existem. Critério de pronto: `verificar.sh "java -jar …"` passando nos 47 cenários. Vale fazê-lo logo, com o E1 fresco, para comparar a ergonomia.
+- **E4 (o mesmo serviço em Java):** pode começar direto no `/speckit-plan`, porque a spec, o contrato, as fixtures e a suíte já existem. Critério de pronto: `verificar.sh "java -jar …"` passando nos 48 cenários. Vale fazê-lo logo, com o E1 fresco, para comparar a ergonomia.
 - **Ideias que ficaram de fora:**
   - servir o contrato em `/openapi.yaml`;
   - busca de município por nome em todo o Brasil;
