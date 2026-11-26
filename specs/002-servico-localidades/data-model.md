@@ -99,18 +99,40 @@ Fonte: `GET {IBGE}/municipios/{codigo}`. A `microrregiao` do IBGE é ignorada e 
 | `GET /v1/ufs/{uf}/municipios` | `{dados: [MunicipioResumido], paginacao, meta}` |
 | `GET /v1/municipios/{codigo}` | `{dados: Municipio, meta}` |
 
-As respostas de `/v1/ufs/{uf}` e de `/v1/ufs/{uf}/municipios` dependem também da lista de UFs (R1). O `meta` descreve o recurso principal: a lista de UFs, na primeira; a lista de municípios da UF, na segunda.
+O parâmetro `{uf}` é resolvido pela tabela fixa `UFS_OFICIAIS` (R1), sem consultar o IBGE. Cada rota consulta um único recurso do IBGE:
+
+| Rota | Recurso do IBGE |
+|---|---|
+| `/v1/ufs` e `/v1/ufs/{uf}` | `estados` |
+| `/v1/ufs/{uf}/municipios` | `estados/{codigo}/municipios` |
+| `/v1/municipios/{codigo}` | `municipios/{codigo}` |
+
+O `meta` descreve esse recurso.
 
 ## Validação de entrada (antes de consultar o IBGE, FR-012)
 
 | Parâmetro | Regra | Erro |
 |---|---|---|
 | `{uf}` | aparado nas pontas; `^[A-Za-z]{2}$` (sigla, comparada em maiúsculas) ou `^\d{2}$` (código) | 400 `entrada-invalida` |
-| `{uf}` bem formado e fora da lista oficial | — | 404 `nao-encontrado` |
+| `{uf}` bem formado e fora de `UFS_OFICIAIS` | — | 404 `nao-encontrado` |
 | `{codigo}` | `^\d{7}$` | 400 `entrada-invalida` |
 | `pagina` | inteiro ≥ 1 | 400 `entrada-invalida` |
 | `itens` | inteiro de 1 a `ITENS_MAX` | 400, com o limite no `detail` |
 | `nome` | aparado; de 2 a 60 caracteres | 400, com o mínimo no `detail` |
+
+## Tabela fixa `UFS_OFICIAIS` (R1)
+
+| Código | Sigla | Código | Sigla | Código | Sigla |
+|---|---|---|---|---|---|
+| 11 | RO | 22 | PI | 32 | ES |
+| 12 | AC | 23 | CE | 33 | RJ |
+| 13 | AM | 24 | RN | 35 | SP |
+| 14 | RR | 25 | PB | 41 | PR |
+| 15 | PA | 26 | PE | 42 | SC |
+| 16 | AP | 27 | AL | 43 | RS |
+| 17 | TO | 28 | SE | 50 | MS |
+| 21 | MA | 29 | BA | 51 | MT |
+| 31 | MG | 52 | GO | 53 | DF |
 
 ## Regras derivadas
 

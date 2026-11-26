@@ -29,7 +29,9 @@ Constatações:
 - `[]` em resposta a um município ou UF solicitados vira "não encontrado".
 - Uma UF que existe na lista oficial e volta com `[]` vira "resposta inesperada da fonte", como manda a spec.
 - `microrregiao` é opcional na leitura. O serviço nem a expõe, porque a spec usa as regiões imediata e intermediária.
-- Para distinguir uma UF inexistente de uma falha, o serviço consulta antes a lista de UFs, que fica guardada.
+- Para distinguir uma UF inexistente de uma falha, o serviço usa uma **tabela fixa com o código e a sigla das 27 UFs** (`UFS_OFICIAIS`), que não muda desde 1988. Ela serve só para validar e resolver a entrada, sem consultar o IBGE. Nomes e regiões continuam vindo do IBGE.
+  - Assim cada pedido faz no máximo uma consulta à fonte (FR-017), mesmo com o cache vazio.
+  - Se a tabela e o IBGE divergirem (uma UF da tabela ausente em `/estados`), o serviço responde "resposta inesperada da fonte".
 
 **Rationale**: o status HTTP do IBGE não basta para separar "não existe" de "existe", então a decisão tem de olhar o corpo. A ficha do IBGE é atualizada com esses fatos.
 
