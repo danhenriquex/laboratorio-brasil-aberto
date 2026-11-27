@@ -145,4 +145,30 @@ class ApiUfsTest extends BaseApiTest {
         assertThat(corpo.get("dados").toString()).isEqualTo("[{\"codigo\":\"5300108\",\"nome\":\"Brasília\"}]");
         assertThat(corpo.get("paginacao").get("paginas").asInt()).isEqualTo(1);
     }
+
+    // --- Convergência do E4 (T045): leitura de pagina e itens como no E1 ---
+
+    @Test
+    void paginaMuitoGrandeEPaginaAlemDoFim() throws Exception {
+        rj();
+        var r = mvc.perform(get("/v1/ufs/RJ/municipios").param("pagina", "99999999999")).andReturn();
+        assertThat(r.getResponse().getStatus()).isEqualTo(200);
+        assertThat(json(r).get("dados")).isEmpty();
+        assertThat(json(r).get("paginacao").toString()).isEqualTo("{\"pagina\":99999999999,\"itens\":100,\"total\":92,\"paginas\":1}");
+    }
+
+    @Test
+    void parametroRepetidoValeOUltimo() throws Exception {
+        rj();
+        var r = mvc.perform(get("/v1/ufs/RJ/municipios").param("itens", "10", "20")).andReturn();
+        assertThat(r.getResponse().getStatus()).isEqualTo(200);
+        assertThat(json(r).get("paginacao").get("itens").asInt()).isEqualTo(20);
+        assertThat(json(r).get("dados")).hasSize(20);
+    }
+
+    @Test
+    void itensMuitoGrandeContinuaForaDoLimite() throws Exception {
+        var corpo = assertProblema(mvc.perform(get("/v1/ufs/RJ/municipios").param("itens", "99999999999")).andReturn(), 400, "entrada-invalida");
+        assertThat(corpo.get("detail").asString()).contains("500");
+    }
 }

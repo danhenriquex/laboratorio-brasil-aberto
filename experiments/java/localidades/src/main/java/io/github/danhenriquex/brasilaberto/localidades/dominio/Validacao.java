@@ -41,7 +41,7 @@ public final class Validacao {
         return codigo;
     }
 
-    public static void validarPaginacao(int pagina, int itens, int itensMax) {
+    public static void validarPaginacao(long pagina, long itens, int itensMax) {
         if (pagina < 1) {
             throw new EntradaInvalida("pagina precisa ser maior ou igual a 1, recebi " + pagina);
         }

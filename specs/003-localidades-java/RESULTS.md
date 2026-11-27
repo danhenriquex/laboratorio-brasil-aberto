@@ -25,10 +25,15 @@ As mesmas do E1: a API de localidades do IBGE e a [ficha da fonte](../../discove
 A partir da raiz do repositório, com o JDK 25 instalado:
 
 ```bash
-(cd experiments/java/localidades && ./mvnw -q test)                       # 133 testes
+(cd experiments/java/localidades && ./mvnw -q test)                       # 136 testes
 (cd experiments/java/localidades && ./mvnw -q package -DskipTests)
 contracts/localidades/verificacao/verificar.sh "java -jar experiments/java/localidades/target/localidades.jar"   # 53 cenários
 specs/003-localidades-java/medicao/medir.sh                                # comparação E1 × E4
+```
+
+A suíte tinha 53 cenários no fechamento; com a convergência, passou a 56 (veja abaixo).
+
+```text
 ```
 
 ## Exemplos de requisição e resposta
@@ -94,6 +99,15 @@ Avaliação qualitativa (FR-007), com nota de 1 (difícil) a 5 (fácil). As just
 - **Relaxed binding:** `LOCALIDADES_PRAZO_FONTE_S` não liga sozinha a `prazo-fonte-s`. Foi feito o mapeamento explícito no `application.properties`.
 - **Modo offline do Maven:** ele só funciona depois de os testes rodarem uma vez com rede, porque o plugin de testes é baixado sob demanda.
 - **Contexto reaproveitado do Spring:** acelera os testes, mas o estado (a cópia guardada e as métricas) vaza entre eles. Foi preciso limpar o cache e isolar os testes de métricas com `@DirtiesContext`.
+
+## Convergência
+O `/speckit-converge` rodou depois do fechamento. As combinações de falha que acharam problemas no E1 (cópia vencida com a fonte travada, pedidos simultâneos, rotas diferentes sobre o mesmo recurso) passaram de primeira no E4. Duas lacunas apareceram em **entradas mal formadas**, e as duas foram corrigidas na issue #53:
+- **T044 (MEDIUM):** caminhos com codificação inválida (`%ZZ`) ou barra codificada (`%2F`) eram recusados pelo Tomcat com uma página HTML, sem `X-Correlation-Id`. Agora uma válvula de erros própria responde em `problem+json`, com correlação.
+- **T045 (LOW):** `pagina=99999999999` dava 400, por estouro de `int`, e o contrato pede 200 com a lista vazia. Com `itens` repetido, também dava 400. Agora `pagina` é `long`, e o parâmetro repetido vale pelo último valor, como no E1.
+
+A suíte compartilhada ganhou 3 cenários que fixam esses comportamentos e passam nas duas implementações (56 no total).
+
+**Divergências que ficaram, porque a spec não as define:** `HEAD` e `OPTIONS` (o E4 aceita, e o E1 dá 404), barra no fim do caminho (o E1 redireciona, e o E4 dá 404) e `/v1/ufs/%2F` no E1, que responde 200 e merece uma olhada própria.
 
 ## Limitações
 - **Ordem de construção:** o E4 foi feito depois do E1, já com as decisões e as correções conhecidas. Isso favorece o E4 em acertar o desenho e não diz nada sobre a linguagem.

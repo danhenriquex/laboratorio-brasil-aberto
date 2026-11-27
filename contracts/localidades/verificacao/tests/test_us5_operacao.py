@@ -44,3 +44,27 @@ def test_correlacao_no_corpo_do_erro(servico):
     r = servico.get("/v1/municipios/12ab", headers={"X-Correlation-Id": "erro-xyz"})
     validar(r, "GET", "/v1/municipios/{codigo}")
     assert r.json()["correlacao_id"] == r.headers["X-Correlation-Id"] == "erro-xyz"
+
+
+def test_entrada_mal_codificada_e_problema(servico):
+    """Convergência do E4 (T044): um caminho com codificação inválida também sai em problem+json com correlação.
+
+    O httpx corrigiria o "%" inválido antes de enviar; o pedido vai cru, pela biblioteca padrão.
+    """
+    import http.client
+    import json
+    from urllib.parse import urlsplit
+
+    alvo = urlsplit(str(servico.base_url))
+    conexao = http.client.HTTPConnection(alvo.hostname, alvo.port, timeout=10)
+    conexao.request("GET", "/v1/municipios/%ZZ", headers={"X-Correlation-Id": "mal-codificado"})
+    resposta = conexao.getresponse()
+    corpo = resposta.read()
+    conexao.close()
+    assert resposta.status == 400
+    assert resposta.getheader("Content-Type", "").startswith("application/problem+json")
+    assert resposta.getheader("X-Correlation-Id") == "mal-codificado"
+    problema = json.loads(corpo)
+    assert problema["type"] == "urn:brasil-aberto:problema:entrada-invalida"
+    assert problema["status"] == 400
+    assert problema["correlacao_id"] == "mal-codificado"
