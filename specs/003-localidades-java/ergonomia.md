@@ -51,3 +51,20 @@ Anotações feitas **durante** a implementação do E4, para a avaliação quali
 - **Registro JSON:** foi preciso um `logback-spring.xml` com um logger dedicado (`%msg%n`). No E1, foi um `logging.Formatter` de 15 linhas.
 - **Tempo da fonte por pedido:** saiu pelo `RequestContextHolder` (atributos do pedido presos à thread). Funciona porque a consulta roda na thread do pedido que a iniciou. No E1, foi uma `ContextVar`.
 - **Resultado:** a suíte inteira de caixa-preta (53 cenários) passou contra o jar.
+
+## Avaliação (FR-007)
+
+Notas de 1 (difícil) a 5 (fácil) para a experiência de construir o mesmo serviço, a partir das anotações acima e do histórico do E1. As medidas citadas estão em [medicao/resultado-2026-11-27.md](medicao/resultado-2026-11-27.md).
+
+| Ponto | E1 (Python) | E4 (Java) | Por quê |
+|---|---|---|---|
+| **Setup** | 5 | 3 | No E1, o `uv` trouxe o interpretador e as dependências sem privilégio de administrador; do clone à primeira resposta, 1,0 s. No E4, o JDK exigiu senha de administrador, os starters mudaram de nome no Boot 4 e o modo offline do Maven só funciona depois de os testes rodarem uma vez com rede. O Initializr e o Maven Wrapper compensam em parte; do clone à primeira resposta, 2,9 s. |
+| **Escrita de testes** | 4 | 3 | Os dois ecossistemas têm boas ferramentas: `pytest` e `respx` de um lado, JUnit, AssertJ e WireMock do outro. No E4, o contexto reaproveitado do Spring exigiu limpar o cache entre os testes, a exportação de métricas vem desligada nos testes e o `MockMvc` recodifica `%` no caminho. A suíte do E1 roda em 1,0 s, e a do E4, em 5,9 s. O E1 teve o seu tropeço: da raiz, o `pytest` coletava testes de todo o repositório. |
+| **Cumprir o contrato escrito à mão** | 4 | 4 | Nos dois, o contrato passou praticamente sem retrabalho. No E1, foi preciso desligar o OpenAPI automático e converter o 422 do FastAPI em 400. No E4, `record`s com `SNAKE_CASE` global passaram de primeira, mas o *relaxed binding* exigiu mapear as variáveis `LOCALIDADES_*` à mão. A paridade de ordenação saiu igual sem esforço. |
+| **Tratamento de erros** | 3 | 4 | No E1, o `problem+json` foi montado à mão, e o middleware precisou capturar a exceção para o 500 levar a correlação. No E4, o `ProblemDetail` nativo e o `@RestControllerAdvice` resolveram quase tudo. Só as rotas inexistentes pediram um tratamento extra (`NoHandlerFoundException`). |
+| **Métricas e registro** | 4 | 3 | No E1, o `prometheus-client` expôs os nomes exatos, e o registro JSON foi um `Formatter` de 15 linhas. No E4, o Micrometer pede cuidado com o sufixo de unidade, e houve três tropeços de framework: exportação desligada nos testes, rótulo `/**` em rota inexistente e aviso duplicado do Spring. |
+
+**Cuidados de leitura (FR-008):**
+- **Ordem de construção:** o E4 foi feito **depois** do E1, com as decisões e as três correções das convergências já conhecidas. Por exemplo, a consulta compartilhada acertou de primeira no Java porque a lição já existia. Isso favorece o E4 em "acertar o desenho", e não diz nada sobre a linguagem.
+- **Mesmo autor:** as duas implementações foram escritas pelo mesmo assistente, com o mesmo estilo e o mesmo nível de familiaridade. Uma equipe com experiência maior em um dos ecossistemas teria outras notas.
+- **Números do contexto, não do serviço:** a memória (55 MB × 261 MB) e a partida (0,14 s × 1,01 s) refletem o custo fixo da JVM e do Spring. A latência depois do aquecimento empata (0,37 ms × 0,41 ms), porque o serviço só repassa dados e a pilha HTTP domina. O tamanho do artefato favorece o Java (26 MB, com o servidor embutido, contra 81 MB da `.venv`).

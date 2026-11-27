@@ -306,7 +306,7 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
 
 **Independent Test**: a tabela comparativa do `RESULTS.md` fica preenchida para as duas implementações, com data e método.
 
-- [ ] T037 [US6] Escrever `specs/003-localidades-java/medicao/medir.sh`, que tira as 9 medidas do R13 para o E1 e para o E4, com mediana de 3 execuções e `/usr/bin/time -l`:
+- [X] T037 [US6] Escrever `specs/003-localidades-java/medicao/medir.sh`, que tira as 9 medidas do R13 para o E1 e para o E4, com mediana de 3 execuções e `/usr/bin/time -l`:
   - do clone local à primeira resposta;
   - build;
   - suíte da implementação;
@@ -318,8 +318,8 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
   - latência mediana de 20 pedidos com a cópia guardada, contra o IBGE falso.
 
   O script imprime uma tabela em Markdown com data e método.
-- [ ] T038 [US6] Rodar o `medir.sh` na mesma máquina e no mesmo dia, com os caches populados, e guardar a saída em `specs/003-localidades-java/medicao/resultado-AAAA-MM-DD.md`.
-- [ ] T039 [US6] Consolidar o `specs/003-localidades-java/ergonomia.md` numa nota de 1 a 5 com justificativa para cada ponto do FR-007 (setup, testes, contrato, erros e métricas), para o E1 e para o E4. Toda diferença citada traz a medida e o contexto (FR-008).
+- [X] T038 [US6] Rodar o `medir.sh` na mesma máquina e no mesmo dia, com os caches populados, e guardar a saída em `specs/003-localidades-java/medicao/resultado-AAAA-MM-DD.md`.
+- [X] T039 [US6] Consolidar o `specs/003-localidades-java/ergonomia.md` numa nota de 1 a 5 com justificativa para cada ponto do FR-007 (setup, testes, contrato, erros e métricas), para o E1 e para o E4. Toda diferença citada traz a medida e o contexto (FR-008).
 
 ---
 
