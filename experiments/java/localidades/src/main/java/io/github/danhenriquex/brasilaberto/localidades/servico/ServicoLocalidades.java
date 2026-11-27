@@ -3,6 +3,7 @@ package io.github.danhenriquex.brasilaberto.localidades.servico;
 import io.github.danhenriquex.brasilaberto.localidades.config.Configuracao;
 import io.github.danhenriquex.brasilaberto.localidades.dominio.Dobra;
 import io.github.danhenriquex.brasilaberto.localidades.dominio.Meta;
+import io.github.danhenriquex.brasilaberto.localidades.dominio.Municipio;
 import io.github.danhenriquex.brasilaberto.localidades.dominio.MunicipioResumido;
 import io.github.danhenriquex.brasilaberto.localidades.dominio.Pagina;
 import io.github.danhenriquex.brasilaberto.localidades.dominio.Uf;
@@ -59,5 +60,13 @@ public class ServicoLocalidades {
                 obter("estados/" + codigo + "/municipios", () -> ibge.obterMunicipiosDaUf(codigo));
         Pagina<MunicipioResumido> fatia = Pagina.paginar(Dobra.ordenar(obtido.dados()), pagina, itens);
         return new Resultado<>(fatia.itens(), fatia.paginacao(), obtido.meta(), obtido.cache());
+    }
+
+    // --- US2 ---
+
+    public Resultado<Municipio> obterMunicipio(String codigo) {
+        String valido = Validacao.validarCodigoMunicipio(codigo);
+        Obtido<Municipio> obtido = obter("municipios/" + valido, () -> ibge.obterMunicipio(valido));
+        return new Resultado<>(obtido.dados(), null, obtido.meta(), obtido.cache());
     }
 }

@@ -203,16 +203,16 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
 
 **Independent Test**: `test_us2_municipio.py` passa contra o jar.
 
-- [ ] T021 [P] [US2] Escrever `TEST/api/ApiMunicipioTest.java`, com os casos do `test_api_municipio.py` do E1:
+- [X] T021 [P] [US2] Escrever `TEST/api/ApiMunicipioTest.java`, com os casos do `test_api_municipio.py` do E1:
   - `3304557` completo, com UF e regiões imediata e intermediária;
   - `9999999` dá 404;
   - `12ab`, `123456` e `12345678` dão 400 sem chamar o IBGE;
   - `Santa Bárbara d'Oeste` sai idêntico ao da fixture;
   - `5101837` dá 200;
   - um município sem região imediata dá 502.
-- [ ] T022 [US2] Em `MAIN/servico/ServicoLocalidades.java`, implementar `obterMunicipio(codigo)`.
-- [ ] T023 [US2] Criar `MAIN/api/MunicipiosController.java` com `GET /v1/municipios/{codigo}`. Ao final, T021 passa.
-- [ ] T024 [US2] Rodar `verificar.sh "java -jar …" -k us2` e registrar observações no diário.
+- [X] T022 [US2] Em `MAIN/servico/ServicoLocalidades.java`, implementar `obterMunicipio(codigo)`.
+- [X] T023 [US2] Criar `MAIN/api/MunicipiosController.java` com `GET /v1/municipios/{codigo}`. Ao final, T021 passa.
+- [X] T024 [US2] Rodar `verificar.sh "java -jar …" -k us2` e registrar observações no diário.
 
 ---
 
