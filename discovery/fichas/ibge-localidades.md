@@ -2,7 +2,7 @@
 
 - **Domínio:** geografia
 - **Documentação oficial:** https://servicodados.ibge.gov.br/api/docs/localidades
-- **Última verificação:** 2026-11-25
+- **Última verificação:** 2026-11-26
 - **Acesso:** facil
 
 Marque cada campo com o grau de verificação: **[confirmado]** (documentação oficial ou observação direta do endpoint oficial), **[parcial]** (indício de terceiros ou documentação incompleta) ou **[não verificado]**.
@@ -32,6 +32,7 @@ Marque cada campo com o grau de verificação: **[confirmado]** (documentação 
 | Como as entidades são identificadas? | "Exceptuando-se as rotas referentes aos países, os identificadores providos pela presente API são oficialmente designados pelo IBGE." Formatos, pelos exemplos oficiais:<br>• UF: 2 dígitos (`33` = RJ, `35` = SP)<br>• mesorregião: 4 (`3301`)<br>• microrregião: 5 (`33001`)<br>• região imediata: 6 (`310055`)<br>• **município: 7** (`3304557` = Rio de Janeiro)<br>• aglomeração urbana: texto com zeros à esquerda (`00301`)<br>No JSON, o `id` é `number`. Município também pode ser buscado por "URL amigável" (`rio-de-janeiro`, sem acentos e com hífens). Países seguem a M49 da ONU. | [confirmado] (doc. no navegador) |
 | Dados completos ou apenas amostra? | Completos: `/municipios` "obtém o conjunto de municípios do Brasil" numa resposta, e `/estados` veio inteiro na sondagem. | [confirmado] (doc. no navegador) e sondagem |
 | Comportamento em indisponibilidade? | Não documentado. | [não verificado] |
+| Como sinaliza "não encontrado"? | **Status 200 com `[]`**, e não 404: `/municipios/9999999` e `/estados/99/municipios` devolveram `[]`. Um código existente devolve um objeto. A sigla da UF é aceita no lugar do código (`/estados/RJ/municipios`). | [confirmado] sondagem do plano do E1, 2026-11-26 14:14 UTC |
 | O dado identifica uma pessoa? | Não: são unidades territoriais. | [confirmado] |
 
 ## Endpoints relevantes para o E1
@@ -47,13 +48,23 @@ Todos documentados em `/api/docs/localidades`. Os que terminam em `/municipios` 
 | `/api/v1/localidades/mesorregioes/{id}/municipios` e `/microrregioes/{id}/municipios` | municípios por meso e microrregião (recortes em substituição) |
 
 **Esquema de município** (documentado):
+
 - `id` (number) e `nome` (string);
 - `microrregiao` { `id`, `nome`, `mesorregiao` { … } };
 - `regiao-imediata` { `id`, `nome`, `regiao-intermediara` { … } }.
 
-A chave aparece escrita como `regiao-intermediara` na documentação, provavelmente um erro de digitação de `regiao-intermediaria`. Conferir na resposta real antes de modelar o E1.
+A chave aparece escrita como `regiao-intermediara` na documentação. **Na resposta real, ela é `regiao-intermediaria`**, e a UF fica em `regiao-imediata.regiao-intermediaria.UF`. Confirmado em 2026-11-26.
+
+**Observado na lista completa** (`/municipios`, 2026-11-26):
+
+- 5.571 municípios em 2,47 MB, entregues em 428 ms;
+- todos com código de 7 dígitos e com `regiao-imediata`;
+- **um com `microrregiao: null`**: o `5101837` (MT);
+- MG tem 853 municípios, e o DF, 1;
+- há nomes com apóstrofo (`Alta Floresta D'Oeste`).
 
 ## Resultado do teste de conectividade
+
 - **Data e hora:** 2026-11-25 20:42:35 UTC (relatório `discovery/reports/inventario-20261125T204235Z.json`)
 - **Status HTTP e latência:** 200, 161 ms
 - **Endereço:** `https://servicodados.ibge.gov.br/api/v1/localidades/estados`, sem redirecionamento
@@ -63,6 +74,7 @@ A chave aparece escrita como `regiao-intermediara` na documentação, provavelme
   - estrutura: lista na raiz com `id` (inteiro), `sigla` (texto), `nome` (texto) e `regiao` (objeto com `id`, `sigla`, `nome`).
 
 ## Decisão
+
 - **Consumir por API, baixar arquivos ou ingerir de forma agendada?** Consumir por API, com cache de TTL longo, porque a divisão territorial muda raramente. É a fonte do E1.
 - **Limitações e riscos:**
   - sem licença, termos nem limites declarados na documentação de localidades;

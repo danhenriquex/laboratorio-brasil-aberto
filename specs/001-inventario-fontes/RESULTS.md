@@ -35,7 +35,7 @@ A partir da raiz do repositório:
 
 ```bash
 uv sync --project experiments/python/discovery
-uv run --project experiments/python/discovery pytest                  # 155 testes, sem rede
+uv run --directory experiments/python/discovery pytest                # testes, sem rede
 uv run --project experiments/python/discovery inventario --rodada 1   # execução real
 ```
 
