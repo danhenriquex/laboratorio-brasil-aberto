@@ -22,7 +22,10 @@ Anotações feitas **durante** a implementação do E4, para a avaliação quali
 
 ## Cumprir o contrato escrito à mão
 
-_(a preencher)_
+- **2026-11-27, US1:** os 21 cenários da US1 e da paridade passaram contra o jar **na primeira execução**, sem ajuste no código para o contrato.
+  - **O que ajudou:** `record`s com a ordem dos campos igual à do contrato, `spring.jackson.property-naming-strategy=SNAKE_CASE` (sem anotação por campo) e `@JsonInclude(NON_NULL)` para a `paginacao` aparecer só nas listas.
+  - **Paridade:** a ordem dos 645 municípios de SP saiu idêntica à do E1 com `Normalizer` NFKD + `\p{Mn}` + `toLowerCase(Locale.ROOT)`. A falta de `casefold` não fez diferença nos nomes reais.
+- **Armadilha de teste:** `MockMvc.get(String)` trata o caminho como *template* de URI e codifica o `%` de novo, então `/v1/ufs/%20RJ%20` virou `%2520`. O teste precisou de `get(URI.create(...))`. No E1, o `TestClient` não tinha esse problema.
 
 ## Tratamento de erros
 

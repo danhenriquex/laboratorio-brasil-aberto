@@ -179,7 +179,7 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
 
 **Independent Test**: os cenários `test_us1_ufs_municipios.py` e `test_paridade_ordenacao.py` (sem as buscas) passam contra o jar.
 
-- [ ] T017 [P] [US1] Escrever `TEST/api/ApiUfsTest.java` (MockMvc + `IbgeSimulado`), com os casos do `test_api_ufs.py` do E1:
+- [X] T017 [P] [US1] Escrever `TEST/api/ApiUfsTest.java` (MockMvc + `IbgeSimulado`), com os casos do `test_api_ufs.py` do E1:
   - 27 UFs ordenadas, com Acre primeiro;
   - `/v1/ufs/rj`, `/v1/ufs/33` e `/v1/ufs/%20RJ%20`;
   - `XX` e `99` dão 404, e `R1` dá 400, os três sem chamar o IBGE;
@@ -189,9 +189,9 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
   - `[]` para o RJ dá 502;
   - o DF tem 1 município;
   - 1 chamada ao IBGE por pedido.
-- [ ] T018 [US1] Em `MAIN/servico/ServicoLocalidades.java`, implementar `listarUfs()`, `obterUf(param)` (com uma UF da tabela ausente no IBGE virando `RespostaInesperadaDaFonte`) e `listarMunicipios(uf, pagina, itens)` (validar, resolver, buscar, ordenar e paginar).
-- [ ] T019 [US1] Criar `MAIN/api/UfsController.java` com as três rotas e o envelope `Resposta<T>` (`dados`, `paginacao` só nas listas, `meta`). `pagina` e `itens` chegam como `String` e são validados pelo domínio, para o `detail` citar `itens_max`. Ao final, T017 passa.
-- [ ] T020 [US1] Rodar `verificar.sh "java -jar …" -k "us1 or paridade or contrato_valido"` e registrar no diário de ergonomia o que exigiu ajuste para cumprir o contrato.
+- [X] T018 [US1] Em `MAIN/servico/ServicoLocalidades.java`, implementar `listarUfs()`, `obterUf(param)` (com uma UF da tabela ausente no IBGE virando `RespostaInesperadaDaFonte`) e `listarMunicipios(uf, pagina, itens)` (validar, resolver, buscar, ordenar e paginar).
+- [X] T019 [US1] Criar `MAIN/api/UfsController.java` com as três rotas e o envelope `Resposta<T>` (`dados`, `paginacao` só nas listas, `meta`). `pagina` e `itens` chegam como `String` e são validados pelo domínio, para o `detail` citar `itens_max`. Ao final, T017 passa.
+- [X] T020 [US1] Rodar `verificar.sh "java -jar …" -k "us1 or paridade or contrato_valido"` e registrar no diário de ergonomia o que exigiu ajuste para cumprir o contrato.
 
 **Checkpoint**: US1 verificada pela mesma suíte do E1. É o MVP do E4.
 
