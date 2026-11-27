@@ -157,7 +157,7 @@ O `meta` descreve esse recurso.
 - **Chave**: o recurso do IBGE (`estados`, `estados/{codigo}/municipios` ou `municipios/{codigo}`).
 - **Valor**: os dados normalizados, `url_fonte`, `coletado_em` e `expira_em = coletado_em + validade`.
 - **"Não encontrado" e erros**: nunca entram na cópia guardada.
-- **Concorrência**: uma trava por chave. Quem chega durante uma consulta em andamento espera e usa o resultado dela (R5).
+- **Concorrência**: uma consulta em andamento por chave. Quem chega durante ela aguarda a mesma consulta e recebe o mesmo resultado, **inclusive a falha** (R5, corrigido na T050). Ninguém espera em fila por mais de um prazo.
 
 ## Validação da resposta do IBGE (normalização)
 

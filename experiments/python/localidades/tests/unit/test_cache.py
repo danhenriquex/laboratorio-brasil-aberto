@@ -129,3 +129,36 @@ def test_consulta_unica_por_chave(relogio):
     assert chamadas == 2  # uma para "k" e uma para "outra"
     assert sorted(r.resultado for r in resultados) == ["acerto"] * 9 + ["falta"]
     assert outra.resultado == "falta"
+
+
+# --- Convergência 3 (T050): falha compartilhada entre pedidos simultâneos ---
+
+
+def test_falha_da_consulta_em_andamento_e_compartilhada(relogio):
+    import time
+
+    async def cenario():
+        cache, buscar = CacheComValidade(relogio, validade_s=60), BuscarFalso()
+        buscar.espera, buscar.erro = 0.1, FonteLenta("lenta")
+        inicio = time.monotonic()
+        resultados = await asyncio.gather(*(cache.obter("k", buscar) for _ in range(10)), return_exceptions=True)
+        return resultados, buscar.chamadas, time.monotonic() - inicio
+
+    resultados, chamadas, duracao = rodar(cenario())
+    assert chamadas == 1  # a fonte com problema recebe uma única consulta
+    assert all(isinstance(r, FonteLenta) for r in resultados)
+    assert duracao < 0.2  # ninguém espera em fila por mais de um prazo
+
+
+def test_copia_vencida_servida_a_todos_que_esperavam(relogio):
+    async def cenario():
+        cache, buscar = CacheComValidade(relogio, validade_s=60), BuscarFalso()
+        await cache.obter("k", buscar)
+        relogio.avancar(61)
+        buscar.espera, buscar.erro = 0.05, FonteIndisponivel("fora")
+        resultados = await asyncio.gather(*(cache.obter("k", buscar) for _ in range(5)))
+        return resultados, buscar.chamadas
+
+    resultados, chamadas = rodar(cenario())
+    assert chamadas == 2
+    assert all(r.desatualizado and r.resultado == "desatualizado" for r in resultados)

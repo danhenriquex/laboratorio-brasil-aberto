@@ -119,3 +119,31 @@ def test_consulta_unica_com_pedidos_simultaneos(servico, ibge):
         t.join()
     assert [r.status_code for r in respostas] == [200] * 10
     assert contagem(ibge, codigo) == 1
+
+
+def test_pedidos_simultaneos_com_a_fonte_travada_nao_fazem_fila(servico, ibge):
+    """Convergência 3 (T050): a falha da consulta em andamento vale para todos os que esperavam."""
+    codigo = codigo_novo()
+    modo(ibge, "lento", 3)
+    duracoes: list[float] = []
+    respostas: list[httpx.Response] = []
+    trava = threading.Lock()
+
+    def pedir():
+        inicio = time.monotonic()
+        with httpx.Client(base_url=LOCALIDADES_URL, timeout=30) as c:
+            r = c.get(f"/v1/municipios/{codigo}")
+        with trava:
+            respostas.append(r)
+            duracoes.append(time.monotonic() - inicio)
+
+    threads = [threading.Thread(target=pedir) for _ in range(5)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    for r in respostas:
+        validar(r, "GET", ROTA)
+    assert [r.status_code for r in respostas] == [504] * 5
+    assert max(duracoes) < PRAZO_S + 1.0
+    assert contagem(ibge, codigo) == 1
