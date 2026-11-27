@@ -41,6 +41,13 @@ Anotações feitas **durante** a implementação do E4, para a avaliação quali
 
 - **2026-11-27:** o `ProblemDetail` nativo deu o `application/problem+json` sem código próprio; no E1, o formato foi montado à mão. Rotas inexistentes viram `NoResourceFoundException`, e o `@RestControllerAdvice` trata tudo num lugar. Para o `X-Correlation-Id` aparecer até nos erros, bastou o filtro definir o cabeçalho antes da cadeia, mais simples que no E1, onde o middleware precisou capturar a exceção.
 
-## Métricas
+## Métricas e registro
 
-_(a preencher)_
+- **2026-11-27, US5, nomes:** com o Micrometer, os nomes do contrato saíram exatos (`localidades_pedidos_total`, `localidades_fonte_duracao_segundos_count` etc.). Para a duração da fonte foi usado um `DistributionSummary` sem unidade, como previsto no R8, porque um `Timer` acrescentaria `_seconds`. O teste confere que nenhum nome ganhou sufixo.
+- **Três tropeços de framework, sem equivalente no E1:**
+  1. **Exportação desligada nos testes:** o Spring Boot desliga a exportação de métricas nos testes, e o `PrometheusMeterRegistry` some do contexto. A propriedade `management.defaults.metrics.export.enabled=true` **não** resolveu; foi preciso a anotação `@AutoConfigureMetrics`, que no Boot 4 mudou de pacote (`org.springframework.boot.micrometer.metrics.test.autoconfigure`).
+  2. **Rotas inexistentes:** elas casavam com o tratador de arquivos estáticos (`/**`), então o rótulo saía `rota="/**"`. Resolvido com `spring.web.resources.add-mappings=false` e tratando o `NoHandlerFoundException`.
+  3. **Aviso duplicado:** o Spring escrevia um `WARN PageNotFound` a cada rota inexistente, poluindo a saída. Silenciado por configuração.
+- **Registro JSON:** foi preciso um `logback-spring.xml` com um logger dedicado (`%msg%n`). No E1, foi um `logging.Formatter` de 15 linhas.
+- **Tempo da fonte por pedido:** saiu pelo `RequestContextHolder` (atributos do pedido presos à thread). Funciona porque a consulta roda na thread do pedido que a iniciou. No E1, foi uma `ContextVar`.
+- **Resultado:** a suíte inteira de caixa-preta (53 cenários) passou contra o jar.

@@ -14,6 +14,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /** Erros em application/problem+json (RFC 9457) com o ProblemDetail nativo do Spring (research do E4, R6). */
@@ -37,7 +38,7 @@ public class TratadorDeErros {
         return problema(erro, pedido);
     }
 
-    @ExceptionHandler({NoResourceFoundException.class, HttpRequestMethodNotSupportedException.class})
+    @ExceptionHandler({NoHandlerFoundException.class, NoResourceFoundException.class, HttpRequestMethodNotSupportedException.class})
     ResponseEntity<ProblemDetail> rotaInexistente(Exception erro, HttpServletRequest pedido) {
         return problema(new NaoEncontrado("a rota " + pedido.getRequestURI() + " não existe"), pedido);
     }
