@@ -30,6 +30,14 @@ Anotações feitas **durante** a implementação do E4, para a avaliação quali
 - **2026-11-27, US4:** a busca por nome entrou com um parâmetro a mais no controller e um filtro no serviço. As 4 buscas da paridade (`são`, `SAO`, `d'oeste` e `ITÁ` em SP) deram o mesmo conjunto e a mesma ordem do E1 na primeira execução, o que confirma que a falta de `casefold` não pesa para nomes brasileiros.
 - **Armadilha de teste:** `MockMvc.get(String)` trata o caminho como *template* de URI e codifica o `%` de novo, então `/v1/ufs/%20RJ%20` virou `%2520`. O teste precisou de `get(URI.create(...))`. No E1, o `TestClient` não tinha esse problema.
 
+## Convergência
+
+- **2026-11-27, entradas mal formadas:** a convergência pegou o que só aparece fora do Spring.
+  - **Caminhos mal codificados:** `%ZZ` e `%2F` são recusados pelo **Tomcat** antes de o pedido chegar ao Spring. A resposta saía na página HTML do Tomcat (com a versão do servidor), sem `X-Correlation-Id`.
+  - **A correção:** uma `ErrorReportValve` própria. Ela precisou ser registrada como **classe** do host (`setErrorReportValveClass`), porque, nos erros anteriores ao roteamento, o Tomcat cria a válvula pela classe e ignora a instância que o Spring Boot põe no pipeline. Descobrir isso exigiu ler o bytecode do `CoyoteAdapter`.
+  - **No E1:** o uvicorn entregou o mesmo erro ao FastAPI, e o formato saiu certo sem nada especial.
+- **2026-11-27, números grandes e parâmetro repetido:** o `Integer.parseInt` estourava com `pagina=99999999999` (o Python não tem esse limite), e o Spring juntava `itens=10&itens=20` em `"10,20"`. Foi resolvido lendo com `BigInteger` e pegando o último valor.
+
 ## Consulta compartilhada e concorrência
 
 - **2026-11-27, US3:** a consulta única com falha compartilhada (a lição da T050 do E1) saiu em cerca de 30 linhas: `ConcurrentHashMap.putIfAbsent` de um `CompletableFuture`, e quem chega depois faz `join()` no mesmo futuro.

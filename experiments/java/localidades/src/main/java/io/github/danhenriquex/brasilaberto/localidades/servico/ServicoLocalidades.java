@@ -55,12 +55,12 @@ public class ServicoLocalidades {
         return new Resultado<>(uf, null, obtido.meta(), obtido.cache());
     }
 
-    public Resultado<List<MunicipioResumido>> listarMunicipios(String paramUf, int pagina, int itens) {
+    public Resultado<List<MunicipioResumido>> listarMunicipios(String paramUf, long pagina, long itens) {
         return listarMunicipios(paramUf, pagina, itens, null);
     }
 
     /** US4: com nome, filtra sem acento nem caixa sobre a cópia da UF, antes de ordenar e paginar. */
-    public Resultado<List<MunicipioResumido>> listarMunicipios(String paramUf, int pagina, int itens, String nome) {
+    public Resultado<List<MunicipioResumido>> listarMunicipios(String paramUf, long pagina, long itens, String nome) {
         Validacao.validarPaginacao(pagina, itens, config.itensMax());
         String filtro = nome == null ? null : Validacao.validarNome(nome);
         String codigo = Validacao.resolverUf(paramUf);
@@ -68,7 +68,7 @@ public class ServicoLocalidades {
                 obter("estados/" + codigo + "/municipios", () -> ibge.obterMunicipiosDaUf(codigo));
         List<MunicipioResumido> selecionados =
                 filtro == null ? obtido.dados() : Dobra.filtrarPorNome(obtido.dados(), filtro);
-        Pagina<MunicipioResumido> fatia = Pagina.paginar(Dobra.ordenar(selecionados), pagina, itens);
+        Pagina<MunicipioResumido> fatia = Pagina.paginar(Dobra.ordenar(selecionados), pagina, (int) itens);
         return new Resultado<>(fatia.itens(), fatia.paginacao(), obtido.meta(), obtido.cache());
     }
 
