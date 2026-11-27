@@ -272,7 +272,7 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
 
 **Independent Test**: `test_us5_operacao.py` passa contra o jar, e a suíte inteira também.
 
-- [ ] T033 [P] [US5] Escrever `TEST/operacao/OperacaoTest.java`, espelhando o `test_api_operacao.py` do E1:
+- [X] T033 [P] [US5] Escrever `TEST/operacao/OperacaoTest.java`, espelhando o `test_api_operacao.py` do E1:
   - **`/health`:** responde com o IBGE fora e sem chamá-lo;
   - **`/metrics`**, depois de acerto, falta, desatualizado, `fonte-lenta` e `entrada-invalida`, contém exatamente:
     - `localidades_pedidos_total{rota="/v1/municipios/{codigo}",status="200"}`;
@@ -281,20 +281,20 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
     - `localidades_fonte_duracao_segundos_count{recurso="municipio"}`;
   - **rotas inexistentes:** viram `rota="nao-encontrado"`, sem multiplicar séries;
   - **registro:** uma linha JSON por pedido, com os campos do R12 do E1 e sem IP.
-- [ ] T034 [P] [US5] Implementar `MAIN/operacao/Metricas.java` com o Micrometer:
+- [X] T034 [P] [US5] Implementar `MAIN/operacao/Metricas.java` com o Micrometer:
   - os `Counter`s `localidades.pedidos`, `localidades.erros` e `localidades.cache`;
   - o **`DistributionSummary`** `localidades.fonte.duracao.segundos`, sem unidade base, com `serviceLevelObjectives` 0,05, 0,1, 0,25, 0,5, 1, 2,5, 5 e 10;
   - o `MetricasController`, com `GET /metrics` devolvendo o `scrape()` do `PrometheusMeterRegistry` em `text/plain`.
 
   Conferir no teste que **nenhum nome ganhou sufixo de unidade** (R8).
-- [ ] T035 [US5] Implementar `MAIN/operacao/RegistroPedidos.java` e integrar no `FiltroCorrelacao`:
+- [X] T035 [US5] Implementar `MAIN/operacao/RegistroPedidos.java` e integrar no `FiltroCorrelacao`:
   - no fim de cada pedido, registrar as métricas;
   - escrever uma linha JSON (Jackson) num logger dedicado com padrão `%m%n`, configurado em `J/src/main/resources/logback-spring.xml`;
   - a rota vem do `BEST_MATCHING_PATTERN_ATTRIBUTE`;
   - o uso da cópia e o tempo da fonte vêm de atributos do pedido.
 
   Ao final, T033 passa.
-- [ ] T036 [US5] Rodar a suíte inteira, `verificar.sh "java -jar experiments/java/localidades/target/localidades.jar"`, e confirmar que **todos** os cenários passam, os mesmos do E1 mais o de paridade (SC-001).
+- [X] T036 [US5] Rodar a suíte inteira, `verificar.sh "java -jar experiments/java/localidades/target/localidades.jar"`, e confirmar que **todos** os cenários passam, os mesmos do E1 mais o de paridade (SC-001).
 
 **Checkpoint**: E4 funcionalmente equivalente ao E1, verificado pela mesma suíte.
 
