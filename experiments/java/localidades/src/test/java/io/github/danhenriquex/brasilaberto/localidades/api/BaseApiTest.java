@@ -1,6 +1,7 @@
 package io.github.danhenriquex.brasilaberto.localidades.api;
 
 import io.github.danhenriquex.brasilaberto.localidades.apoio.IbgeSimulado;
+import io.github.danhenriquex.brasilaberto.localidades.cache.CacheComValidade;
 import io.github.danhenriquex.brasilaberto.localidades.operacao.FiltroCorrelacao;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,11 +35,15 @@ abstract class BaseApiTest {
     @Autowired
     FiltroCorrelacao filtro;
 
+    @Autowired
+    CacheComValidade cache;
+
     MockMvc mvc;
 
     @BeforeEach
     void montar() {
         IBGE.servidor().resetAll();
+        cache.limpar(); // o contexto do Spring é reaproveitado entre os testes
         mvc = MockMvcBuilders.webAppContextSetup(contexto).addFilters(filtro).build();
     }
 }

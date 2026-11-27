@@ -18,6 +18,7 @@ Anotações feitas **durante** a implementação do E4, para a avaliação quali
 - **2026-11-27, fundação:** 71 testes (domínio, configuração, cliente do IBGE, `meta` e base da API) em cerca de 3 s com o Spring subindo. O WireMock fez o papel do `respx` sem atrito, e simular atraso (`withFixedDelay`) e conexão recusada (servidor parado) foi direto.
 - **Testes parametrizados:** `@ParameterizedTest` com `@CsvSource` e `@ValueSource` cobrem as mesmas tabelas do `pytest.mark.parametrize`, com mais cerimônia.
 - **Configuração:** testar a configuração pede o `ApplicationContextRunner`, o `ConfigDataApplicationContextInitializer` e a autoconfiguração de validação. São três peças de framework para o que no E1 foi chamar `Configuracao.do_ambiente({...})`.
+- **2026-11-27, US3, isolamento entre testes:** no E1, cada teste criava um app novo. No Spring, o contexto é reaproveitado entre os testes da mesma configuração (é o que deixa a suíte rápida), e a cópia guardada vazaria de um teste para o outro. Foi preciso tornar o cache um bean e limpá-lo num `@BeforeEach`. Para controlar o relógio, um `@TestConfiguration` com um `RelogioFalso` marcado como `@Primary`, que por isso ganha um contexto próprio.
 - **Jackson 3:** o Spring Boot 4 traz o Jackson 3 (pacote `tools.jackson`). A API mudou (`isString`/`asString` no lugar de `isTextual`/`asText`), e exemplos antigos da internet não compilam.
 
 ## Cumprir o contrato escrito à mão
@@ -27,6 +28,13 @@ Anotações feitas **durante** a implementação do E4, para a avaliação quali
   - **Paridade:** a ordem dos 645 municípios de SP saiu idêntica à do E1 com `Normalizer` NFKD + `\p{Mn}` + `toLowerCase(Locale.ROOT)`. A falta de `casefold` não fez diferença nos nomes reais.
 - **2026-11-27, US2:** os cenários da US2 passaram contra o jar na primeira execução. Com o domínio e o envelope prontos, a história inteira foi um método no serviço e um controller de 15 linhas, como no E1 (um método e uma rota). O `SNAKE_CASE` global já transformou `regiaoImediata` em `regiao_imediata`, sem anotação.
 - **Armadilha de teste:** `MockMvc.get(String)` trata o caminho como *template* de URI e codifica o `%` de novo, então `/v1/ufs/%20RJ%20` virou `%2520`. O teste precisou de `get(URI.create(...))`. No E1, o `TestClient` não tinha esse problema.
+
+## Consulta compartilhada e concorrência
+
+- **2026-11-27, US3:** a consulta única com falha compartilhada (a lição da T050 do E1) saiu em cerca de 30 linhas: `ConcurrentHashMap.putIfAbsent` de um `CompletableFuture`, e quem chega depois faz `join()` no mesmo futuro.
+  - **Diferença para o E1:** no Python, a primeira versão (com `asyncio.Lock`) enfileirava os pedidos e só a 3ª convergência pegou. Aqui, o desenho certo veio desde o início porque a lição já existia. A comparação de "qual linguagem induz o erro" fica prejudicada por isso, e convém registrar no `RESULTS`.
+  - **Threads virtuais:** o `join()` bloqueante é barato, então o código ficou sequencial, sem `async`/`await`. No E1, cada camada até o cliente HTTP precisou ser `async`.
+  - **Verificação:** os cenários da US3 na caixa-preta, inclusive "não fazem fila", passaram na primeira execução.
 
 ## Tratamento de erros
 
