@@ -325,23 +325,23 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
 
 ## Phase 9: Polish & Fechamento do experimento
 
-- [ ] T040 Verificar sem rede externa (SC-004), com o perfil do quickstart §3:
+- [X] T040 Verificar sem rede externa (SC-004), com o perfil do quickstart §3:
   - o `curl` ao IBGE falha;
   - `./mvnw -o -q test` passa;
   - o `verificar.sh` passa contra o jar;
   - como regressão, os testes do E1, a caixa-preta do E1 e os testes do E0 também passam.
-- [ ] T041 Fazer a execução real contra o IBGE, conforme o quickstart §4:
+- [X] T041 Fazer a execução real contra o IBGE, conforme o quickstart §4:
   - repetir os mesmos pedidos contra o E1 e o E4;
   - comparar os corpos, ignorando `coletado_em` e `url_fonte` quando a base diferir;
   - registrar data e latências.
-- [ ] T042 [P] Atualizar `docs/adr/0001-convencoes-comuns-de-api.md` para "aceita no E1 e confirmada no E4", com os achados:
+- [X] T042 [P] Atualizar `docs/adr/0001-convencoes-comuns-de-api.md` para "aceita no E1 e confirmada no E4", com os achados:
   - o sufixo de unidade do Micrometer;
   - o `casefold` sem equivalente direto em Java;
   - o `ProblemDetail` nativo;
   - o *relaxed binding* das variáveis de ambiente.
 
   Atualizar também o comando do E4 em `contracts/localidades/README.md`.
-- [ ] T043 Escrever `specs/003-localidades-java/RESULTS.md` a partir de `docs/templates/RESULTS.md`, com:
+- [X] T043 Escrever `specs/003-localidades-java/RESULTS.md` a partir de `docs/templates/RESULTS.md`, com:
   - a resposta à pergunta;
   - a tabela comparativa (T038) e a avaliação qualitativa (T039);
   - o que funcionou e o que surpreendeu;
