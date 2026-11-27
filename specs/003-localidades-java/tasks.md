@@ -40,7 +40,7 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
 **Purpose**: JDK, projeto Spring Boot e diário de ergonomia.
 
 - [ ] T001 Instalar o JDK 25 com `brew install --cask temurin@25`, **depois de confirmação do usuário** (é uma mudança no sistema). Conferir com `java -version`, que deve mostrar `25.0.x`, e registrar a versão exata e o tempo gasto em `specs/003-localidades-java/ergonomia.md`.
-- [ ] T002 Gerar o esqueleto em `experiments/java/localidades/` pelo Spring Initializr, o caminho comum de setup no ecossistema e parte da medida de ergonomia:
+- [X] T002 Gerar o esqueleto em `experiments/java/localidades/` pelo Spring Initializr, o caminho comum de setup no ecossistema e parte da medida de ergonomia:
   - **Comando:**
 
     ```bash
@@ -57,7 +57,7 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
     - `<finalName>localidades</finalName>`;
     - dependência de teste `org.wiremock:wiremock-standalone:3.13.2`;
     - wrapper apontando para o Maven 3.10.x em `J/.mvn/wrapper/maven-wrapper.properties`.
-- [ ] T003 [P] Criar `J/.java-version` (`25`) e `J/src/main/resources/application.properties`, conforme os R2, R9 e R10 do research:
+- [X] T003 [P] Criar `J/.java-version` (`25`) e `J/src/main/resources/application.properties`, conforme os R2, R9 e R10 do research:
   - `server.address=${LOCALIDADES_HOST:127.0.0.1}` e `server.port=${LOCALIDADES_PORTA:8000}`;
   - `localidades.ibge-url=${LOCALIDADES_IBGE_URL:https://servicodados.ibge.gov.br/api/v1/localidades}`;
   - `localidades.prazo-fonte-s=${LOCALIDADES_PRAZO_FONTE_S:10}`;
@@ -68,7 +68,7 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
   - `logging.level.root=WARN`;
   - `server.error.include-stacktrace=never` e `server.error.whitelabel.enabled=false`;
   - `management.endpoints.access.default=none` e `management.endpoints.web.exposure.exclude=*`.
-- [ ] T004 [P] Criar `J/README.md`, espelhando o README do E1: pergunta do E4, pré-requisitos (JDK 25), comandos de teste, de verificação e de execução, e links para o quickstart e o contrato. Criar também `specs/003-localidades-java/ergonomia.md`, o diário do FR-007, com uma seção por ponto: setup, testes, contrato, erros e métricas.
+- [X] T004 [P] Criar `J/README.md`, espelhando o README do E1: pergunta do E4, pré-requisitos (JDK 25), comandos de teste, de verificação e de execução, e links para o quickstart e o contrato. Criar também `specs/003-localidades-java/ergonomia.md`, o diário do FR-007, com uma seção por ponto: setup, testes, contrato, erros e métricas.
 - [ ] T005 Rodar `(cd experiments/java/localidades && ./mvnw -q package)`, confirmar que o projeto vazio compila e sobe, e versionar o wrapper e o `pom.xml`. O Maven não tem lockfile; as versões ficam fixadas no `pom.xml`.
 
 ---
@@ -163,7 +163,7 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
 
 ### Paridade na suíte compartilhada (FR-004, SC-005)
 
-- [ ] T016 Escrever `contracts/localidades/verificacao/tests/test_paridade_ordenacao.py`:
+- [X] T016 Escrever `contracts/localidades/verificacao/tests/test_paridade_ordenacao.py`:
   - **Ordem esperada:** calculada a partir de `fixtures-ibge/municipios-uf-35.json` com a regra R8 do E1 (`unicodedata` NFKD, sem `Mn`, `casefold`, desempate pelo código).
   - **Comparação da lista:** a lista completa de SP, em duas páginas de 500, sai com os 645 códigos na mesma ordem.
   - **Comparação das buscas:** `nome=são` e `nome=SAO` dão o mesmo resultado esperado.
