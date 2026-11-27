@@ -48,8 +48,9 @@ public class UfsController {
             @PathVariable String uf,
             @RequestParam(required = false) String pagina,
             @RequestParam(required = false) String itens,
+            @RequestParam(required = false) String nome,
             HttpServletRequest pedido) {
         return Resposta.de(
-                servico.listarMunicipios(uf, inteiro("pagina", pagina, 1), inteiro("itens", itens, 100)), pedido);
+                servico.listarMunicipios(uf, inteiro("pagina", pagina, 1), inteiro("itens", itens, 100), nome), pedido);
     }
 }

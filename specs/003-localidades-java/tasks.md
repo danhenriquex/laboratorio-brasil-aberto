@@ -255,14 +255,14 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
 
 **Independent Test**: `test_us4_busca.py` e as buscas de `test_paridade_ordenacao.py` passam contra o jar.
 
-- [ ] T030 [P] [US4] Escrever `TEST/api/ApiBuscaTest.java`, espelhando o `test_api_busca.py` do E1:
+- [X] T030 [P] [US4] Escrever `TEST/api/ApiBuscaTest.java`, espelhando o `test_api_busca.py` do E1:
   - `niteroi`, `NITERÓI` e `  Niterói  ` acham Niterói;
   - `são` devolve vários resultados, em ordem e paginados;
   - uma busca sem resultado devolve `[]` com `paginas` 0;
   - `a`, `  a  `, `""` e 61 caracteres dão 400, com o limite no `detail`;
   - duas buscas na mesma UF geram 1 consulta.
-- [ ] T031 [US4] Acrescentar o `nome` opcional a `listarMunicipios` em `MAIN/servico/ServicoLocalidades.java` (validar, depois filtrar, ordenar e paginar) e ao `UfsController`. Ao final, T030 passa.
-- [ ] T032 [US4] Rodar `verificar.sh "java -jar …" -k "us4 or paridade"`.
+- [X] T031 [US4] Acrescentar o `nome` opcional a `listarMunicipios` em `MAIN/servico/ServicoLocalidades.java` (validar, depois filtrar, ordenar e paginar) e ao `UfsController`. Ao final, T030 passa.
+- [X] T032 [US4] Rodar `verificar.sh "java -jar …" -k "us4 or paridade"`.
 
 ---
 
