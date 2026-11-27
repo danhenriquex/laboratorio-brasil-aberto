@@ -222,7 +222,7 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
 
 **Independent Test**: `test_us3_falhas.py` passa contra o jar, inclusive o cenário "pedidos simultâneos com a fonte travada não fazem fila".
 
-- [ ] T025 [P] [US3] Escrever `TEST/cache/CacheComValidadeTest.java` com o `RelogioFalso`, espelhando o `test_cache.py` do E1:
+- [X] T025 [P] [US3] Escrever `TEST/cache/CacheComValidadeTest.java` com o `RelogioFalso`, espelhando o `test_cache.py` do E1:
   - **cópia válida:** atende sem consultar;
   - **cópia vencida:** se a fonte responder, renova; se falhar, devolve a cópia marcada como desatualizada e com o `coletado_em` original, para cada um dos três erros de fonte;
   - **cópia ausente com falha:** propaga o erro;
@@ -231,12 +231,12 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
   - **10 pedidos simultâneos com sucesso:** 1 consulta; um recebe `falta` e nove recebem `acerto`;
   - **10 pedidos simultâneos com falha:** 1 consulta, todos recebem a falha e terminam em menos de 2× o atraso;
   - **cópia vencida com falha e 5 pedidos simultâneos:** todos recebem `desatualizado`, com 1 consulta.
-- [ ] T026 [P] [US3] Escrever `TEST/api/ApiFalhasTest.java`, espelhando o `test_api_falhas.py` do E1:
+- [X] T026 [P] [US3] Escrever `TEST/api/ApiFalhasTest.java`, espelhando o `test_api_falhas.py` do E1:
   - **sem cópia:** fora, lenta e HTML dão 502, 504 e 502, sem corpo, rastro ou endereço interno no `detail`;
   - **com cópia:** uma cópia válida evita a consulta; uma vencida é servida quando a fonte falha e renovada quando ela responde;
   - **isolamento:** uma falha não afeta o pedido seguinte;
   - **listas:** também usam a cópia.
-- [ ] T027 [US3] Implementar `MAIN/cache/CacheComValidade.java` conforme o R5 do E4:
+- [X] T027 [US3] Implementar `MAIN/cache/CacheComValidade.java` conforme o R5 do E4:
   - `ConcurrentHashMap` de guardadas;
   - `ConcurrentHashMap<String, CompletableFuture<Entrada>>` de consultas em andamento, com `computeIfAbsent` e, ao terminar, `remove(chave, futuro)`;
   - quem espera recebe o mesmo resultado, inclusive a exceção;
@@ -244,8 +244,8 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
   - o relógio é injetável.
 
   Ao final, T025 passa.
-- [ ] T028 [US3] Em `MAIN/servico/ServicoLocalidades.java`, trocar o `obter` para usar a `CacheComValidade`. O `meta` vem da entrada (`coletado_em` original e `desatualizado`), e o `resultado` da cópia fica exposto para as métricas. Ao final, T026 passa.
-- [ ] T029 [US3] Rodar `verificar.sh "java -jar …" -k us3` e registrar no diário como foi implementar a consulta compartilhada em Java comparado ao `asyncio`.
+- [X] T028 [US3] Em `MAIN/servico/ServicoLocalidades.java`, trocar o `obter` para usar a `CacheComValidade`. O `meta` vem da entrada (`coletado_em` original e `desatualizado`), e o `resultado` da cópia fica exposto para as métricas. Ao final, T026 passa.
+- [X] T029 [US3] Rodar `verificar.sh "java -jar …" -k us3` e registrar no diário como foi implementar a consulta compartilhada em Java comparado ao `asyncio`.
 
 ---
 

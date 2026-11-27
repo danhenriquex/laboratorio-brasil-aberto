@@ -1,5 +1,6 @@
 package io.github.danhenriquex.brasilaberto.localidades.servico;
 
+import io.github.danhenriquex.brasilaberto.localidades.cache.CacheComValidade;
 import io.github.danhenriquex.brasilaberto.localidades.config.Configuracao;
 import io.github.danhenriquex.brasilaberto.localidades.dominio.Dobra;
 import io.github.danhenriquex.brasilaberto.localidades.dominio.Meta;
@@ -12,7 +13,6 @@ import io.github.danhenriquex.brasilaberto.localidades.erros.RespostaInesperadaD
 import io.github.danhenriquex.brasilaberto.localidades.fonte.ClienteIbge;
 import io.github.danhenriquex.brasilaberto.localidades.fonte.RespostaFonte;
 import java.time.Clock;
-import java.time.Instant;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -22,18 +22,20 @@ public class ServicoLocalidades {
     protected final ClienteIbge ibge;
     protected final Clock relogio;
     protected final Configuracao config;
+    protected final CacheComValidade cache;
 
-    public ServicoLocalidades(ClienteIbge ibge, Clock relogio, Configuracao config) {
+    public ServicoLocalidades(ClienteIbge ibge, Clock relogio, Configuracao config, CacheComValidade cache) {
         this.ibge = ibge;
         this.relogio = relogio;
         this.config = config;
+        this.cache = cache;
     }
 
-    /** Nesta fase consulta a fonte direto; a cópia guardada entra na US3 (T028). */
+    /** Toda consulta passa pela cópia guardada; o meta vem da entrada (coletado_em original e desatualizado). */
     protected <T> Obtido<T> obter(String chave, Supplier<RespostaFonte<T>> buscar) {
-        Instant coletadoEm = relogio.instant();
-        RespostaFonte<T> resposta = buscar.get();
-        return new Obtido<>(resposta.dados(), Meta.de(resposta.urlFonte(), coletadoEm, false), "falta");
+        CacheComValidade.Entrada<T> entrada = cache.obter(chave, buscar);
+        return new Obtido<>(entrada.dados(), Meta.de(entrada.urlFonte(), entrada.coletadoEm(), entrada.desatualizado()),
+                entrada.resultado());
     }
 
     // --- US1 ---
