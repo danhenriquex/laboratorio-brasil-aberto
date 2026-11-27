@@ -43,7 +43,7 @@ O script `verificar.sh` recebe o comando que sobe o serviço, aplica o perfil de
 # E1 (Python)
 contracts/localidades/verificacao/verificar.sh "uv run --project experiments/python/localidades localidades"
 
-# E4 (Java), quando existir
+# E4 (Java); antes, empacote com: (cd experiments/java/localidades && ./mvnw -q package -DskipTests)
 contracts/localidades/verificacao/verificar.sh "java -jar experiments/java/localidades/target/localidades.jar"
 ```
 
