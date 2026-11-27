@@ -39,8 +39,8 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
 
 **Purpose**: JDK, projeto Spring Boot e diário de ergonomia.
 
-- [ ] T001 Instalar o JDK 25 com `brew install --cask temurin@25`, **depois de confirmação do usuário** (é uma mudança no sistema). Conferir com `java -version`, que deve mostrar `25.0.x`, e registrar a versão exata e o tempo gasto em `specs/003-localidades-java/ergonomia.md`.
-- [ ] T002 Gerar o esqueleto em `experiments/java/localidades/` pelo Spring Initializr, o caminho comum de setup no ecossistema e parte da medida de ergonomia:
+- [X] T001 Instalar o JDK 25 com `brew install --cask temurin@25`, **depois de confirmação do usuário** (é uma mudança no sistema). Conferir com `java -version`, que deve mostrar `25.0.x`, e registrar a versão exata e o tempo gasto em `specs/003-localidades-java/ergonomia.md`.
+- [X] T002 Gerar o esqueleto em `experiments/java/localidades/` pelo Spring Initializr, o caminho comum de setup no ecossistema e parte da medida de ergonomia:
   - **Comando:**
 
     ```bash
@@ -57,7 +57,7 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
     - `<finalName>localidades</finalName>`;
     - dependência de teste `org.wiremock:wiremock-standalone:3.13.2`;
     - wrapper apontando para o Maven 3.10.x em `J/.mvn/wrapper/maven-wrapper.properties`.
-- [ ] T003 [P] Criar `J/.java-version` (`25`) e `J/src/main/resources/application.properties`, conforme os R2, R9 e R10 do research:
+- [X] T003 [P] Criar `J/.java-version` (`25`) e `J/src/main/resources/application.properties`, conforme os R2, R9 e R10 do research:
   - `server.address=${LOCALIDADES_HOST:127.0.0.1}` e `server.port=${LOCALIDADES_PORTA:8000}`;
   - `localidades.ibge-url=${LOCALIDADES_IBGE_URL:https://servicodados.ibge.gov.br/api/v1/localidades}`;
   - `localidades.prazo-fonte-s=${LOCALIDADES_PRAZO_FONTE_S:10}`;
@@ -68,8 +68,8 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
   - `logging.level.root=WARN`;
   - `server.error.include-stacktrace=never` e `server.error.whitelabel.enabled=false`;
   - `management.endpoints.access.default=none` e `management.endpoints.web.exposure.exclude=*`.
-- [ ] T004 [P] Criar `J/README.md`, espelhando o README do E1: pergunta do E4, pré-requisitos (JDK 25), comandos de teste, de verificação e de execução, e links para o quickstart e o contrato. Criar também `specs/003-localidades-java/ergonomia.md`, o diário do FR-007, com uma seção por ponto: setup, testes, contrato, erros e métricas.
-- [ ] T005 Rodar `(cd experiments/java/localidades && ./mvnw -q package)`, confirmar que o projeto vazio compila e sobe, e versionar o wrapper e o `pom.xml`. O Maven não tem lockfile; as versões ficam fixadas no `pom.xml`.
+- [X] T004 [P] Criar `J/README.md`, espelhando o README do E1: pergunta do E4, pré-requisitos (JDK 25), comandos de teste, de verificação e de execução, e links para o quickstart e o contrato. Criar também `specs/003-localidades-java/ergonomia.md`, o diário do FR-007, com uma seção por ponto: setup, testes, contrato, erros e métricas.
+- [X] T005 Rodar `(cd experiments/java/localidades && ./mvnw -q package)`, confirmar que o projeto vazio compila e sobe, e versionar o wrapper e o `pom.xml`. O Maven não tem lockfile; as versões ficam fixadas no `pom.xml`.
 
 ---
 
@@ -81,11 +81,11 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
 
 ### Testes da fundação (escrever primeiro)
 
-- [ ] T006 [P] Criar o apoio de testes em `TEST/apoio/`:
+- [X] T006 [P] Criar o apoio de testes em `TEST/apoio/`:
   - `Fixtures.java`: localiza a raiz do repositório subindo até achar `contracts/localidades` e lê `contracts/localidades/fixtures-ibge/*.json`;
   - `RelogioFalso.java`: um `Clock` com instante inicial `2026-11-26T12:00:00.123Z`, mais uma fonte monotônica, com `avancar(Duration)`;
   - `IbgeSimulado.java`: um WireMock em porta aleatória de `127.0.0.1`, com ajuda para registrar respostas a partir das fixtures. Nenhum teste fala com host externo.
-- [ ] T007 [P] Escrever `TEST/dominio/DominioTest.java`, com os mesmos casos do `test_dominio.py` do E1:
+- [X] T007 [P] Escrever `TEST/dominio/DominioTest.java`, com os mesmos casos do `test_dominio.py` do E1:
   - **`Dobra.dobrar`:** `"Niterói"` dá `"niteroi"`, `"SÃO"` dá `"sao"`, e o apóstrofo é mantido;
   - **ordenação** por `(dobrar(nome), codigo)`;
   - **`filtrarPorNome`;**
@@ -97,11 +97,11 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
   - **`validarCodigoMunicipio`:** exige "`^\d{7}$`" só com dígitos ASCII, e `"330455７"` é recusado;
   - **`validarPaginacao`:** "inteiro de 1 a `ITENS_MAX` (padrão 500)", com o limite citado na mensagem;
   - **`validarNome`:** "aparado; de 2 a 60 caracteres".
-- [ ] T008 [P] Escrever `TEST/config/ConfiguracaoTest.java` com `ApplicationContextRunner`, cobrindo:
+- [X] T008 [P] Escrever `TEST/config/ConfiguracaoTest.java` com `ApplicationContextRunner`, cobrindo:
   - os padrões de R14 do E1: `127.0.0.1`, `8000`, a URL do IBGE, `10`, `86400` e `500`;
   - a leitura pelas variáveis `LOCALIDADES_*`;
   - a recusa de valores inválidos (não numérico, zero, negativo e URL sem `http://` ou `https://`), em que o contexto não sobe.
-- [ ] T009 [P] Escrever `TEST/fonte/ClienteIbgeTest.java` com o `IbgeSimulado`, espelhando o `test_fonte_ibge.py` do E1:
+- [X] T009 [P] Escrever `TEST/fonte/ClienteIbgeTest.java` com o `IbgeSimulado`, espelhando o `test_fonte_ibge.py` do E1:
   - **Classificação:**
 
     | Situação simulada | Erro esperado |
@@ -121,11 +121,11 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
 
 ### Implementação da fundação
 
-- [ ] T010 [P] Implementar `MAIN/erros/`:
+- [X] T010 [P] Implementar `MAIN/erros/`:
   - `ErroDominio extends RuntimeException`, com `tipo()`, `titulo()`, `status()` e `urn()` (`urn:brasil-aberto:problema:` + tipo);
   - as subclasses `EntradaInvalida` (400), `NaoEncontrado` (404), `FonteIndisponivel` (502), `FonteLenta` (504), `RespostaInesperadaDaFonte` (502) e `ErroInterno` (500), com os títulos do E1;
   - a interface `ErroDeFonte`, implementada pelas três de fonte.
-- [ ] T011 Implementar `MAIN/dominio/` conforme o `data-model.md` do E4, sem anotações do Spring Web:
+- [X] T011 Implementar `MAIN/dominio/` conforme o `data-model.md` do E4, sem anotações do Spring Web:
   - os `record`s das entidades;
   - `UfsOficiais`, com os 27 códigos e siglas;
   - `Dobra`: `Normalizer` NFKD, remoção de `\p{Mn}` e `toLowerCase(Locale.ROOT)`;
@@ -133,8 +133,8 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
   - `Validacao` (`resolverUf`, `validarCodigoMunicipio`, `validarPaginacao` e `validarNome`), com `Pattern`s ASCII.
 
   Ao final, T007 passa.
-- [ ] T012 Implementar `MAIN/config/Configuracao.java` como `record` `@ConfigurationProperties("localidades")` `@Validated`, com `@Positive` nos números e `@Pattern("^https?://.+")` na URL, e habilitá-lo em `LocalidadesApplication`. A URL sem barra final é normalizada. Ao final, T008 passa.
-- [ ] T013 Implementar `MAIN/fonte/ClienteIbge.java`:
+- [X] T012 Implementar `MAIN/config/Configuracao.java` como `record` `@ConfigurationProperties("localidades")` `@Validated`, com `@Positive` nos números e `@Pattern("^https?://.+")` na URL, e habilitá-lo em `LocalidadesApplication`. A URL sem barra final é normalizada. Ao final, T008 passa.
+- [X] T013 Implementar `MAIN/fonte/ClienteIbge.java`:
   - **Cliente:** `HttpClient` com `connectTimeout(prazo)`, sem redirecionamento e com o `User-Agent` `laboratorio-brasil-aberto-localidades/0.1.0`;
   - **Prazo total:** `sendAsync(…, ofByteArray()).orTimeout(prazo)`;
   - **Classificação:** a do R4 do research do E4;
@@ -143,7 +143,7 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
   - **Mensagens de erro:** nunca contêm o corpo do IBGE.
 
   Ao final, T009 passa.
-- [ ] T014 Implementar a base HTTP e escrever `TEST/api/ApiBaseTest.java` (MockMvc), espelhando o `test_api_base.py` do E1:
+- [X] T014 Implementar a base HTTP e escrever `TEST/api/ApiBaseTest.java` (MockMvc), espelhando o `test_api_base.py` do E1:
   - **`MAIN/operacao/FiltroCorrelacao.java`** (`OncePerRequestFilter`, ordem mais alta): aceita `^[A-Za-z0-9._-]{1,64}$` ou gera um UUID v4, guarda o valor em atributo do pedido e o devolve em toda resposta;
   - **`MAIN/api/TratadorDeErros.java`** (`@RestControllerAdvice`), que devolve `ProblemDetail` com `type` URN e `correlacao_id`:
     - `ErroDominio` vira o problema correspondente;
@@ -157,13 +157,13 @@ description: "Lista de tarefas do E4 — Serviço de localidades (IBGE), em Java
     - a correlação volta igual quando válida e é trocada quando inválida;
     - um 500 sem rastro de execução no corpo;
     - `Content-Type` `application/problem+json`.
-- [ ] T015 Implementar a base de `MAIN/servico/ServicoLocalidades.java`, sem Spring Web:
+- [X] T015 Implementar a base de `MAIN/servico/ServicoLocalidades.java`, sem Spring Web:
   - **`Meta`:** `fonte`, `url_fonte`, `url_documentacao` e `coletado_em`, formatado com `yyyy-MM-dd'T'HH:mm:ss.SSS'Z'` em UTC. Um teste em `TEST/servico/MetaTest.java` confere que um instante com 0 ms sai como `.000Z`;
   - **`obter(chave, buscar)`:** nesta fase, chama a fonte direto. A cópia guardada entra em T028.
 
 ### Paridade na suíte compartilhada (FR-004, SC-005)
 
-- [ ] T016 Escrever `contracts/localidades/verificacao/tests/test_paridade_ordenacao.py`:
+- [X] T016 Escrever `contracts/localidades/verificacao/tests/test_paridade_ordenacao.py`:
   - **Ordem esperada:** calculada a partir de `fixtures-ibge/municipios-uf-35.json` com a regra R8 do E1 (`unicodedata` NFKD, sem `Mn`, `casefold`, desempate pelo código).
   - **Comparação da lista:** a lista completa de SP, em duas páginas de 500, sai com os 645 códigos na mesma ordem.
   - **Comparação das buscas:** `nome=são` e `nome=SAO` dão o mesmo resultado esperado.
