@@ -2,10 +2,13 @@ package io.github.danhenriquex.brasilaberto.localidades.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.bind.BindException;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.validation.autoconfigure.ValidationAutoConfiguration;
@@ -60,9 +63,32 @@ class ConfiguracaoTest {
     @ParameterizedTest
     @CsvSource({
         "LOCALIDADES_PRAZO_FONTE_S,abc", "LOCALIDADES_PRAZO_FONTE_S,0", "LOCALIDADES_PRAZO_FONTE_S,-1",
-        "LOCALIDADES_VALIDADE_S,x", "LOCALIDADES_ITENS_MAX,0", "LOCALIDADES_IBGE_URL,ftp://ibge"
+        "LOCALIDADES_VALIDADE_S,x", "LOCALIDADES_ITENS_MAX,0", "LOCALIDADES_IBGE_URL,ftp://ibge",
+        // T049: não finitos, grandes demais para o relógio em nanossegundos, ou que arredondam para 0 ms
+        "LOCALIDADES_PRAZO_FONTE_S,NaN", "LOCALIDADES_PRAZO_FONTE_S,Infinity", "LOCALIDADES_VALIDADE_S,Infinity",
+        "LOCALIDADES_VALIDADE_S,1e300", "LOCALIDADES_PRAZO_FONTE_S,0.0001", "LOCALIDADES_VALIDADE_S,0.0001"
     })
     void valoresInvalidosImpedemAPartida(String variavel, String valor) {
-        runner.withSystemProperties(variavel + "=" + valor).run(ctx -> assertThat(ctx).hasFailed());
+        runner.withSystemProperties(variavel + "=" + valor).run(ctx -> {
+            assertThat(ctx).hasFailed();
+            // Falha de binding: é ela que vira o relatório "Property / Value / Reason" do Spring, e não um stack trace.
+            assertThat(cadeia(ctx.getStartupFailure())).anyMatch(BindException.class::isInstance);
+        });
+    }
+
+    /** T049: os limites aceitos continuam aceitos. */
+    @ParameterizedTest
+    @CsvSource({"0.001,0.001", "1000000000,1000000000"})
+    void limitesAceitos(String prazo, String validade) {
+        runner.withSystemProperties("LOCALIDADES_PRAZO_FONTE_S=" + prazo, "LOCALIDADES_VALIDADE_S=" + validade)
+                .run(ctx -> assertThat(ctx).hasNotFailed());
+    }
+
+    private static List<Throwable> cadeia(Throwable erro) {
+        List<Throwable> lista = new ArrayList<>();
+        for (Throwable atual = erro; atual != null; atual = atual.getCause()) {
+            lista.add(atual);
+        }
+        return lista;
     }
 }
