@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import http.client
 import re
 from functools import cache
 from pathlib import Path
@@ -69,3 +70,19 @@ def validar(resposta: httpx.Response, metodo: str, rota_modelo: str) -> None:
     assert not erros, "resposta fora do contrato:\n" + "\n".join(
         f"- {'/'.join(map(str, e.absolute_path)) or '(raiz)'}: {e.message}" for e in erros[:10]
     )
+
+
+def pedido_cru(servico: httpx.Client, metodo: str, caminho: str, cabecalhos: dict[str, str] | None = None) -> httpx.Response:
+    """Envia o caminho exatamente como escrito, pela biblioteca padrão.
+
+    O httpx corrigiria um "%" inválido (viraria "%25") antes de enviar, e aqui o que se testa é justamente a
+    entrada mal codificada. Devolve um httpx.Response para poder usar o validar().
+    """
+    alvo = servico.base_url
+    conexao = http.client.HTTPConnection(alvo.host, alvo.port, timeout=10)
+    try:
+        conexao.request(metodo, caminho, headers=cabecalhos or {})
+        resposta = conexao.getresponse()
+        return httpx.Response(resposta.status, headers=resposta.getheaders(), content=resposta.read())
+    finally:
+        conexao.close()

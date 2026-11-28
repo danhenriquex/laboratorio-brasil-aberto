@@ -25,13 +25,13 @@ As mesmas do E1: a API de localidades do IBGE e a [ficha da fonte](../../discove
 A partir da raiz do repositório, com o JDK 25 instalado:
 
 ```bash
-(cd experiments/java/localidades && ./mvnw -q test)                       # 136 testes
+(cd experiments/java/localidades && ./mvnw -q test)                       # 141 testes
 (cd experiments/java/localidades && ./mvnw -q package -DskipTests)
 contracts/localidades/verificacao/verificar.sh "java -jar experiments/java/localidades/target/localidades.jar"   # 53 cenários
 specs/003-localidades-java/medicao/medir.sh                                # comparação E1 × E4
 ```
 
-A suíte tinha 53 cenários no fechamento; com a convergência, passou a 56 (veja abaixo).
+A suíte tinha 53 cenários no fechamento; com as duas convergências, passou a 65 (veja abaixo).
 
 ```text
 ```
@@ -106,6 +106,12 @@ O `/speckit-converge` rodou depois do fechamento. As combinações de falha que 
 - **T045 (LOW):** `pagina=99999999999` dava 400, por estouro de `int`, e o contrato pede 200 com a lista vazia. Com `itens` repetido, também dava 400. Agora `pagina` é `long`, e o parâmetro repetido vale pelo último valor, como no E1.
 
 A suíte compartilhada ganhou 3 cenários que fixam esses comportamentos e passam nas duas implementações (56 no total).
+
+A **segunda convergência** sondou o que passa pelo Tomcat antes do controller e achou mais duas lacunas, corrigidas na issue #55:
+- **T046 (MEDIUM):** uma *query* com codificação inválida (`?nome=%ZZ`, `?nome=s%E3o`) dava **500 `erro-interno`**. O Tomcat só decodifica a *query* quando o controller lê o primeiro parâmetro, e a exceção dele (`InvalidParameterException`) caía no tratador genérico. Agora é 400 `entrada-invalida`, sem consultar o IBGE. O E1 aceita o texto como veio e responde 200; as duas respostas seguem o contrato, e a suíte só proíbe o 500.
+- **T047 (LOW):** `TRACE` dava 405 no JSON padrão do Spring Boot, sem `problem+json` e sem `X-Correlation-Id`. Agora dá o mesmo 404 `nao-encontrado` dos outros métodos não suportados. O caminho óbvio (`spring.mvc.dispatch-trace-request=true`) não bastava: o `DispatcherServlet` despachava o pedido, mas depois chamava o `HttpServlet.doTrace`, que **ecoava o pedido inteiro, cookies inclusive**, depois do corpo. Isso é a porta do *cross-site tracing*. A solução foi um `DispatcherServlet` próprio (`DespachanteSemEco`) e o conector do Tomcat com `allowTrace`. Mais uma convenção do framework que só aparece quando quebra (ver [ergonomia.md](ergonomia.md)).
+
+A suíte ganhou 9 cenários (`test_query_mal_codificada_nunca_e_500` com 4 variações e `test_metodo_trace_e_problema` com 5 métodos), que passam nas duas implementações: 65 no total. Os testes do E4 que dependem do Tomcat de verdade agora sobem o servidor numa porta livre, porque o MockMvc não passa pela decodificação da *query* nem pelo conector.
 
 **Divergências que ficaram, porque a spec não as define:** `HEAD` e `OPTIONS` (o E4 aceita, e o E1 dá 404), barra no fim do caminho (o E1 redireciona, e o E4 dá 404) e `/v1/ufs/%2F` no E1, que responde 200 e merece uma olhada própria.
 

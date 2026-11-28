@@ -2,7 +2,9 @@
 
 import re
 
-from contrato import validar
+import pytest
+
+from contrato import pedido_cru, validar
 
 UUID4 = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
 METRICAS = (
@@ -47,24 +49,24 @@ def test_correlacao_no_corpo_do_erro(servico):
 
 
 def test_entrada_mal_codificada_e_problema(servico):
-    """Convergência do E4 (T044): um caminho com codificação inválida também sai em problem+json com correlação.
-
-    O httpx corrigiria o "%" inválido antes de enviar; o pedido vai cru, pela biblioteca padrão.
-    """
-    import http.client
-    import json
-    from urllib.parse import urlsplit
-
-    alvo = urlsplit(str(servico.base_url))
-    conexao = http.client.HTTPConnection(alvo.hostname, alvo.port, timeout=10)
-    conexao.request("GET", "/v1/municipios/%ZZ", headers={"X-Correlation-Id": "mal-codificado"})
-    resposta = conexao.getresponse()
-    corpo = resposta.read()
-    conexao.close()
-    assert resposta.status == 400
-    assert resposta.getheader("Content-Type", "").startswith("application/problem+json")
-    assert resposta.getheader("X-Correlation-Id") == "mal-codificado"
-    problema = json.loads(corpo)
+    """Convergência do E4 (T044): um caminho com codificação inválida também sai em problem+json com correlação."""
+    r = pedido_cru(servico, "GET", "/v1/municipios/%ZZ", {"X-Correlation-Id": "mal-codificado"})
+    assert r.status_code == 400
+    assert r.headers["content-type"].startswith("application/problem+json")
+    assert r.headers["X-Correlation-Id"] == "mal-codificado"
+    problema = r.json()
     assert problema["type"] == "urn:brasil-aberto:problema:entrada-invalida"
     assert problema["status"] == 400
     assert problema["correlacao_id"] == "mal-codificado"
+
+
+@pytest.mark.parametrize("metodo", ["TRACE", "POST", "PUT", "DELETE", "PATCH"])
+def test_metodo_trace_e_problema(servico, metodo):
+    """Convergência do E4 (T047): método não suportado, inclusive o TRACE, é 404 em problem+json com correlação."""
+    r = servico.request(metodo, "/v1/ufs", headers={"X-Correlation-Id": "metodo-xyz"})
+    assert r.status_code == 404
+    assert r.headers["content-type"].startswith("application/problem+json")
+    assert r.headers["X-Correlation-Id"] == "metodo-xyz"
+    problema = r.json()
+    assert problema["type"] == "urn:brasil-aberto:problema:nao-encontrado"
+    assert problema["correlacao_id"] == "metodo-xyz"

@@ -7,6 +7,7 @@ import io.github.danhenriquex.brasilaberto.localidades.erros.NaoEncontrado;
 import io.github.danhenriquex.brasilaberto.localidades.operacao.FiltroCorrelacao;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
+import org.apache.tomcat.util.http.InvalidParameterException;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +47,15 @@ public class TratadorDeErros {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     ResponseEntity<ProblemDetail> parametroInvalido(MethodArgumentTypeMismatchException erro, HttpServletRequest pedido) {
         return problema(new EntradaInvalida(erro.getName() + ": valor inválido"), pedido);
+    }
+
+    /**
+     * O Tomcat só decodifica a query quando o controller lê o primeiro parâmetro; se ela estiver mal codificada
+     * (por exemplo "nome=%ZZ"), a falha é do pedido, não do serviço (T046).
+     */
+    @ExceptionHandler(InvalidParameterException.class)
+    ResponseEntity<ProblemDetail> queryMalCodificada(InvalidParameterException erro, HttpServletRequest pedido) {
+        return problema(new EntradaInvalida("os parâmetros da consulta têm codificação inválida"), pedido);
     }
 
     @ExceptionHandler(Exception.class)
