@@ -41,6 +41,12 @@ Escrito durante a implementação, e não de memória no fim (FR-007; research R
 
 ## Métricas e registro
 
+- **2026-11-28, métricas:** o `client_golang` não impõe sufixo de unidade, então `localidades_fonte_duracao_segundos` saiu com o nome do contrato sem ajuste. No E4, foi preciso trocar o `Timer` do Micrometer por um `DistributionSummary` para escapar do `_seconds`. Num registro próprio (`prometheus.NewRegistry()`), cada montagem de teste tem as suas séries, sem o estado global que o E1 também evitou.
+- **O preço do `client_golang`:** a única dependência pesada do E7. Ele trouxe 8 módulos indiretos (protobuf, `prometheus/common`, `procfs`, compressão etc.), e o binário passou de 7,9 MB para 14 MB. Um formato de texto escrito à mão para 4 métricas teria evitado isso. Fica registrado como contrapartida do caminho comum do ecossistema.
+- **Negociação no `/metrics`:** o `promhttp` negocia pelo `Accept` e devolveria protobuf ou OpenMetrics a quem pedisse. É o mesmo tipo de comportamento da T048 do E4, aqui no endpoint de métricas. O handler retira o `Accept` antes, e o `/metrics` sai sempre em texto. Um teste fixa isso com 4 valores de `Accept`.
+- **Registro:** o `log/slog` com `JSONHandler` e um `ReplaceAttr` de 20 linhas deu os campos do E1 na mesma ordem (`momento`, `nivel`, `correlacao_id`...), sem mensagem e sem dependência. No E4, foi preciso um *logger* dedicado com padrão `%m%n` e o Jackson montando a linha.
+- **Resultado:** com a US5, os **82 de 82 cenários** da suíte passaram contra o binário (SC-001).
+
 ## Lições do E4
 
 Uma linha por lacuna das convergências do E4, preenchida à medida que cada uma aparecer (FR-009). A tabela final vai para o `RESULTS.md`.

@@ -213,10 +213,10 @@ description: "Lista de tarefas do E7 — Serviço de localidades (IBGE), em Go"
 
 **Independent Test**: `test_us5_operacao.py` passa contra o binário, e a suíte inteira também.
 
-- [ ] T032 [P] [US5] Escrever `G/internal/operacao/operacao_test.go`, espelhando o `test_api_operacao.py` do E1: o `/metrics` expõe `localidades_pedidos_total{rota,status}`, `localidades_erros_total{tipo}`, `localidades_cache_total{resultado}` e `localidades_fonte_duracao_segundos_bucket{recurso}` com as faixas do E1; rota inexistente conta como `rota="nao-encontrado"`; o `/metrics` responde `text/plain` com qualquer `Accept`; e cada pedido gera uma linha JSON com `momento`, `nivel`, `correlacao_id`, `metodo`, `rota`, `status`, `duracao_ms`, `cache` e `fonte_ms`, sem IP.
-- [ ] T033 [P] [US5] Implementar `G/internal/operacao/metricas.go` com o `client_golang`, num `prometheus.NewRegistry()` próprio, com as quatro métricas do research R10 e os coletores de runtime do Go, e o `GET /metrics` com `promhttp.HandlerFor`.
-- [ ] T034 [US5] Implementar `G/internal/operacao/registro.go` com `log/slog` (`JSONHandler` e `ReplaceAttr` para os nomes do E1) e integrá-lo ao handler de topo, com um `ResponseWriter` que guarda o status e um valor mutável no contexto para o uso da cópia e o tempo da fonte. Ao final, T032 passa.
-- [ ] T035 [US5] Rodar a suíte inteira, `verificar.sh "experiments/go/localidades/localidades"`, e confirmar que **todos** os 82 cenários passam, os mesmos do E1 e do E4 (SC-001).
+- [X] T032 [P] [US5] Escrever `G/internal/operacao/operacao_test.go`, espelhando o `test_api_operacao.py` do E1: o `/metrics` expõe `localidades_pedidos_total{rota,status}`, `localidades_erros_total{tipo}`, `localidades_cache_total{resultado}` e `localidades_fonte_duracao_segundos_bucket{recurso}` com as faixas do E1; rota inexistente conta como `rota="nao-encontrado"`; o `/metrics` responde `text/plain` com qualquer `Accept`; e cada pedido gera uma linha JSON com `momento`, `nivel`, `correlacao_id`, `metodo`, `rota`, `status`, `duracao_ms`, `cache` e `fonte_ms`, sem IP.
+- [X] T033 [P] [US5] Implementar `G/internal/operacao/metricas.go` com o `client_golang`, num `prometheus.NewRegistry()` próprio, com as quatro métricas do research R10 e os coletores de runtime do Go, e o `GET /metrics` com `promhttp.HandlerFor`.
+- [X] T034 [US5] Implementar `G/internal/operacao/registro.go` com `log/slog` (`JSONHandler` e `ReplaceAttr` para os nomes do E1) e integrá-lo ao handler de topo, com um `ResponseWriter` que guarda o status e um valor mutável no contexto para o uso da cópia e o tempo da fonte. Ao final, T032 passa.
+- [X] T035 [US5] Rodar a suíte inteira, `verificar.sh "experiments/go/localidades/localidades"`, e confirmar que **todos** os 82 cenários passam, os mesmos do E1 e do E4 (SC-001).
 
 **Checkpoint**: E7 funcionalmente equivalente ao E1 e ao E4, verificado pela mesma suíte.
 
