@@ -22,7 +22,7 @@ As mesmas do E1: a API de localidades do IBGE e a [ficha da fonte](../../discove
 A partir da raiz do repositório, com o Go 1.27 instalado:
 
 ```bash
-(cd experiments/go/localidades && go vet ./... && go test ./...)          # 78 testes
+(cd experiments/go/localidades && go vet ./... && go test ./...)          # 79 testes
 (cd experiments/go/localidades && go build -o localidades ./cmd/localidades)
 contracts/localidades/verificacao/verificar.sh "experiments/go/localidades/localidades"   # 82 cenários
 specs/004-localidades-go/medicao/medir.sh                                  # comparação E1 × E4 × E7
@@ -84,6 +84,12 @@ Para cada lacuna achada nas convergências do E4, se o mesmo comportamento apare
 - **SC-004, testes sem rede:** em 2026-11-28, dentro do sandbox sem rede externa, passaram os 78 testes do E7 (`GOFLAGS=-mod=mod GOPROXY=off go test -count=1 ./...`) e os 82 cenários, e um `curl` ao IBGE falhou no mesmo sandbox.
 - **SC-005, paridade de ordenação:** a ordem dos 645 municípios de SP e as buscas da suíte deram o mesmo resultado nas três.
 - **SC-006, lições do E4:** as 7 têm registro (tabela acima).
+
+## Convergência
+O `/speckit-converge` rodou depois do fechamento e achou uma lacuna, corrigida na issue #83:
+- **T044 (LOW):** o pedido `OPTIONS *` era respondido pelo próprio `http.Server` do Go com 200 vazio, sem passar pelo handler de topo e, portanto, sem `X-Correlation-Id`. O E1 responde 404 `nao-encontrado`. Agora o `http.Server` tem `DisableGeneralOptionsHandler: true`, e o pedido cai no 404 do contrato. Um teste com pedido cru, num servidor montado com as mesmas opções do `main.go`, fixa isso (79 testes no total).
+
+É mais um comportamento da pilha HTTP fora do contrato, da mesma família das lições do E4. Aparece só com um pedido incomum, e a correção foi uma opção do próprio `http.Server`.
 
 ## O que funcionou
 - **Biblioteca padrão:** HTTP com rotas de método e curinga, JSON, registro estruturado e testes, sem framework e sem biblioteca de testes externa.

@@ -46,11 +46,7 @@ func executar() int {
 	roteador.RotaHTTP("GET /metrics", metricas.Handler())
 	api.RegistrarV1(roteador, servicoLocalidades)
 
-	servidor := &http.Server{
-		Addr:              net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Porta)),
-		Handler:           roteador,
-		ReadHeaderTimeout: 10 * time.Second,
-	}
+	servidor := novoServidor(net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Porta)), roteador)
 
 	// Encerra com SIGTERM ou SIGINT, terminando os pedidos em andamento (o verificar.sh manda SIGTERM).
 	ctx, parar := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
@@ -76,4 +72,17 @@ func executar() int {
 		_ = servidor.Shutdown(encerrar)
 	}
 	return 0
+}
+
+// novoServidor monta o http.Server com as opções do serviço, separado do main para os testes usarem as
+// mesmas opções.
+func novoServidor(endereco string, h http.Handler) *http.Server {
+	return &http.Server{
+		Addr:              endereco,
+		Handler:           h,
+		ReadHeaderTimeout: 10 * time.Second,
+		// Sem isso, o http.Server responde sozinho ao "OPTIONS *" com 200 vazio, sem passar pelo handler de
+		// topo e, portanto, sem correlação. Com ele, o pedido cai no 404 do contrato, como no E1 (T044).
+		DisableGeneralOptionsHandler: true,
+	}
 }
