@@ -30,6 +30,9 @@ Escrito durante a implementação, e não de memória no fim (FR-007; research R
   | `GET /health` com `Accept: application/xml` | 200 em JSON | sem negociação |
   | `GET /health?x=%ZZ` | 200 | a *query* só é lida se o handler pedir |
 
+- **2026-11-28, US1:** os 27 cenários da US1, da paridade de ordenação (os 645 municípios de SP) e de contrato passaram de primeira contra o binário. A paridade veio da dobra com `unicode-normalization` e `caseless`, sem ajuste, apesar da diferença entre a classe de combinação usada aqui e a categoria `Mn` do E1 (research R9).
+- **Extratores e suas rejeições:** o axum lê os parâmetros por extratores tipados (`Path`, `Query`, `State`), o que deixa os handlers curtos. Mas cada extrator tem a sua resposta de erro pronta, fora do contrato: o `Path` recusaria `%ZZ` e o `Query` decodificaria de forma tolerante. A saída foi receber `Result<Path<String>, PathRejection>`, transformando a rejeição no texto literal do segmento, e ler a *query* do texto cru (`Uri::query()`), com a mesma regra do E7.
+- **`serde_json`:** não escapa `<>&`, não põe quebra de linha no fim e escreve os campos na ordem da *struct*. As três armadilhas de JSON do Go não existem aqui.
 - **2026-11-28, configuração:** o `parse::<f64>()` do Rust aceita `inf`, `infinity` e `NaN` e transforma `1e400` em infinito sem erro. É a mesma lacuna da T049 do E4, a terceira linguagem seguida em que ela aparece. A recusa é explícita com `is_finite()`, e a mensagem sai igual à do E1.
 
   **Decisão (atualiza o R3):** não há `Ouvinte` como no E7. Basta o `fallback` e o `method_not_allowed_fallback` do roteador levarem ao 404 do contrato, e a camada de topo pôr a correlação e o formato. Fica um cuidado: o extrator `Path` do axum decodifica o segmento e, com `%ZZ`, recusaria o pedido com a sua própria resposta de erro. A rejeição dele precisa virar `entrada-invalida`.
@@ -49,8 +52,8 @@ Uma linha por comportamento fora do contrato achado antes, preenchida à medida 
 | Lição | Apareceu em Rust? | Como foi tratada |
 |---|---|---|
 | T044 do E4 — caminho mal codificado fora do formato | | |
-| T045 do E4 — `pagina` grande demais e parâmetro repetido | | |
-| T046 do E4 — *query* mal codificada virando 500 | | |
+| T045 do E4 — `pagina` grande demais e parâmetro repetido | Em parte: `pagina=99999999999` cabe em `i64`, mas 30 dígitos estouram; o extrator `Query` não foi usado | Só dígitos que estouram `i64` valem como além do fim; a leitura da *query* crua usa o último valor repetido |
+| T046 do E4 — *query* mal codificada virando 500 | Não viraria 500: o extrator `Query` decodificaria de forma tolerante, e a *query* chega crua ao handler | A leitura do texto cru recusa `%` sem dois dígitos hexadecimais e UTF-8 inválido com 400 `entrada-invalida` |
 | T047 do E4 — `TRACE` fora do formato e ecoando o pedido | Em parte: o axum responde 405 com `Allow` e sem corpo, sem eco | `method_not_allowed_fallback` → 404 `nao-encontrado`; teste com pedido cru confere que nada é ecoado |
 | T048 do E4 — `Accept` mudando o formato da resposta | Não: o axum não negocia conteúdo | Os handlers escrevem o `Content-Type`; um teste fixa isso para `/health` e para os erros |
 | T049 do E4 — configuração infinita ou arredondada para zero | Sim: o `parse::<f64>()` aceita `inf`, `infinity` e `NaN` | Recusa explícita com `is_finite()`, mais os limites de 0,001 e 10⁹ s, com a mensagem do E1 |

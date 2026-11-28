@@ -294,3 +294,151 @@ pub async fn servir(app: Router) -> String {
     tokio::spawn(async move { axum::serve(ouvinte, app).await.unwrap() });
     endereco
 }
+
+/// O serviço inteiro (cliente, serviço e roteador) contra o IBGE simulado, como o app de teste do E1.
+pub struct Ambiente {
+    pub ibge: Ibge,
+    pub relogio: Relogio,
+    pub app: Router,
+}
+
+impl Ambiente {
+    pub async fn novo() -> Self {
+        Self::com_prazo(Duration::from_secs(1)).await
+    }
+
+    pub async fn com_prazo(prazo: Duration) -> Self {
+        let ibge = Ibge::novo().await;
+        let relogio = Relogio::novo();
+        let cliente = localidades::fonte::Cliente::novo(&ibge.url(), prazo, None);
+        let (r1, r2) = (relogio.clone(), relogio.clone());
+        let opcoes = localidades::servico::Opcoes {
+            agora: Arc::new(move || r1.agora()),
+            monotonico: Arc::new(move || r2.monotonico()),
+            validade: Duration::from_secs(24 * 3600),
+            itens_max: 500,
+        };
+        let servico = localidades::servico::Servico::novo(cliente, opcoes);
+        let app = localidades::app(servico, localidades::topo::Topo::default());
+        Self { ibge, relogio, app }
+    }
+
+    pub fn estados(&self) {
+        self.ibge.responder_fixture("/estados", "estados.json");
+    }
+    pub fn rj(&self) {
+        self.ibge
+            .responder_fixture("/estados/33/municipios", "municipios-uf-33.json");
+    }
+    pub fn sp(&self) {
+        self.ibge
+            .responder_fixture("/estados/35/municipios", "municipios-uf-35.json");
+    }
+
+    /// Pedido pelo roteador, sem rede (`oneshot`).
+    pub async fn get(&self, alvo: &str, cabecalhos: &[(&str, &str)]) -> Resp {
+        use tower::ServiceExt;
+        let mut req = axum::http::Request::builder().uri(alvo);
+        for (k, v) in cabecalhos {
+            req = req.header(*k, *v);
+        }
+        let r = self
+            .app
+            .clone()
+            .oneshot(req.body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        let cab = |n: &str| {
+            r.headers()
+                .get(n)
+                .and_then(|v| v.to_str().ok())
+                .unwrap_or("")
+                .to_string()
+        };
+        let (status, tipo, correlacao) = (
+            r.status().as_u16(),
+            cab("content-type"),
+            cab("x-correlation-id"),
+        );
+        let bytes = axum::body::to_bytes(r.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        Resp {
+            status,
+            tipo,
+            correlacao,
+            corpo: String::from_utf8(bytes.to_vec()).unwrap(),
+        }
+    }
+
+    /// Pedido cru num servidor de verdade, para caminho e query chegarem como escritos.
+    pub async fn cru(&self, alvo: &str, cabecalhos: &[&str]) -> RespostaCrua {
+        let endereco = servir(self.app.clone()).await;
+        pedido_cru(&endereco, "GET", alvo, cabecalhos).await
+    }
+}
+
+pub struct Resp {
+    pub status: u16,
+    pub tipo: String,
+    pub correlacao: String,
+    pub corpo: String,
+}
+
+impl Resp {
+    pub fn json(&self) -> serde_json::Value {
+        serde_json::from_str(&self.corpo)
+            .unwrap_or_else(|_| panic!("corpo não é JSON: {}", self.corpo))
+    }
+}
+
+/// O assert_problema do E1: status, tipo, problem+json e correlação no corpo e no cabeçalho.
+pub fn conferir_problema(
+    status: u16,
+    tipo_conteudo: &str,
+    correlacao: &str,
+    corpo: &str,
+    esperado: u16,
+    tipo: &str,
+) -> serde_json::Value {
+    assert_eq!(status, esperado, "corpo: {corpo}");
+    assert_eq!(tipo_conteudo, "application/problem+json");
+    let p: serde_json::Value =
+        serde_json::from_str(corpo).unwrap_or_else(|_| panic!("não é JSON: {corpo}"));
+    assert_eq!(
+        p["type"],
+        format!("urn:brasil-aberto:problema:{tipo}"),
+        "corpo: {corpo}"
+    );
+    assert_eq!(p["status"], esperado);
+    assert!(!p["detail"].as_str().unwrap_or("").is_empty());
+    assert!(!correlacao.is_empty());
+    assert_eq!(p["correlacao_id"], correlacao);
+    p
+}
+
+/// O assert_meta do E1.
+pub fn conferir_meta(corpo: &serde_json::Value, url_fonte: &str, desatualizado: bool) {
+    let meta = &corpo["meta"];
+    assert_eq!(meta["fonte"], "IBGE — API de localidades");
+    assert_eq!(meta["url_fonte"], url_fonte);
+    assert_eq!(
+        meta["url_documentacao"],
+        "https://servicodados.ibge.gov.br/api/docs/localidades"
+    );
+    assert_eq!(meta["desatualizado"], desatualizado);
+    let c = meta["coletado_em"].as_str().unwrap_or("");
+    assert!(
+        c.len() == "2026-11-26T12:00:00.123Z".len() && c.ends_with('Z'),
+        "coletado_em: {c}"
+    );
+}
+
+pub fn nomes(dados: &serde_json::Value) -> Vec<String> {
+    dados
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|d| d["nome"].as_str().unwrap().to_string())
+        .collect()
+}
