@@ -38,6 +38,8 @@ Escrito durante a implementação, e não de memória no fim (FR-007; research R
 
   **Decisão (atualiza o R3):** não há `Ouvinte` como no E7. Basta o `fallback` e o `method_not_allowed_fallback` do roteador levarem ao 404 do contrato, e a camada de topo pôr a correlação e o formato. Fica um cuidado: o extrator `Path` do axum decodifica o segmento e, com `%ZZ`, recusaria o pedido com a sua própria resposta de erro. A rejeição dele precisa virar `entrada-invalida`.
 
+- **2026-11-28, US4 e a ordem do TDD invertida:** o filtro `nome` entrou na US1, junto da listagem, porque a validação, a dobra e a ordem de aplicação (validar, filtrar, ordenar e paginar) são as mesmas do E1 e já estavam no domínio. Assim, os 6 testes de `tests/busca.rs` (T029) passaram de primeira, e a T030 não teve código novo. Para não aceitar um teste verde sem prova, uma mutação temporária desligou a validação e o filtro: 4 dos 6 falharam. Os outros 2 cobrem a decodificação da *query* e a cópia guardada, que ficam fora do filtro. Os 16 cenários da US4 e da paridade passaram contra o binário. A lição da T046 do E4 (`nome=%ZZ`, `nome=s%E3o` e `nome=%` crus → 400) já vinha coberta pela leitura da *query* do texto cru, feita na US1.
+
 ## Consulta compartilhada e concorrência
 
 - **2026-11-28, US3:** a parte em que o modelo assíncrono do Rust mais pesou. Um futuro abandonado é cancelado (quando o cliente desiste, o hyper descarta o futuro do pedido), então a consulta ao IBGE não pode morar no futuro do pedido que a iniciou. A solução foi um `tokio::spawn` para a consulta e um `Shared` (do `futures`) sobre o resultado da tarefa, guardado num mapa de consultas em andamento. Quem chega durante a consulta clona o `Shared` e recebe o mesmo resultado, **inclusive o erro** (lição da T050 do E1).
