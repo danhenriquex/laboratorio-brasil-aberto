@@ -47,6 +47,25 @@ Escrito durante a implementação, e não de memória no fim (FR-007; research R
 - **Registro:** o `log/slog` com `JSONHandler` e um `ReplaceAttr` de 20 linhas deu os campos do E1 na mesma ordem (`momento`, `nivel`, `correlacao_id`...), sem mensagem e sem dependência. No E4, foi preciso um *logger* dedicado com padrão `%m%n` e o Jackson montando a linha.
 - **Resultado:** com a US5, os **82 de 82 cenários** da suíte passaram contra o binário (SC-001).
 
+## Avaliação (FR-007)
+
+Notas de 1 (difícil) a 5 (fácil) para a experiência de construir o mesmo serviço. As notas do E1 e do E4 são as do [diário do E4](../003-localidades-java/ergonomia.md), e as medidas estão em [medicao/resultado-2026-11-28.md](medicao/resultado-2026-11-28.md), tiradas no mesmo dia para as três.
+
+| Ponto | E1 (Python) | E4 (Java) | E7 (Go) | Por quê (E7) |
+|---|---|---|---|---|
+| **Setup** | 5 | 3 | 5 | `brew install go` sem senha de administrador, `go mod init` e três `go get` em 2 s, sem *wrapper*, gerador de projeto nem arquivo de build. Do clone à primeira resposta, 1,2 s (E1: 1,1 s; E4: 3,0 s). |
+| **Escrita de testes** | 4 | 3 | 4 | Tudo com a biblioteca padrão (`testing` e `httptest`), sem biblioteca de testes externa, e com o detector de corrida (`-race`) de graça. A suíte roda em 1,0 s (E1: 0,9 s; E4: 6,6 s). Perde um ponto pelas asserções escritas à mão, mais verbosas que o `assert` do pytest ou o AssertJ, e pelo apoio de pedido cru, que também foi preciso no E4. |
+| **Cumprir o contrato escrito à mão** | 4 | 4 | 3 | A biblioteca padrão tem os seus próprios comportamentos fora do contrato: o `ServeMux` redireciona `//`, `.` e `..` e responde 405; o `net/http` recusa um `%ZZ` no caminho com 400 em texto puro, antes de qualquer handler; o `URL.Query()` descarta pares mal codificados em silêncio; e o JSON escapa `<>&`. Tudo foi previsto ou contornado, mas um deles exigiu embrulhar o `net.Listener`. É também o E7 com mais linhas de produção (1.758, contra 1.279 do E4 e 799 do E1): o que os outros ganham do framework, aqui é escrito à mão. |
+| **Tratamento de erros** | 3 | 4 | 4 | Erro como valor deixa o caminho de cada falha explícito, e um adaptador único converte em problem+json. O `recover` resolve o 500 sem rastro. Perde para o ideal pela verbosidade do `if err != nil`, contida na leitura do JSON do IBGE com um pequeno acumulador. |
+| **Métricas e registro** | 4 | 3 | 4 | O `client_golang` expõe os nomes exatos, sem sufixo de unidade, e o `log/slog` deu o registro do E1 com um `ReplaceAttr` de 20 linhas. Perde um ponto pelo peso do `client_golang` (8 módulos indiretos; o binário foi de 7,9 MB para 14 MB) e pela negociação de formato do `promhttp`, que precisou ser desligada. |
+
+**Cuidados de leitura (FR-008):**
+- **Ordem de construção:** o E7 foi feito **depois** do E1 e do E4, com as decisões e as lições das 5 convergências do E4 já conhecidas. As lições viraram tarefas desde o início, o que favorece o E7 em "acertar o desenho" e não diz nada sobre a linguagem.
+- **Mesmo autor:** as três implementações foram escritas pelo mesmo assistente. Uma equipe com experiência maior em um dos ecossistemas daria outras notas.
+- **Números do contexto:** a partida (0,03 s), a memória (15 MB) e o artefato (14,9 MB) do E7 refletem a ausência de runtime separado: o binário é compilado e já traz o servidor. A latência aquecida do E7 (0,09 ms) é menor que a do E1 e do E4 (0,37 e 0,38 ms), mas as três ficam bem abaixo de 1 ms num pedido atendido pela cópia, em loopback. Num pedido real ao IBGE, a rede (dezenas a centenas de milissegundos) domina, e a diferença deixa de importar.
+- **Linhas de código:** o E7 tem mais linhas porque escreve à mão o que o FastAPI e o Spring dão: leitura e validação da *query* e da configuração, normalização do JSON do IBGE campo a campo, o handler de topo e o `Ouvinte`. Os testes também são mais longos, pelas asserções manuais.
+- **Dependências:** as 3 diretas do E7 escondem 8 indiretas, todas do `client_golang`. Sem ele, o E7 dependeria só de dois módulos do próprio projeto Go.
+
 ## Lições do E4
 
 Uma linha por lacuna das convergências do E4, preenchida à medida que cada uma aparecer (FR-009). A tabela final vai para o `RESULTS.md`.
