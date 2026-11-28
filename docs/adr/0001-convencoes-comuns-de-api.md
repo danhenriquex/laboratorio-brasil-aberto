@@ -75,3 +75,15 @@ As convenções funcionaram numa terceira linguagem, de novo **sem mudar o contr
 - **Configuração:** a leitura das variáveis `LOCALIDADES_*` foi escrita à mão, com as mesmas mensagens do E1. O `strconv.ParseFloat` aceita `NaN` e `Inf`, que precisaram ser recusados explicitamente (a mesma lacuna da T049 do E4).
 - **Comparação completa:** `specs/004-localidades-go/RESULTS.md`.
 
+## Confirmação no E8 (Rust, 2026-11-28)
+
+As convenções funcionaram numa quarta linguagem, de novo **sem mudar o contrato**. Os 82 cenários da suíte de caixa-preta passaram contra o E8, e, contra o IBGE real, os corpos das quatro implementações foram idênticos nos mesmos 8 pedidos. O que o E8 acrescentou:
+
+- **Ordenação sem acento:** NFKD com `unicode-normalization`, remoção das marcas combinantes e *casefold* com `caseless` deram a mesma ordem dos 645 municípios de SP, sem ajuste.
+- **Formato do `coletado_em`:** formatado à mão, com milissegundos fixos e o sufixo `Z`, para não depender da representação padrão do `time`.
+- **Nomes de métricas:** o `prometheus` 0.14.0 não acrescenta sufixo de unidade, e o `TextEncoder` escreve só o formato texto, sem negociar pelo `Accept`. A regra do E4 se confirma pela terceira vez.
+- **Erros:** o `problem+json` sai de um único `IntoResponse`, e o operador `?` propaga o erro até ele. A correlação no corpo do erro exigiu levar o estado do pedido num `task_local`, porque o `IntoResponse` não recebe o pedido.
+- **Entrada mal formada:** a regra do E7 se confirmou como a mais útil das convenções. A pilha do Rust (hyper e axum) não decide nada antes da aplicação, ao contrário do Tomcat e do `net/http`, mas cada extrator do axum tem a sua resposta de erro pronta, fora do contrato. A rejeição do `Path` e a leitura da *query* crua resolveram. Os cenários de entrada mal formada da suíte foram o que garantiu isso.
+- **Configuração:** o `parse::<f64>()` aceita `inf` e `NaN`, a mesma lacuna da T049 do E4, agora na terceira linguagem seguida. Fica como regra: **toda leitura de número de configuração precisa recusar valores não finitos explicitamente**.
+- **Cliente que desiste:** registrado com 499 e sem contar como erro, como no E7. Em Rust, isso exigiu uma guarda com `Drop`, porque o futuro do pedido é descartado inteiro.
+- **Comparação completa:** `specs/005-localidades-rust/RESULTS.md`.
