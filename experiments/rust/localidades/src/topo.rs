@@ -18,14 +18,47 @@ use futures::FutureExt;
 use percent_encoding::percent_decode_str;
 
 use crate::erros::ErroDominio;
-use crate::operacao::{CABECALHO_CORRELACAO, ESTADO, Estado, correlacao_de};
+use crate::operacao::{CABECALHO_CORRELACAO, ESTADO, Estado, Metricas, correlacao_de};
 
 /// Recebe cada pedido terminado, para métricas e registro (US5).
 pub type Observador = Arc<dyn Fn(&Method, &Estado, u16, Duration) + Send + Sync>;
 
+/// O status registrado quando o cliente desiste antes da resposta (a convenção do nginx, como no E7).
+pub const CLIENTE_DESISTIU: u16 = 499;
+
 #[derive(Clone, Default)]
 pub struct Topo {
     pub observar: Option<Observador>,
+    /// Com métricas, o roteador ganha o `GET /metrics`.
+    pub metricas: Option<Arc<Metricas>>,
+}
+
+/// Quando o cliente desiste, o hyper descarta o futuro do pedido inteiro, inclusive esta camada, e nenhuma
+/// linha depois do `await` roda. O `Drop` roda mesmo assim: se a resposta não saiu, o pedido é observado
+/// com 499, sem contar como erro do serviço.
+struct Guarda {
+    observar: Option<Observador>,
+    metodo: Method,
+    estado: Arc<Estado>,
+    inicio: Instant,
+    respondido: bool,
+}
+
+impl Guarda {
+    fn observar(&mut self, status: u16) {
+        self.respondido = true;
+        if let Some(observar) = &self.observar {
+            observar(&self.metodo, &self.estado, status, self.inicio.elapsed());
+        }
+    }
+}
+
+impl Drop for Guarda {
+    fn drop(&mut self) {
+        if !self.respondido {
+            self.observar(CLIENTE_DESISTIU);
+        }
+    }
 }
 
 /// Rota inexistente e método não suportado: o mesmo 404 do contrato, inclusive para TRACE, sem eco.
@@ -51,7 +84,13 @@ async fn camada(State(topo): State<Topo>, req: Request, next: Next) -> Response 
             .and_then(|v| v.to_str().ok()),
     );
     let estado = Arc::new(Estado::novo(correlacao.clone()));
-    let metodo = req.method().clone();
+    let mut guarda = Guarda {
+        observar: topo.observar.clone(),
+        metodo: req.method().clone(),
+        estado: estado.clone(),
+        inicio,
+        respondido: false,
+    };
 
     // Um panic vira 500 erro-interno, sem rastro, em vez de derrubar só a conexão.
     let resposta = ESTADO
@@ -67,14 +106,7 @@ async fn camada(State(topo): State<Topo>, req: Request, next: Next) -> Response 
     if let Ok(valor) = HeaderValue::from_str(&correlacao) {
         resposta.headers_mut().insert(CABECALHO_CORRELACAO, valor);
     }
-    if let Some(observar) = &topo.observar {
-        observar(
-            &metodo,
-            &estado,
-            resposta.status().as_u16(),
-            inicio.elapsed(),
-        );
-    }
+    guarda.observar(resposta.status().as_u16());
     resposta
 }
 

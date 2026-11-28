@@ -19,8 +19,15 @@ use crate::topo::Topo;
 
 /// O roteador completo do serviço, com a camada de topo.
 pub fn app(servico: Servico, topo: Topo) -> Router {
-    let rotas = Router::new()
+    let mut rotas = Router::new()
         .route("/health", get(operacao::saude))
         .merge(api::rotas(servico));
+    if let Some(metricas) = &topo.metricas {
+        rotas = rotas.merge(
+            Router::new()
+                .route("/metrics", get(operacao::expor_metricas))
+                .with_state(metricas.clone()),
+        );
+    }
     topo::com_camadas(rotas, topo)
 }

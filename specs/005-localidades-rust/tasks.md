@@ -140,10 +140,10 @@ description: "Lista de tarefas do E8 — Serviço de localidades (IBGE), em Rust
 
 **Independent Test**: `test_us5_operacao.py` passa contra o binário, e a suíte inteira também.
 
-- [ ] T032 [P] [US5] Escrever `R/tests/operacao.rs`: o `/metrics` expõe `localidades_pedidos_total{rota,status}`, `localidades_erros_total{tipo}`, `localidades_cache_total{resultado}` e `localidades_fonte_duracao_segundos_bucket{recurso}` com as faixas do E1, sem sufixo de unidade; rota inexistente conta como `rota="nao-encontrado"`; o `/metrics` responde `text/plain` com qualquer `Accept`; cada pedido gera uma linha JSON com `momento`, `nivel`, `correlacao_id`, `metodo`, `rota`, `status`, `duracao_ms`, `cache` e `fonte_ms`, nessa ordem e sem IP, com `nivel` `error` nos 5xx.
-- [ ] T033 [P] [US5] Implementar as métricas em `R/src/operacao.rs` com o `prometheus` 0.14.0 (registro próprio, `IntCounterVec`, `HistogramVec` com as faixas do E1, `TextEncoder`) e o `GET /metrics`.
-- [ ] T034 [US5] Implementar o registro JSON em `R/src/operacao.rs` com `serde_json` (research R12) e integrá-lo à camada de topo, com o estado do pedido numa extensão (rota, uso da cópia, tipo de erro e tempo da fonte). Ao final, T032 passa.
-- [ ] T035 [US5] Rodar a suíte inteira, `verificar.sh "experiments/rust/localidades/target/release/localidades"`, e confirmar que **todos** os 82 cenários passam (SC-001).
+- [X] T032 [P] [US5] Escrever `R/tests/operacao.rs`: o `/metrics` expõe `localidades_pedidos_total{rota,status}`, `localidades_erros_total{tipo}`, `localidades_cache_total{resultado}` e `localidades_fonte_duracao_segundos_bucket{recurso}` com as faixas do E1, sem sufixo de unidade; rota inexistente conta como `rota="nao-encontrado"`; o `/metrics` responde `text/plain` com qualquer `Accept`; cada pedido gera uma linha JSON com `momento`, `nivel`, `correlacao_id`, `metodo`, `rota`, `status`, `duracao_ms`, `cache` e `fonte_ms`, nessa ordem e sem IP, com `nivel` `error` nos 5xx.
+- [X] T033 [P] [US5] Implementar as métricas em `R/src/operacao.rs` com o `prometheus` 0.14.0 (registro próprio, `IntCounterVec`, `HistogramVec` com as faixas do E1, `TextEncoder`) e o `GET /metrics`.
+- [X] T034 [US5] Implementar o registro JSON em `R/src/operacao.rs` com `serde_json` (research R12) e integrá-lo à camada de topo, com o estado do pedido numa extensão (rota, uso da cópia, tipo de erro e tempo da fonte). Ao final, T032 passa.
+- [X] T035 [US5] Rodar a suíte inteira, `verificar.sh "experiments/rust/localidades/target/release/localidades"`, e confirmar que **todos** os 82 cenários passam (SC-001).
 
 **Checkpoint**: E8 funcionalmente equivalente às outras três, verificado pela mesma suíte.
 

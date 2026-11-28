@@ -56,6 +56,11 @@ Escrito durante a implementação, e não de memória no fim (FR-007; research R
 
 ## Métricas e registro
 
+- **2026-11-28, US5:** o `prometheus` 0.14.0 num `Registry` próprio, com `IntCounterVec` e `HistogramVec`, saiu como no E7: os nomes não ganham sufixo de unidade e as faixas são as do E1. O `TextEncoder` só escreve o formato texto e não olha o `Accept`, então não foi preciso retirar o cabeçalho, como o `promhttp` exigia no E7. O serviço não usa o protobuf, que é a feature padrão do crate, então ela saiu (`default-features = false`), e a árvore caiu de 180 para 174 crates. Ficam de fora os coletores de processo: no crate, eles dependem do `procfs` e só funcionam no Linux. No E4, a JVM expõe os seus; no E7, o Go expõe os do *runtime*.
+- **Registro:** uma *struct* com `#[derive(Serialize)]` e os campos do E1 na ordem da declaração, escrita com `serde_json` numa única escrita por linha, sob um `Mutex`. Foram poucas dezenas de linhas, sem biblioteca de registro. No E7, o `slog` precisou de um `ReplaceAttr` para renomear e remover campos.
+- **Cliente que desiste (pendência da US3):** quando o cliente desiste, o hyper descarta o futuro do pedido, inclusive a camada de topo, e nenhuma linha depois do `await` roda. A saída foi uma guarda com `Drop`: se a resposta não saiu, o pedido é observado com 499 (a convenção do nginx), sem contar como erro do serviço. O resultado é o mesmo do E7, mas o mecanismo é o oposto: lá o `context` cancelado chega ao handler, e aqui é o destrutor que avisa que o futuro morreu. Um teste com `tokio::time::timeout` em volta do pedido fixa o comportamento.
+- **Suíte inteira:** **82 de 82** cenários contra o binário otimizado, sem rede (SC-001). As 103 linhas que o binário escreveu durante a suíte são JSON válido, e os 502 e 504 saem com `nivel` `error`.
+
 ## Lições anteriores
 
 Uma linha por comportamento fora do contrato achado antes, preenchida à medida que cada um aparecer (FR-009). A tabela final vai para o `RESULTS.md`.
