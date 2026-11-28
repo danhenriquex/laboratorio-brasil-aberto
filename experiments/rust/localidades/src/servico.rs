@@ -6,7 +6,10 @@ use std::time::Duration;
 use serde::Serialize;
 use time::OffsetDateTime;
 
-use crate::dominio::{Municipio, MunicipioResumido, Paginacao, Uf};
+use crate::dominio::{
+    Municipio, MunicipioResumido, Paginacao, Uf, filtrar_por_nome, ordenar, paginar, resolver_uf,
+    validar_nome, validar_paginacao,
+};
 use crate::erros::ErroDominio;
 use crate::fonte::Cliente;
 
@@ -92,14 +95,12 @@ impl Opcoes {
 }
 
 #[derive(Clone)]
-#[allow(dead_code)] // os campos passam a ser lidos na US1 (T017)
 pub struct Servico {
     pub(crate) fonte: Cliente,
     pub(crate) opcoes: Opcoes,
 }
 
 /// Um recurso do IBGE já normalizado, com a procedência e o uso da cópia guardada.
-#[allow(dead_code)] // usado a partir da US1 (T017)
 pub(crate) struct Obtido {
     pub dados: Dados,
     pub meta: Meta,
@@ -112,7 +113,6 @@ impl Servico {
     }
 
     /// Chama a fonte direto. A cópia guardada e a consulta compartilhada entram na US3 (T027).
-    #[allow(dead_code)] // usado a partir da US1 (T017)
     pub(crate) async fn obter<F>(&self, _chave: String, buscar: F) -> Result<Obtido, ErroDominio>
     where
         F: std::future::Future<Output = Result<(Dados, String), ErroDominio>> + Send + 'static,
@@ -123,6 +123,91 @@ impl Servico {
             dados,
             meta: Meta::nova(url, coletado_em, false),
             cache: "falta",
+        })
+    }
+}
+
+// --- US1 ---
+
+impl Servico {
+    async fn estados(&self) -> Result<(Arc<Vec<Uf>>, Meta, &'static str), ErroDominio> {
+        let fonte = self.fonte.clone();
+        let o = self
+            .obter("estados".into(), async move {
+                let (ufs, url) = fonte.estados().await?;
+                Ok((Dados::Ufs(Arc::new(ufs)), url))
+            })
+            .await?;
+        match o.dados {
+            Dados::Ufs(ufs) => Ok((ufs, o.meta, o.cache)),
+            _ => Err(ErroDominio::interno()),
+        }
+    }
+
+    /// As 27 UFs ordenadas por nome.
+    pub async fn listar_ufs(&self) -> Result<Resultado<Vec<Uf>>, ErroDominio> {
+        let (ufs, meta, cache) = self.estados().await?;
+        Ok(Resultado {
+            dados: ordenar(&ufs),
+            meta,
+            paginacao: None,
+            cache,
+        })
+    }
+
+    /// Resolve a sigla ou o código antes de consultar, para entrada inválida não chegar ao IBGE.
+    pub async fn obter_uf(&self, param: &str) -> Result<Resultado<Uf>, ErroDominio> {
+        let codigo = resolver_uf(param)?;
+        let (ufs, meta, cache) = self.estados().await?;
+        let uf = ufs
+            .iter()
+            .find(|u| u.codigo == codigo)
+            .cloned()
+            .ok_or_else(|| {
+                ErroDominio::resposta_inesperada(format!(
+                    "a UF {codigo} não veio na lista de UFs do IBGE"
+                ))
+            })?;
+        Ok(Resultado {
+            dados: uf,
+            meta,
+            paginacao: None,
+            cache,
+        })
+    }
+
+    /// Valida, resolve a UF, consulta, filtra pelo nome (se houver), ordena e pagina, na ordem do E1.
+    pub async fn listar_municipios(
+        &self,
+        param_uf: &str,
+        pagina: i64,
+        itens: i64,
+        nome: Option<&str>,
+    ) -> Result<Resultado<Vec<MunicipioResumido>>, ErroDominio> {
+        validar_paginacao(pagina, itens, self.opcoes.itens_max)?;
+        let filtro = nome.map(validar_nome).transpose()?;
+        let codigo = resolver_uf(param_uf)?;
+        let fonte = self.fonte.clone();
+        let c = codigo.clone();
+        let o = self
+            .obter(format!("estados/{codigo}/municipios"), async move {
+                let (municipios, url) = fonte.municipios_da_uf(&c).await?;
+                Ok((Dados::Municipios(Arc::new(municipios)), url))
+            })
+            .await?;
+        let Dados::Municipios(municipios) = o.dados else {
+            return Err(ErroDominio::interno());
+        };
+        let selecionados = match &filtro {
+            Some(nome) => filtrar_por_nome(&municipios, nome),
+            None => municipios.as_ref().clone(),
+        };
+        let p = paginar(&ordenar(&selecionados), pagina, itens as u32);
+        Ok(Resultado {
+            dados: p.itens,
+            meta: o.meta,
+            paginacao: Some(p.paginacao),
+            cache: o.cache,
         })
     }
 }

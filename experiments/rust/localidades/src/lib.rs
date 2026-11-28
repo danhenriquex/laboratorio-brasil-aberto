@@ -1,6 +1,7 @@
 //! E8 — serviço de localidades (IBGE) em Rust. O binário (`main.rs`) só monta e sobe; os módulos ficam
 //! aqui para os testes de integração em `tests/`.
 
+pub mod api;
 pub mod config;
 pub mod dominio;
 pub mod erros;
@@ -16,7 +17,9 @@ use crate::servico::Servico;
 use crate::topo::Topo;
 
 /// O roteador completo do serviço, com a camada de topo.
-pub fn app(_servico: Servico, topo: Topo) -> Router {
-    let rotas = Router::new().route("/health", get(operacao::saude));
+pub fn app(servico: Servico, topo: Topo) -> Router {
+    let rotas = Router::new()
+        .route("/health", get(operacao::saude))
+        .merge(api::rotas(servico));
     topo::com_camadas(rotas, topo)
 }
