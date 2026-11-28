@@ -101,10 +101,10 @@ description: "Lista de tarefas do E8 — Serviço de localidades (IBGE), em Rust
 
 **Independent Test**: `test_us2_municipio.py` passa contra o binário.
 
-- [ ] T020 [P] [US2] Escrever `R/tests/municipio.rs`, com os casos do `municipio_test.go` do E7: Rio de Janeiro com UF e regiões; `9999999` → 404 com o detalhe do E1; `12ab`, `123456`, `12345678` e `330455７` → 400 sem chamar o IBGE; `3545803` com apóstrofo sem escape; `5101837` e `5300108`; e a lição da **T044** com pedido cru (`/v1/municipios/%ZZ`, `%`, `%E3` e `/v1/ufs/R%ZZ/municipios` → 400; `/v1/municipios/%2F` → 404; todos em problem+json com correlação).
-- [ ] T021 [US2] Em `R/src/servico.rs`, implementar `obter_municipio(codigo)`.
-- [ ] T022 [US2] Em `R/src/api.rs`, criar `GET /v1/municipios/{codigo}`, decodificando o segmento a partir do caminho cru para recusar o escape inválido como entrada inválida. Ao final, T020 passa.
-- [ ] T023 [US2] Rodar `verificar.sh "experiments/rust/localidades/target/release/localidades" -k us2` e registrar no diário como a T044 se comportou em Rust.
+- [X] T020 [P] [US2] Escrever `R/tests/municipio.rs`, com os casos do `municipio_test.go` do E7: Rio de Janeiro com UF e regiões; `9999999` → 404 com o detalhe do E1; `12ab`, `123456`, `12345678` e `330455７` → 400 sem chamar o IBGE; `3545803` com apóstrofo sem escape; `5101837` e `5300108`; e a lição da **T044** com pedido cru (`/v1/municipios/%ZZ`, `%`, `%E3` e `/v1/ufs/R%ZZ/municipios` → 400; `/v1/municipios/%2F` → 404; todos em problem+json com correlação).
+- [X] T021 [US2] Em `R/src/servico.rs`, implementar `obter_municipio(codigo)`.
+- [X] T022 [US2] Em `R/src/api.rs`, criar `GET /v1/municipios/{codigo}`, decodificando o segmento a partir do caminho cru para recusar o escape inválido como entrada inválida. Ao final, T020 passa.
+- [X] T023 [US2] Rodar `verificar.sh "experiments/rust/localidades/target/release/localidades" -k us2` e registrar no diário como a T044 se comportou em Rust.
 
 ---
 

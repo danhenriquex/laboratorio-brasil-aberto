@@ -42,6 +42,7 @@ pub fn rotas(servico: Servico) -> Router {
         .route("/v1/ufs", get(listar_ufs))
         .route("/v1/ufs/{uf}", get(obter_uf))
         .route("/v1/ufs/{uf}/municipios", get(listar_municipios))
+        .route("/v1/municipios/{codigo}", get(obter_municipio))
         .with_state(servico)
 }
 
@@ -88,6 +89,16 @@ async fn listar_municipios(
     Ok(responder(
         s.listar_municipios(&segmento(uf, &uri, 3), pagina, itens, nome)
             .await?,
+    ))
+}
+
+async fn obter_municipio(
+    State(s): State<Servico>,
+    uri: Uri,
+    codigo: Result<Path<String>, PathRejection>,
+) -> Result<Json<Resposta<crate::dominio::Municipio>>, ErroDominio> {
+    Ok(responder(
+        s.obter_municipio(&segmento(codigo, &uri, 3)).await?,
     ))
 }
 
