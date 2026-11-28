@@ -306,3 +306,7 @@ Cada história acrescenta um grupo de cenários da suíte. A US5 fecha os 82 cen
 - Nenhum teste fala com a rede externa: o IBGE é sempre o `httptest.Server` em loopback ou o IBGE falso da suíte.
 - `go vet ./...` e `gofmt -l .` sem saída fazem parte do "testes passam" de cada fase.
 - Se a implementação em Go revelar um caso novo que a suíte não cobre, o cenário entra na suíte compartilhada e precisa passar no E1 e no E4 (FR-002).
+
+## Phase 10: Convergence
+
+- [ ] T044 Fazer o pedido `OPTIONS *` passar pelo handler de topo, com `DisableGeneralOptionsHandler: true` no `http.Server` de `experiments/go/localidades/cmd/localidades/main.go`: hoje o `http.Server` responde sozinho 200 vazio, sem `X-Correlation-Id`, e o E1 responde 404 `nao-encontrado` em problem+json. Cobrir com um teste de pedido cru (`OPTIONS *` → 404 em problem+json com correlação) num servidor montado com as mesmas opções do `main.go` (por exemplo, extraindo a montagem do `http.Server` para uma função testável) per FR-001 do E7 → FR-010 e FR-024 do E1 (contradicts)
