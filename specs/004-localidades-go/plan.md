@@ -116,6 +116,7 @@ experiments/go/localidades/                 # E7
     ├── cache/                              # cópia com validade + singleflight (consulta compartilhada)
     ├── servico/                            # casos de uso — sem net/http
     ├── api/                                # roteador, handlers v1, envelope, problem+json
+    ├── transporte/                         # Ouvinte: saneia a linha do pedido antes do net/http (US2; research R3)
     └── operacao/                           # /health, /metrics, correlação, registro JSON, métricas
     (cada pacote com os seus *_test.go ao lado, como é o costume em Go)
 
