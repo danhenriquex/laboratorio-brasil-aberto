@@ -27,9 +27,14 @@ type ambiente struct {
 
 func novoAmbiente(t *testing.T) *ambiente {
 	t.Helper()
+	return novoAmbienteComPrazo(t, time.Second)
+}
+
+func novoAmbienteComPrazo(t *testing.T, prazo time.Duration) *ambiente {
+	t.Helper()
 	ibge := testeapoio.NovoIBGE(t)
 	relogio := testeapoio.NovoRelogio()
-	cliente := fonte.NovoCliente(ibge.URL(), time.Second, nil)
+	cliente := fonte.NovoCliente(ibge.URL(), prazo, nil)
 	s := servico.Novo(cliente, servico.Opcoes{
 		Agora:      relogio.Agora,
 		Monotonico: relogio.Monotonico,

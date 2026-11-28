@@ -1,6 +1,8 @@
 package api
 
 import (
+	"context"
+	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -8,6 +10,9 @@ import (
 	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/erros"
 	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/operacao"
 )
+
+// statusClienteDesistiu marca, no registro e nas métricas, o pedido cujo cliente foi embora antes da resposta.
+const statusClienteDesistiu = 499
 
 // Observador recebe cada pedido terminado, para métricas e registro (US5).
 type Observador func(r *http.Request, estado *operacao.Estado, status int, duracao time.Duration)
@@ -30,7 +35,14 @@ func NovoRoteador(observar Observador) *Roteador {
 // Rota registra um handler que devolve erro, com padrão de método e curinga ("GET /v1/ufs/{uf}").
 func (rt *Roteador) Rota(padrao string, h HandlerComErro) {
 	rt.mux.HandleFunc(padrao, func(w http.ResponseWriter, r *http.Request) {
-		if err := h(w, r); err != nil {
+		err := h(w, r)
+		switch {
+		case err == nil:
+		case errors.Is(err, context.Canceled) && r.Context().Err() != nil:
+			// O cliente desistiu: ninguém lê a resposta, e não é erro do serviço. O 499 (convenção do nginx)
+			// só aparece no registro e nas métricas.
+			w.WriteHeader(statusClienteDesistiu)
+		default:
 			EscreverProblema(w, r, err)
 		}
 	})

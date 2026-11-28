@@ -6,6 +6,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/cache"
 	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/dominio"
 	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/erros"
 )
@@ -66,6 +67,7 @@ type Opcoes struct {
 type Servico struct {
 	fonte  Fonte
 	opcoes Opcoes
+	cache  *cache.Cache
 }
 
 func Novo(fonte Fonte, opcoes Opcoes) *Servico {
@@ -76,7 +78,7 @@ func Novo(fonte Fonte, opcoes Opcoes) *Servico {
 		inicio := time.Now()
 		opcoes.Monotonico = func() time.Duration { return time.Since(inicio) }
 	}
-	return &Servico{fonte: fonte, opcoes: opcoes}
+	return &Servico{fonte: fonte, opcoes: opcoes, cache: cache.Novo(opcoes.Agora, opcoes.Monotonico, opcoes.Validade)}
 }
 
 // obtido é um recurso do IBGE já normalizado, com a procedência e o uso da cópia guardada.
@@ -86,16 +88,16 @@ type obtido struct {
 	cache string
 }
 
-type buscar func(ctx context.Context) (any, string, error)
+type buscar = cache.Buscar
 
-// obter chama a fonte direto. A cópia guardada e a consulta compartilhada entram na US3 (T027).
-func (s *Servico) obter(ctx context.Context, _ string, b buscar) (obtido, error) {
-	coletadoEm := s.opcoes.Agora()
-	dados, url, err := b(ctx)
+// obter passa pela cópia guardada: o meta vem da entrada (coletado_em da consulta original e desatualizado),
+// e o resultado da cópia (acerto, falta, desatualizado) segue para as métricas e o registro.
+func (s *Servico) obter(ctx context.Context, chave string, b buscar) (obtido, error) {
+	e, err := s.cache.Obter(ctx, chave, b)
 	if err != nil {
 		return obtido{}, err
 	}
-	return obtido{dados: dados, meta: NovaMeta(url, coletadoEm, false), cache: "falta"}, nil
+	return obtido{dados: e.Dados, meta: NovaMeta(e.URLFonte, e.ColetadoEm, e.Desatualizado), cache: e.Resultado}, nil
 }
 
 // --- US1 ---
