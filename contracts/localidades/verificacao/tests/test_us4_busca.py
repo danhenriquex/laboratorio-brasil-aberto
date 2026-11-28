@@ -2,7 +2,7 @@
 
 import pytest
 
-from contrato import validar
+from contrato import pedido_cru, validar
 
 ROTA = "/v1/ufs/{uf}/municipios"
 
@@ -39,3 +39,17 @@ def test_busca_fora_dos_limites(servico, termo):
     r = servico.get("/v1/ufs/SP/municipios", params={"nome": termo})
     validar(r, "GET", ROTA)
     assert r.status_code == 400
+
+
+@pytest.mark.parametrize("consulta", ["nome=%ZZ", "nome=s%E3o", "nome=%", "itens=%ZZ"])
+def test_query_mal_codificada_nunca_e_500(servico, consulta):
+    """Convergência do E4 (T046): codificação inválida na query é problema do cliente, nunca erro interno.
+
+    O E1 aceita o texto como veio (200) e o E4 recusa (400); as duas respostas seguem o contrato.
+    """
+    r = pedido_cru(servico, "GET", f"/v1/ufs/RJ/municipios?{consulta}", {"X-Correlation-Id": "query-xyz"})
+    validar(r, "GET", ROTA)
+    assert r.status_code in (200, 400)
+    assert r.headers["X-Correlation-Id"] == "query-xyz"
+    if r.status_code == 400:
+        assert r.json()["type"] == "urn:brasil-aberto:problema:entrada-invalida"

@@ -12,6 +12,10 @@ import org.springframework.stereotype.Component;
  * Troca a válvula de erros do Tomcat pela ValvulaDeErros (T044). Registra a classe no host, que o Tomcat usa
  * também para os erros anteriores ao roteamento, e remove do pipeline qualquer outra ErrorReportValve (como a
  * que o próprio Spring Boot registra), para sobrar só a nossa. Roda depois da configuração do Spring Boot.
+ *
+ * <p>Também deixa o TRACE passar do conector (T047). Sem isso, o Tomcat responde 405 sozinho e o erro cai na
+ * página /error do Spring Boot, fora do problem+json. Com o DespachanteSemEco, o TRACE recebe o mesmo 404 dos
+ * outros métodos não suportados, e nada do pedido é ecoado de volta.
  */
 @Component
 public class ConfiguracaoTomcat implements WebServerFactoryCustomizer<TomcatServletWebServerFactory>, Ordered {
@@ -25,6 +29,7 @@ public class ConfiguracaoTomcat implements WebServerFactoryCustomizer<TomcatServ
     @Override
     public void customize(TomcatServletWebServerFactory fabrica) {
         ValvulaDeErros.usarMetricas(metricas);
+        fabrica.addConnectorCustomizers(conector -> conector.setAllowTrace(true));
         fabrica.addContextCustomizers(contexto -> {
             if (contexto.getParent() instanceof StandardHost host) {
                 host.setErrorReportValveClass(ValvulaDeErros.class.getName());

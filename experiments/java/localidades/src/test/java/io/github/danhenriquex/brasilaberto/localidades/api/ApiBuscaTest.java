@@ -86,4 +86,18 @@ class ApiBuscaTest extends BaseApiTest {
         mvc.perform(get("/v1/ufs/RJ/municipios").param("nome", "são"));
         assertThat(IBGE.pedidos("/estados/33/municipios")).isEqualTo(1);
     }
+
+    /** T046: query mal codificada é erro do pedido (400), não falha interna, e não chega a consultar o IBGE. */
+    @ParameterizedTest
+    @ValueSource(strings = {"nome=%ZZ", "nome=s%E3o", "nome=%", "itens=%ZZ"})
+    void queryMalCodificadaE400(String consulta) throws Exception {
+        IBGE.servidor().resetAll();
+        var r = Apoio.pedidoCru(porta, "GET", "/v1/ufs/RJ/municipios?" + consulta, "X-Correlation-Id: query-123");
+        assertThat(r.status()).as(r.corpo()).isEqualTo(400);
+        assertThat(r.cabecalho("Content-Type")).startsWith("application/problem+json");
+        assertThat(r.cabecalho("X-Correlation-Id")).isEqualTo("query-123");
+        assertThat(r.json().get("type").asString()).isEqualTo("urn:brasil-aberto:problema:entrada-invalida");
+        assertThat(r.json().get("detail").asString()).contains("codificação inválida");
+        assertThat(IBGE.pedidosTotais()).isZero();
+    }
 }

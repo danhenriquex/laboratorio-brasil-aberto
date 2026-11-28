@@ -2,6 +2,7 @@ package io.github.danhenriquex.brasilaberto.localidades.config;
 
 import io.github.danhenriquex.brasilaberto.localidades.cache.CacheComValidade;
 import io.github.danhenriquex.brasilaberto.localidades.fonte.ClienteIbge;
+import io.github.danhenriquex.brasilaberto.localidades.operacao.DespachanteSemEco;
 import io.github.danhenriquex.brasilaberto.localidades.operacao.FiltroCorrelacao;
 import io.github.danhenriquex.brasilaberto.localidades.operacao.Metricas;
 import io.github.danhenriquex.brasilaberto.localidades.servico.ServicoLocalidades;
@@ -18,6 +19,12 @@ import org.springframework.web.context.request.RequestContextHolder;
 @Configuration
 @EnableConfigurationProperties(Configuracao.class)
 public class Montagem {
+
+    /** Substitui o DispatcherServlet padrão (mesmo nome de bean) para o TRACE não ecoar o pedido (T047). */
+    @Bean(name = "dispatcherServlet")
+    DespachanteSemEco dispatcherServlet() {
+        return new DespachanteSemEco();
+    }
 
     @Bean
     Clock relogio() {

@@ -14,6 +14,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -23,7 +24,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 /** Mesmos casos do test_api_base.py do E1. */
 @AutoConfigureMetrics
-@SpringBootTest(classes = {LocalidadesApplication.class, ApiBaseTest.Falha.class})
+@SpringBootTest(classes = {LocalidadesApplication.class, ApiBaseTest.Falha.class},
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ApiBaseTest {
 
     @RestController
@@ -39,6 +41,9 @@ class ApiBaseTest {
 
     @Autowired
     FiltroCorrelacao filtro;
+
+    @LocalServerPort
+    int porta;
 
     MockMvc mvc;
 
@@ -64,6 +69,18 @@ class ApiBaseTest {
     @Test
     void metodoNaoSuportadoTambemE404() throws Exception {
         Apoio.assertProblema(mvc.perform(post("/health")).andReturn(), 404, "nao-encontrado");
+    }
+
+    /** T047: o TRACE passa pelo Tomcat e pelo Spring como os outros métodos, e nada do pedido volta ecoado. */
+    @Test
+    void traceTambemE404SemEco() throws Exception {
+        var r = Apoio.pedidoCru(porta, "TRACE", "/v1/ufs", "X-Correlation-Id: trace-123", "Cookie: segredo=abc");
+        assertThat(r.status()).isEqualTo(404);
+        assertThat(r.cabecalho("Content-Type")).startsWith("application/problem+json");
+        assertThat(r.cabecalho("X-Correlation-Id")).isEqualTo("trace-123");
+        assertThat(r.json().get("type").asString()).isEqualTo("urn:brasil-aberto:problema:nao-encontrado");
+        assertThat(r.json().get("correlacao_id").asString()).isEqualTo("trace-123");
+        assertThat(r.bruto()).doesNotContain("segredo").doesNotContain("TRACE /v1/ufs");
     }
 
     @Test

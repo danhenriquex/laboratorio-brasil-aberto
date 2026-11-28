@@ -8,15 +8,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-/** Base dos testes de integração: serviço inteiro (MockMvc) com o IBGE simulado pelo WireMock. */
+/**
+ * Base dos testes de integração: serviço inteiro (MockMvc) com o IBGE simulado pelo WireMock. O Tomcat também
+ * sobe, numa porta livre, para os casos que só ele reproduz (Apoio.pedidoCru).
+ */
 @AutoConfigureMetrics
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 abstract class BaseApiTest {
 
     static final IbgeSimulado IBGE = new IbgeSimulado();
@@ -39,6 +43,9 @@ abstract class BaseApiTest {
 
     @Autowired
     CacheComValidade cache;
+
+    @LocalServerPort
+    int porta;
 
     MockMvc mvc;
 
