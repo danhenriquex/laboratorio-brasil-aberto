@@ -35,6 +35,8 @@ A documentação do axum confirma um comportamento fora do contrato: "Create a d
 - **HEAD:** fica como no E4 e no E7, divergência já registrada.
 - **Rationale**: no E7, as mesmas lições ficaram num handler de topo e nenhuma virou convergência. Aqui elas ficam numa camada única, e a suíte (que já tem os cenários) confere.
 
+- **Atualização depois da sondagem (T004, 2026-11-28):** com o esqueleto, o `hyper` deixou passar `%ZZ`, `//`, `.`, `..`, `;` e `OPTIONS *` até o roteador, que respondeu 404 sem limpar nem redirecionar nada, e o axum deu 405 com `Allow` para `POST` e `TRACE`, sem eco. **Decisão:** não há saneamento da linha do pedido, como no E7. A camada de topo põe a correlação e o formato, e o `fallback` e o `method_not_allowed_fallback` levam ao 404 do contrato. Como o roteador não normaliza, a checagem de caminho irregular da camada de topo deixa de ser necessária: um `;` ou um `.` num segmento com curinga chega ao handler e é recusado pela validação (400), e fora deles não casa rota nenhuma (404), o que a suíte aceita. O cuidado que fica é o extrator `Path`, que decodifica o segmento e recusaria `%ZZ` com a sua própria resposta: a rejeição vira `entrada-invalida`.
+
 ## R4. Parâmetros da *query*
 
 - **Decision**: a *query* é lida do texto cru (`Uri::query()`), sem o extrator `Query` do axum, que usa `serde_urlencoded` e decodifica de forma tolerante:
