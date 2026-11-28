@@ -70,3 +70,24 @@ def test_metodo_trace_e_problema(servico, metodo):
     problema = r.json()
     assert problema["type"] == "urn:brasil-aberto:problema:nao-encontrado"
     assert problema["correlacao_id"] == "metodo-xyz"
+
+
+@pytest.mark.parametrize("aceita", ["application/xml", "text/html", "text/plain", "application/problem+json"])
+@pytest.mark.parametrize("caminho,rota", [
+    ("/v1/ufs", "/v1/ufs"),
+    ("/v1/ufs/RJ/municipios", "/v1/ufs/{uf}/municipios"),
+    ("/health", "/health"),
+])
+def test_accept_e_ignorado(servico, caminho, rota, aceita):
+    """Convergência do E4 (T048): o Accept não muda a resposta; o sucesso é sempre application/json."""
+    r = servico.get(caminho, headers={"Accept": aceita})
+    assert r.status_code == 200
+    assert r.headers["content-type"].split(";")[0].strip() == "application/json"
+    validar(r, "GET", rota)
+
+
+def test_accept_nao_muda_o_formato_do_erro(servico):
+    """Convergência do E4 (T048): com qualquer Accept, o erro continua em application/problem+json."""
+    r = servico.get("/v1/municipios/12ab", headers={"Accept": "application/xml"})
+    validar(r, "GET", "/v1/municipios/{codigo}")
+    assert r.status_code == 400

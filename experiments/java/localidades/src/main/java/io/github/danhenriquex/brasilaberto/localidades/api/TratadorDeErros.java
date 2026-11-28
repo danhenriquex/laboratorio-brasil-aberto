@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import org.apache.tomcat.util.http.InvalidParameterException;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -31,7 +32,8 @@ public class TratadorDeErros {
         Object correlacao = pedido.getAttribute(FiltroCorrelacao.ATRIBUTO);
         corpo.setProperty("correlacao_id", correlacao != null ? correlacao : FiltroCorrelacao.correlacaoDe(null));
         pedido.setAttribute(ATRIBUTO_TIPO_ERRO, erro.tipo());
-        return ResponseEntity.status(erro.status()).body(corpo);
+        // Tipo explícito: o Accept do pedido é ignorado (FormatoDaResposta, T048).
+        return ResponseEntity.status(erro.status()).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(corpo);
     }
 
     @ExceptionHandler(ErroDominio.class)

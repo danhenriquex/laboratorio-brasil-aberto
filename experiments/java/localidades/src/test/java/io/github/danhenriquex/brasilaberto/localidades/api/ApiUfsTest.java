@@ -171,4 +171,15 @@ class ApiUfsTest extends BaseApiTest {
         var corpo = assertProblema(mvc.perform(get("/v1/ufs/RJ/municipios").param("itens", "99999999999")).andReturn(), 400, "entrada-invalida");
         assertThat(corpo.get("detail").asString()).contains("500");
     }
+
+    /** T048: com qualquer Accept, a lista sai em application/json, como no E1. */
+    @ParameterizedTest
+    @ValueSource(strings = {"application/xml", "text/html", "text/plain", "application/problem+json"})
+    void acceptNaoMudaOFormato(String aceita) throws Exception {
+        estados();
+        var r = mvc.perform(get("/v1/ufs").header("Accept", aceita)).andReturn();
+        assertThat(r.getResponse().getStatus()).as(r.getResponse().getContentAsString()).isEqualTo(200);
+        assertThat(r.getResponse().getContentType()).startsWith("application/json");
+        assertThat(json(r).get("dados")).hasSize(27);
+    }
 }
