@@ -59,6 +59,8 @@ O `ServeMux` tem comportamentos padrão que divergem do contrato. Pela documenta
 - **Rationale**: no E4, cada uma dessas lições custou uma rodada de convergência. Aqui elas viram regra explícita, num lugar só, e a suíte (que já tem os cenários) confere.
 - **Alternatives considered**: deixar o `ServeMux` responder e reescrever as respostas dele com um *wrapper* do `ResponseWriter`. É mais frágil e esconde a regra.
 
+- **Atualização na US2 (2026-11-28), caminho mal codificado (lição da T044):** o handler de topo não basta para um caminho com escape inválido, como `/v1/municipios/%ZZ`. O próprio `net/http` recusa o pedido ao ler a linha, antes de qualquer handler, com `400 Bad Request` em texto puro e sem correlação, e a biblioteca padrão não oferece gancho para isso. **Decisão:** um `net.Listener` próprio (`internal/transporte`) saneia a linha de cada pedido. Só no caminho, troca o `%` que não inicia um escape válido por `%25`, e assim o texto literal (`%ZZ`) chega ao handler, onde a validação o recusa como entrada inválida (400 em problem+json), como no E1. A *query* fica crua, porque a leitura dela já trata a codificação inválida (R4). Um corpo nunca é alterado: com `Content-Length`, os bytes passam sem mexer; com `Transfer-Encoding`, o resto da conexão passa sem mexer.
+
 ## R4. Parâmetros da *query*
 
 O `URL.Query()` do Go descarta em silêncio os pares mal codificados, e o `Get` devolve o **primeiro** valor de um parâmetro repetido.

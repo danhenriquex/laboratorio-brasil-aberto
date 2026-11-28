@@ -26,6 +26,8 @@ func responder(w http.ResponseWriter, r *http.Request, res servico.Resultado) er
 
 // RegistrarV1 registra as rotas v1 do contrato no roteador.
 func RegistrarV1(rt *Roteador, s *servico.Servico) {
+	registrarMunicipios(rt, s)
+
 	rt.Rota("GET /v1/ufs", func(w http.ResponseWriter, r *http.Request) error {
 		res, err := s.ListarUFs(r.Context())
 		if err != nil {

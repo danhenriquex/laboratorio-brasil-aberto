@@ -164,3 +164,20 @@ func (s *Servico) ListarMunicipios(ctx context.Context, paramUF string, pagina i
 	p := dominio.Paginar(dominio.Ordenar(municipios), pagina, itens)
 	return Resultado{Dados: p.Itens, Meta: o.meta, Paginacao: &p.Paginacao, Cache: o.cache}, nil
 }
+
+// --- US2 ---
+
+// ObterMunicipio valida o código antes de consultar o IBGE.
+func (s *Servico) ObterMunicipio(ctx context.Context, codigo string) (Resultado, error) {
+	codigo, err := dominio.ValidarCodigoMunicipio(codigo)
+	if err != nil {
+		return Resultado{}, err
+	}
+	o, err := s.obter(ctx, "municipios/"+codigo, func(ctx context.Context) (any, string, error) {
+		return s.fonte.Municipio(ctx, codigo)
+	})
+	if err != nil {
+		return Resultado{}, err
+	}
+	return Resultado{Dados: o.dados, Meta: o.meta, Cache: o.cache}, nil
+}

@@ -174,10 +174,10 @@ description: "Lista de tarefas do E7 — Serviço de localidades (IBGE), em Go"
 
 **Independent Test**: `test_us2_municipio.py` passa contra o binário.
 
-- [ ] T020 [P] [US2] Escrever `G/internal/api/municipio_test.go`, com os casos do `test_api_municipio.py` do E1: Rio de Janeiro (`3304557`) com UF e regiões; `9999999` dá 404 com o `detail` do E1; `12ab`, `123456`, `12345678` e `330455７` dão 400 sem chamar o IBGE; `3545803` (nome com apóstrofo) sai sem escape; e, como lição da **T044**, `/v1/municipios/%ZZ` e `/v1/municipios/%2F` dão 400 ou 404 em problem+json com correlação, nunca HTML.
-- [ ] T021 [US2] Em `G/internal/servico/servico.go`, implementar `ObterMunicipio(ctx, codigo)`.
-- [ ] T022 [US2] Criar `G/internal/api/municipios.go` com `GET /v1/municipios/{codigo}`. Ao final, T020 passa.
-- [ ] T023 [US2] Rodar `verificar.sh "experiments/go/localidades/localidades" -k us2` e registrar observações no diário.
+- [X] T020 [P] [US2] Escrever `G/internal/api/municipio_test.go`, com os casos do `test_api_municipio.py` do E1: Rio de Janeiro (`3304557`) com UF e regiões; `9999999` dá 404 com o `detail` do E1; `12ab`, `123456`, `12345678` e `330455７` dão 400 sem chamar o IBGE; `3545803` (nome com apóstrofo) sai sem escape; e, como lição da **T044**, `/v1/municipios/%ZZ` e `/v1/municipios/%2F` dão 400 ou 404 em problem+json com correlação, nunca HTML.
+- [X] T021 [US2] Em `G/internal/servico/servico.go`, implementar `ObterMunicipio(ctx, codigo)`.
+- [X] T022 [US2] Criar `G/internal/api/municipios.go` com `GET /v1/municipios/{codigo}`. Ao final, T020 passa.
+- [X] T023 [US2] Rodar `verificar.sh "experiments/go/localidades/localidades" -k us2` e registrar observações no diário.
 
 ---
 

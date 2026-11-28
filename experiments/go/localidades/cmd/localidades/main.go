@@ -19,6 +19,7 @@ import (
 	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/fonte"
 	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/operacao"
 	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/servico"
+	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/transporte"
 )
 
 func main() {
@@ -50,8 +51,14 @@ func executar() int {
 	// Encerra com SIGTERM ou SIGINT, terminando os pedidos em andamento (o verificar.sh manda SIGTERM).
 	ctx, parar := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
 	defer parar()
+	ouvinte, err := net.Listen("tcp", servidor.Addr)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "não foi possível subir o servidor: %v\n", err)
+		return 1
+	}
 	erro := make(chan error, 1)
-	go func() { erro <- servidor.ListenAndServe() }()
+	// O Ouvinte saneia a linha de cada pedido antes do net/http (lição da T044 do E4).
+	go func() { erro <- servidor.Serve(transporte.Ouvinte(ouvinte)) }()
 
 	select {
 	case err := <-erro:

@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,6 +12,7 @@ import (
 	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/operacao"
 	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/servico"
 	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/testeapoio"
+	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/transporte"
 )
 
 // ambiente monta o serviço inteiro (cliente, serviço e roteador) contra o IBGE simulado, como o app de
@@ -49,7 +51,10 @@ func (a *ambiente) get(alvo string, cabecalhos ...string) *httptest.ResponseReco
 func (a *ambiente) cru(alvo string, cabecalhos ...string) testeapoio.RespostaCrua {
 	a.t.Helper()
 	if a.srv == nil {
-		a.srv = httptest.NewServer(a.handler)
+		// Com o mesmo Ouvinte do main, que saneia a linha do pedido antes do net/http (lição da T044 do E4).
+		a.srv = httptest.NewUnstartedServer(a.handler)
+		a.srv.Listener = transporte.Ouvinte(a.srv.Listener)
+		a.srv.Start()
 		a.t.Cleanup(a.srv.Close)
 	}
 	return testeapoio.PedidoCru(a.t, a.srv, "GET", alvo, cabecalhos...)
@@ -99,4 +104,22 @@ func nomesDe(t *testing.T, dados any) []string {
 // testeapoioResposta é uma resposta 200 do IBGE simulado com o corpo dado.
 func testeapoioResposta(corpo string) testeapoio.Resposta {
 	return testeapoio.Resposta{Corpo: []byte(corpo)}
+}
+
+// municipio serve em /municipios/<codigo> o item de uma lista de municípios das fixtures, como o IBGE
+// falso da suíte faz.
+func (a *ambiente) municipio(fixtureLista, codigo string) {
+	a.t.Helper()
+	var lista []map[string]any
+	if err := json.Unmarshal(testeapoio.Fixture(a.t, fixtureLista), &lista); err != nil {
+		a.t.Fatal(err)
+	}
+	for _, m := range lista {
+		if id, _ := m["id"].(float64); fmt.Sprintf("%.0f", id) == codigo {
+			corpo, _ := json.Marshal(m)
+			a.ibge.Responder("/municipios/"+codigo, testeapoio.Resposta{Corpo: corpo})
+			return
+		}
+	}
+	a.t.Fatalf("município %s não está em %s", codigo, fixtureLista)
 }
