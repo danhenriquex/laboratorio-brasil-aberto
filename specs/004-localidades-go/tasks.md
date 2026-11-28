@@ -228,9 +228,9 @@ description: "Lista de tarefas do E7 — Serviço de localidades (IBGE), em Go"
 
 **Independent Test**: a tabela comparativa do `RESULTS.md` fica preenchida para as três implementações, com data e método.
 
-- [ ] T036 [US6] Criar `specs/004-localidades-go/medicao/medir.py` e `medir.sh` a partir dos do E4 (`specs/003-localidades-java/medicao/`), que ficam como registro do E4, acrescentando o E7: build `go build -o localidades ./cmd/localidades`, suíte `go test -count=1 ./...`, subida pelo binário, artefato = tamanho do binário, linhas `.go` de produção e de `*_test.go`, e dependências diretas = linhas `require` sem `// indirect` no `go.mod`. A tabela de saída passa a ter três colunas.
-- [ ] T037 [US6] Rodar o `medir.sh` na mesma máquina e no mesmo dia, com os caches dos três ecossistemas populados, e guardar a saída em `specs/004-localidades-go/medicao/resultado-AAAA-MM-DD.md`.
-- [ ] T038 [US6] Consolidar o `specs/004-localidades-go/ergonomia.md` numa nota de 1 a 5 com justificativa para cada ponto do FR-007 (setup, testes, contrato, erros e métricas), para o E7, ao lado das notas do E1 e do E4 registradas no `ergonomia.md` do E4. Toda diferença citada traz a medida e o contexto (FR-008).
+- [X] T036 [US6] Criar `specs/004-localidades-go/medicao/medir.py` e `medir.sh` a partir dos do E4 (`specs/003-localidades-java/medicao/`), que ficam como registro do E4, acrescentando o E7: build `go build -o localidades ./cmd/localidades`, suíte `go test -count=1 ./...`, subida pelo binário, artefato = tamanho do binário, linhas `.go` de produção e de `*_test.go`, e dependências diretas = linhas `require` sem `// indirect` no `go.mod`. A tabela de saída passa a ter três colunas.
+- [X] T037 [US6] Rodar o `medir.sh` na mesma máquina e no mesmo dia, com os caches dos três ecossistemas populados, e guardar a saída em `specs/004-localidades-go/medicao/resultado-AAAA-MM-DD.md`.
+- [X] T038 [US6] Consolidar o `specs/004-localidades-go/ergonomia.md` numa nota de 1 a 5 com justificativa para cada ponto do FR-007 (setup, testes, contrato, erros e métricas), para o E7, ao lado das notas do E1 e do E4 registradas no `ergonomia.md` do E4. Toda diferença citada traz a medida e o contexto (FR-008).
 
 ---
 
