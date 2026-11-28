@@ -14,7 +14,7 @@ Cada experimento é um ciclo do Spec Kit (specify, plan, tasks, implement) com u
 | E5 | Simulador de crédito (SAC e Price) | Java | Modelagem de domínio, precisão decimal, Strategy |
 | E6 | Portal da Transparência | Python | Chave, limite de requisições, fila e backoff |
 
-O E4 foi antecipado para logo depois do E1 (2026-11-27), para comparar a ergonomia com o E1 ainda fresco. O E7 e o E8 entraram com a constituição 1.1.0 ([ADR 0002](adr/0002-go-e-rust-como-linguagens.md)) e vêm logo depois do E4, pelo mesmo motivo. A ordem de execução é a da tabela.
+O E4 foi antecipado para logo depois do E1 (2026-11-27), para comparar a ergonomia com o E1 ainda fresco. O E7 e o E8 entraram com a constituição 1.1.0 ([ADR 0002](adr/0002-go-e-rust-como-linguagens.md)) e vêm logo depois do E4, pelo mesmo motivo. O E7 foi concluído em 2026-11-28 ([RESULTS](../specs/004-localidades-go/RESULTS.md)): passou nos 82 cenários, com respostas idênticas às do E1 e do E4. A ordem de execução é a da tabela.
 
 Depois, com os serviços estabelecidos: ingestão agendada, MCP, RAG e chatbot.
 

@@ -236,16 +236,16 @@ description: "Lista de tarefas do E7 — Serviço de localidades (IBGE), em Go"
 
 ## Phase 9: Polish & Fechamento do experimento
 
-- [ ] T039 Verificar sem rede externa (SC-004), com o perfil do quickstart §3: `go test -count=1 ./...` com `GOFLAGS=-mod=mod GOPROXY=off` e a suíte de caixa-preta, os dois dentro do sandbox, mais um `curl` ao IBGE que precisa falhar no mesmo sandbox.
-- [ ] T040 Fazer a execução real contra o IBGE, conforme o quickstart §5, com o E1, o E4 e o E7 lado a lado recebendo os mesmos pedidos, e comparar os corpos ignorando só o `coletado_em` e a correlação.
-- [ ] T041 [P] Acrescentar a `docs/adr/0001-convencoes-comuns-de-api.md` uma seção "Confirmação no E7", com o que a terceira implementação mostrou sobre as convenções (formato de erro, métricas, `coletado_em`, configuração).
-- [ ] T042 Escrever `specs/004-localidades-go/RESULTS.md` a partir de `docs/templates/RESULTS.md`, com:
+- [X] T039 Verificar sem rede externa (SC-004), com o perfil do quickstart §3: `go test -count=1 ./...` com `GOFLAGS=-mod=mod GOPROXY=off` e a suíte de caixa-preta, os dois dentro do sandbox, mais um `curl` ao IBGE que precisa falhar no mesmo sandbox.
+- [X] T040 Fazer a execução real contra o IBGE, conforme o quickstart §5, com o E1, o E4 e o E7 lado a lado recebendo os mesmos pedidos, e comparar os corpos ignorando só o `coletado_em` e a correlação.
+- [X] T041 [P] Acrescentar a `docs/adr/0001-convencoes-comuns-de-api.md` uma seção "Confirmação no E7", com o que a terceira implementação mostrou sobre as convenções (formato de erro, métricas, `coletado_em`, configuração).
+- [X] T042 Escrever `specs/004-localidades-go/RESULTS.md` a partir de `docs/templates/RESULTS.md`, com:
   - a resposta curta à pergunta do E7;
   - a tabela das 9 medidas para as três implementações (US6);
   - a tabela das **lições do E4** (FR-009, SC-006): uma linha para cada uma de T044 a T050, dizendo se o comportamento apareceu em Go e como foi tratado;
   - as limitações, inclusive a ordem de construção (o E7 veio depois do E1 e do E4);
   - as decisões e os próximos passos, com o E8 (Rust) na sequência do roteiro.
-- [ ] T043 [P] Atualizar `docs/roteiro.md` com a data de conclusão do E7 e conferir que `CLAUDE.md` e o `README.md` da raiz citam `experiments/go/`.
+- [X] T043 [P] Atualizar `docs/roteiro.md` com a data de conclusão do E7 e conferir que `CLAUDE.md` e o `README.md` da raiz citam `experiments/go/`.
 
 ---
 
