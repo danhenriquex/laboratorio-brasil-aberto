@@ -201,9 +201,9 @@ description: "Lista de tarefas do E7 — Serviço de localidades (IBGE), em Go"
 
 **Independent Test**: `test_us4_busca.py` e as buscas de `test_paridade_ordenacao.py` passam contra o binário.
 
-- [ ] T029 [P] [US4] Escrever `G/internal/api/busca_test.go`, espelhando o `test_api_busca.py` do E1: `niteroi` e `NITERÓI` acham Niterói; `são` em SP traz vários, em ordem e paginados; termo sem resultado dá lista vazia com `paginas` 0; `a`, `"  a  "` e `""` dão 400 sem consultar; 61 caracteres dão 400 citando 60; duas buscas na mesma UF fazem uma consulta só; e, como lição da **T046**, `nome=%ZZ`, `nome=s%E3o` e `nome=%`, enviados crus num `httptest.Server`, dão 400 `entrada-invalida`.
-- [ ] T030 [US4] Acrescentar o `nome` opcional a `ListarMunicipios` em `G/internal/servico/servico.go` (validar, filtrar, ordenar e paginar) e ao handler de `G/internal/api/ufs.go`. Ao final, T029 passa.
-- [ ] T031 [US4] Rodar `verificar.sh "experiments/go/localidades/localidades" -k "us4 or paridade"`.
+- [X] T029 [P] [US4] Escrever `G/internal/api/busca_test.go`, espelhando o `test_api_busca.py` do E1: `niteroi` e `NITERÓI` acham Niterói; `são` em SP traz vários, em ordem e paginados; termo sem resultado dá lista vazia com `paginas` 0; `a`, `"  a  "` e `""` dão 400 sem consultar; 61 caracteres dão 400 citando 60; duas buscas na mesma UF fazem uma consulta só; e, como lição da **T046**, `nome=%ZZ`, `nome=s%E3o` e `nome=%`, enviados crus num `httptest.Server`, dão 400 `entrada-invalida`.
+- [X] T030 [US4] Acrescentar o `nome` opcional a `ListarMunicipios` em `G/internal/servico/servico.go` (validar, filtrar, ordenar e paginar) e ao handler de `G/internal/api/ufs.go`. Ao final, T029 passa.
+- [X] T031 [US4] Rodar `verificar.sh "experiments/go/localidades/localidades" -k "us4 or paridade"`.
 
 ---
 
