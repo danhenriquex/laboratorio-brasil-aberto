@@ -52,6 +52,19 @@ class ApiBaseTest {
         mvc = MockMvcBuilders.webAppContextSetup(contexto).addFilters(filtro).build();
     }
 
+    /** T048: o Accept não muda o formato; sucesso em application/json e erro em application/problem+json. */
+    @ParameterizedTest
+    @ValueSource(strings = {"application/xml", "text/html", "text/plain", "application/problem+json"})
+    void acceptEIgnorado(String aceita) throws Exception {
+        MvcResult saude = mvc.perform(get("/health").header("Accept", aceita)).andReturn();
+        assertThat(saude.getResponse().getStatus()).isEqualTo(200);
+        assertThat(saude.getResponse().getContentType()).startsWith("application/json");
+        assertThat(saude.getResponse().getContentAsString()).isEqualTo("{\"status\":\"ok\"}");
+        Apoio.assertProblema(mvc.perform(get("/v1/municipios/12ab").header("Accept", aceita)).andReturn(), 400, "entrada-invalida");
+        Apoio.assertProblema(mvc.perform(get("/nada").header("Accept", aceita)).andReturn(), 404, "nao-encontrado");
+        Apoio.assertProblema(mvc.perform(get("/v1/_falha_de_teste").header("Accept", aceita)).andReturn(), 500, "erro-interno");
+    }
+
     @Test
     void health() throws Exception {
         MvcResult r = mvc.perform(get("/health")).andReturn();

@@ -25,13 +25,13 @@ As mesmas do E1: a API de localidades do IBGE e a [ficha da fonte](../../discove
 A partir da raiz do repositório, com o JDK 25 instalado:
 
 ```bash
-(cd experiments/java/localidades && ./mvnw -q test)                       # 141 testes
+(cd experiments/java/localidades && ./mvnw -q test)                       # 149 testes
 (cd experiments/java/localidades && ./mvnw -q package -DskipTests)
 contracts/localidades/verificacao/verificar.sh "java -jar experiments/java/localidades/target/localidades.jar"   # 53 cenários
 specs/003-localidades-java/medicao/medir.sh                                # comparação E1 × E4
 ```
 
-A suíte tinha 53 cenários no fechamento; com as duas convergências, passou a 65 (veja abaixo).
+A suíte tinha 53 cenários no fechamento; com as três convergências, passou a 78 (veja abaixo).
 
 ```text
 ```
@@ -112,6 +112,11 @@ A **segunda convergência** sondou o que passa pelo Tomcat antes do controller e
 - **T047 (LOW):** `TRACE` dava 405 no JSON padrão do Spring Boot, sem `problem+json` e sem `X-Correlation-Id`. Agora dá o mesmo 404 `nao-encontrado` dos outros métodos não suportados. O caminho óbvio (`spring.mvc.dispatch-trace-request=true`) não bastava: o `DispatcherServlet` despachava o pedido, mas depois chamava o `HttpServlet.doTrace`, que **ecoava o pedido inteiro, cookies inclusive**, depois do corpo. Isso é a porta do *cross-site tracing*. A solução foi um `DispatcherServlet` próprio (`DespachanteSemEco`) e o conector do Tomcat com `allowTrace`. Mais uma convenção do framework que só aparece quando quebra (ver [ergonomia.md](ergonomia.md)).
 
 A suíte ganhou 9 cenários (`test_query_mal_codificada_nunca_e_500` com 4 variações e `test_metodo_trace_e_problema` com 5 métodos), que passam nas duas implementações: 65 no total. Os testes do E4 que dependem do Tomcat de verdade agora sobem o servidor numa porta livre, porque o MockMvc não passa pela decodificação da *query* nem pelo conector.
+
+A **terceira convergência** olhou para a negociação de conteúdo e achou uma lacuna, corrigida na issue #57:
+- **T048 (MEDIUM):** o Spring escolhia o formato da resposta pelo cabeçalho `Accept`, e o contrato só tem JSON. Com `Accept: application/xml`, `text/html` ou `text/plain`, um pedido válido dava **500 `erro-interno`**, até no `/health`, e ainda contava como erro interno nas métricas. Com `Accept: application/problem+json`, o 200 saía com o tipo de erro no `Content-Type`. Agora o E4 ignora o `Accept`, como o E1: sucesso sempre em `application/json`, erro sempre em `application/problem+json`.
+
+A suíte ganhou 13 cenários (`test_accept_e_ignorado`, com 3 rotas e 4 valores de `Accept`, e `test_accept_nao_muda_o_formato_do_erro`), que passam nas duas implementações: 78 no total.
 
 **Divergências que ficaram, porque a spec não as define:** `HEAD` e `OPTIONS` (o E4 aceita, e o E1 dá 404), barra no fim do caminho (o E1 redireciona, e o E4 dá 404) e `/v1/ufs/%2F` no E1, que responde 200 e merece uma olhada própria.
 
