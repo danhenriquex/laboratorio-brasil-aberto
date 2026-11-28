@@ -13,3 +13,6 @@ node_modules/
 discovery/reports/*.html
 dist/
 *.pyc
+
+# E7 (Go): binário gerado por go build
+experiments/go/localidades/localidades

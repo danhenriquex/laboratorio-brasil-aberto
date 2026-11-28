@@ -41,15 +41,15 @@ description: "Lista de tarefas do E7 — Serviço de localidades (IBGE), em Go"
 
 **Purpose**: Go, módulo, dependências fixadas e diário de ergonomia.
 
-- [ ] T001 Instalar o Go com `brew install go`, **depois de confirmação do usuário** (é uma mudança no sistema). Conferir com `go version`, que deve mostrar `go1.27.x`, e registrar a versão exata e o tempo gasto em `specs/004-localidades-go/ergonomia.md`.
-- [ ] T002 Criar o módulo em `G/` com `go mod init github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades`, declarar `go 1.27` no `G/go.mod` e fixar as dependências do research com `go get`:
+- [X] T001 Instalar o Go com `brew install go`, **depois de confirmação do usuário** (é uma mudança no sistema). Conferir com `go version`, que deve mostrar `go1.27.x`, e registrar a versão exata e o tempo gasto em `specs/004-localidades-go/ergonomia.md`.
+- [X] T002 Criar o módulo em `G/` com `go mod init github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades`, declarar `go 1.27` no `G/go.mod` e fixar as dependências do research com `go get`:
   - `github.com/prometheus/client_golang@v1.25.0`;
   - `golang.org/x/text@v0.44.0`;
   - `golang.org/x/sync@v0.25.0`.
 
   Versionar `G/go.mod` e `G/go.sum`. Acrescentar ao `.gitignore` da raiz o binário `experiments/go/localidades/localidades`.
-- [ ] T003 [P] Criar `G/README.md`, espelhando o README do E4: pergunta do E7, pré-requisitos (Go 1.27), comandos de teste, de verificação e de execução, e links para o quickstart e o contrato. Criar também `specs/004-localidades-go/ergonomia.md`, o diário do FR-007, com uma seção por ponto (setup, testes, contrato, erros e métricas) e uma seção "Lições do E4" para anotar, à medida que aparecerem, os comportamentos das convergências T044 a T050.
-- [ ] T004 Criar `G/cmd/localidades/main.go` mínimo, que sobe um `http.Server` em `127.0.0.1:8000` com `GET /health` devolvendo `{"status":"ok"}`. Rodar `go build` e confirmar que compila e responde. Esse arquivo é substituído pela montagem completa na T015.
+- [X] T003 [P] Criar `G/README.md`, espelhando o README do E4: pergunta do E7, pré-requisitos (Go 1.27), comandos de teste, de verificação e de execução, e links para o quickstart e o contrato. Criar também `specs/004-localidades-go/ergonomia.md`, o diário do FR-007, com uma seção por ponto (setup, testes, contrato, erros e métricas) e uma seção "Lições do E4" para anotar, à medida que aparecerem, os comportamentos das convergências T044 a T050.
+- [X] T004 Criar `G/cmd/localidades/main.go` mínimo, que sobe um `http.Server` em `127.0.0.1:8000` com `GET /health` devolvendo `{"status":"ok"}`. Rodar `go build` e confirmar que compila e responde. Esse arquivo é substituído pela montagem completa na T015.
 
 ---
 
@@ -61,11 +61,11 @@ description: "Lista de tarefas do E7 — Serviço de localidades (IBGE), em Go"
 
 ### Testes da fundação (escrever primeiro)
 
-- [ ] T005 [P] Criar o apoio de testes em `G/internal/testeapoio/`:
+- [X] T005 [P] Criar o apoio de testes em `G/internal/testeapoio/`:
   - `fixtures.go`: localiza a raiz do repositório subindo até achar `contracts/localidades` e lê `contracts/localidades/fixtures-ibge/*.json`;
   - `relogio.go`: um relógio falso com instante inicial `2026-11-26T12:00:00.123Z`, uma fonte monotônica e `Avancar(time.Duration)`;
   - `ibge.go`: um `httptest.NewServer` em `127.0.0.1`, que serve as fixtures por caminho, conta os pedidos por caminho e permite simular atraso, status e corpo. Nenhum teste fala com host externo.
-- [ ] T006 [P] Escrever `G/internal/dominio/dominio_test.go`, em tabela, com os mesmos casos do `test_dominio.py` do E1 e do `DominioTest.java` do E4:
+- [X] T006 [P] Escrever `G/internal/dominio/dominio_test.go`, em tabela, com os mesmos casos do `test_dominio.py` do E1 e do `DominioTest.java` do E4:
   - **`Dobrar`:** `"Niterói"` dá `"niteroi"`, `"SÃO"` dá `"sao"`, e o apóstrofo é mantido;
   - **ordenação** por `(Dobrar(nome), codigo)`;
   - **`FiltrarPorNome`;**
@@ -74,12 +74,12 @@ description: "Lista de tarefas do E7 — Serviço de localidades (IBGE), em Go"
   - **`ValidarCodigoMunicipio`:** exige "`^\d{7}$`" só com dígitos ASCII, e `"330455７"` é recusado;
   - **`ValidarPaginacao`:** "inteiro de 1 a `ITENS_MAX` (padrão 500)" para `itens`, com o limite citado na mensagem, e `pagina` como `int64` (data-model);
   - **`ValidarNome`:** "aparado; de 2 a 60 caracteres".
-- [ ] T007 [P] Escrever `G/internal/config/config_test.go`, cobrindo:
+- [X] T007 [P] Escrever `G/internal/config/config_test.go`, cobrindo:
   - os padrões do R14 do E1: `127.0.0.1`, `8000`, a URL do IBGE, `10`, `86400` e `500`;
   - a leitura pelas variáveis `LOCALIDADES_*` e a URL sem barra final;
   - a recusa, com erro cuja mensagem cita a variável e o valor recebido, de: `abc`, `0`, `-1`, `NaN`, `Inf`, `infinity`, `1e300` e `0.0001` em prazo e validade (lição da **T049**: "número finito entre 0,001 e 10⁹"); `0` e `1.5` em `LOCALIDADES_ITENS_MAX`; `ftp://ibge` em `LOCALIDADES_IBGE_URL`; e `abc` em `LOCALIDADES_PORTA`;
   - a aceitação dos limites `0.001` e `1000000000`.
-- [ ] T008 [P] Escrever `G/internal/fonte/fonte_test.go` com o IBGE simulado, espelhando o `test_fonte_ibge.py` do E1:
+- [X] T008 [P] Escrever `G/internal/fonte/fonte_test.go` com o IBGE simulado, espelhando o `test_fonte_ibge.py` do E1:
   - **Classificação:**
 
     | Situação simulada | Erro esperado |
@@ -97,8 +97,8 @@ description: "Lista de tarefas do E7 — Serviço de localidades (IBGE), em Go"
 
 ### Implementação da fundação
 
-- [ ] T009 [P] Implementar `G/internal/erros/erros.go`: `ErroDominio` (`Tipo`, `Titulo`, `Detalhe`, `Status`, método `Error()` e `URN()` = `urn:brasil-aberto:problema:` + tipo), os seis construtores com os títulos e status do E1 (`EntradaInvalida` 400, `NaoEncontrado` 404, `FonteIndisponivel` 502, `FonteLenta` 504, `RespostaInesperadaDaFonte` 502, `ErroInterno` 500) e `DeFonte()`.
-- [ ] T010 Implementar `G/internal/dominio/` conforme o `data-model.md` do E7, sem importar `net/http`:
+- [X] T009 [P] Implementar `G/internal/erros/erros.go`: `ErroDominio` (`Tipo`, `Titulo`, `Detalhe`, `Status`, método `Error()` e `URN()` = `urn:brasil-aberto:problema:` + tipo), os seis construtores com os títulos e status do E1 (`EntradaInvalida` 400, `NaoEncontrado` 404, `FonteIndisponivel` 502, `FonteLenta` 504, `RespostaInesperadaDaFonte` 502, `ErroInterno` 500) e `DeFonte()`.
+- [X] T010 Implementar `G/internal/dominio/` conforme o `data-model.md` do E7, sem importar `net/http`:
   - as *structs* das entidades com as *tags* JSON do contrato;
   - `UFsOficiais`, com os 27 códigos e siglas;
   - `Dobrar`: cadeia `transform.Chain(norm.NFKD, runes.Remove(runes.In(unicode.Mn)), cases.Fold())` (research R9);
@@ -106,8 +106,8 @@ description: "Lista de tarefas do E7 — Serviço de localidades (IBGE), em Go"
   - `ResolverUF`, `ValidarCodigoMunicipio`, `ValidarPaginacao` e `ValidarNome`, com expressões só ASCII.
 
   Ao final, T006 passa.
-- [ ] T011 Implementar `G/internal/config/config.go` conforme o research R11: `Carregar(getenv func(string) string) (Configuracao, error)`, com `strconv`, os padrões do E1 e as regras de validação, recusando explicitamente `NaN` e infinito (`math.IsNaN`, `math.IsInf`). A mensagem segue o formato do E1: `configuração inválida: LOCALIDADES_X precisa …, recebi '…'`. Ao final, T007 passa.
-- [ ] T012 Implementar `G/internal/fonte/ibge.go`:
+- [X] T011 Implementar `G/internal/config/config.go` conforme o research R11: `Carregar(getenv func(string) string) (Configuracao, error)`, com `strconv`, os padrões do E1 e as regras de validação, recusando explicitamente `NaN` e infinito (`math.IsNaN`, `math.IsInf`). A mensagem segue o formato do E1: `configuração inválida: LOCALIDADES_X precisa …, recebi '…'`. Ao final, T007 passa.
+- [X] T012 Implementar `G/internal/fonte/ibge.go`:
   - **Cliente:** `http.Client` sem redirecionamento (`CheckRedirect` que devolve `http.ErrUseLastResponse`) e com o `User-Agent` `laboratorio-brasil-aberto-localidades/0.1.0`;
   - **Prazo total:** `context.WithTimeout(prazo)` cobrindo conexão, cabeçalhos e `io.ReadAll` do corpo;
   - **Classificação:** a do research R6, com `errors.Is(err, context.DeadlineExceeded)` para o prazo;
@@ -116,7 +116,7 @@ description: "Lista de tarefas do E7 — Serviço de localidades (IBGE), em Go"
   - **Mensagens de erro:** nunca contêm o corpo do IBGE.
 
   Ao final, T008 passa.
-- [ ] T013 Implementar a base HTTP em `G/internal/api/` e `G/internal/operacao/`, e escrever `G/internal/api/base_test.go`, espelhando o `test_api_base.py` do E1 e o `ApiBaseTest.java` do E4:
+- [X] T013 Implementar a base HTTP em `G/internal/api/` e `G/internal/operacao/`, e escrever `G/internal/api/base_test.go`, espelhando o `test_api_base.py` do E1 e o `ApiBaseTest.java` do E4:
   - **`operacao/correlacao.go`:** aceita `^[A-Za-z0-9._-]{1,64}$` ou gera um UUID v4 com `crypto/rand`, e guarda o valor no `context.Context` do pedido;
   - **`api/problema.go`:** escreve `application/problem+json` com `type` URN, `title`, `status`, `detail` e `correlacao_id`; um erro que não é `ErroDominio` vira 500 `erro-interno` com `detail` genérico;
   - **`api/roteador.go`, o handler de topo (research R3):**
@@ -133,10 +133,10 @@ description: "Lista de tarefas do E7 — Serviço de localidades (IBGE), em Go"
     - a correlação volta igual quando válida e é trocada por UUID v4 quando inválida;
     - um `panic` vira 500 sem rastro de execução no corpo;
     - com `Accept: application/xml`, `text/plain` e `application/problem+json`, o `/health` responde 200 em `application/json` (lição da **T048**).
-- [ ] T014 Implementar a base de `G/internal/servico/servico.go`, sem importar `net/http`:
+- [X] T014 Implementar a base de `G/internal/servico/servico.go`, sem importar `net/http`:
   - **`Meta`:** `fonte`, `url_fonte`, `url_documentacao` e `coletado_em`, formatado com o *layout* `2006-01-02T15:04:05.000Z07:00` em UTC (data-model). Um teste em `G/internal/servico/meta_test.go` confere que um instante com 0 ms sai como `.000Z`;
   - **`obter(ctx, chave, buscar)`:** nesta fase, chama a fonte direto. A cópia guardada entra na T027.
-- [ ] T015 Substituir o `G/cmd/localidades/main.go` pela montagem completa: carrega a configuração (com erro → mensagem em stderr e `os.Exit(2)`), monta cliente, serviço, métricas e roteador, e sobe o `http.Server` em `LOCALIDADES_HOST:LOCALIDADES_PORTA`, com `ReadHeaderTimeout` definido. Gerar o binário e rodar `verificar.sh "experiments/go/localidades/localidades" -k "contrato_valido or saude or correlacao"`.
+- [X] T015 Substituir o `G/cmd/localidades/main.go` pela montagem completa: carrega a configuração (com erro → mensagem em stderr e `os.Exit(2)`), monta cliente, serviço, métricas e roteador, e sobe o `http.Server` em `LOCALIDADES_HOST:LOCALIDADES_PORTA`, com `ReadHeaderTimeout` definido. Gerar o binário e rodar `verificar.sh "experiments/go/localidades/localidades" -k "contrato_valido or saude or correlacao"`.
 
 **Checkpoint**: `go test ./...` passa (domínio, configuração, cliente e base HTTP), e o binário sobe e responde `/health` pelo `verificar.sh`.
 
@@ -159,7 +159,7 @@ description: "Lista de tarefas do E7 — Serviço de localidades (IBGE), em Go"
   - **lição da T046:** `?itens=%ZZ` e `?pagina=%E3` dão 400 `entrada-invalida`, e nunca 500;
   - **lição da T048:** com `Accept: application/xml`, `/v1/ufs` responde 200 em `application/json`;
   - **lição da T050:** `/v1/ufs;jsessionid=x` e `/v1/ufs/RJ;x=1/municipios` dão 404 sem consultar o IBGE;
-  - JSON sem `<` nem `&` (`SetEscapeHTML(false)`) e `paginacao` ausente em `/v1/ufs/{uf}`.
+  - JSON sem as sequências `\u003c` e `\u0026` (`SetEscapeHTML(false)`) e `paginacao` ausente em `/v1/ufs/{uf}`.
 - [ ] T017 [US1] Em `G/internal/servico/servico.go`, implementar `ListarUFs`, `ObterUF` (uma UF da tabela ausente no IBGE vira `RespostaInesperadaDaFonte`) e `ListarMunicipios(ctx, uf, pagina, itens)` (validar, resolver, buscar, ordenar e paginar).
 - [ ] T018 [US1] Criar `G/internal/api/ufs.go` com as três rotas e o envelope `Resposta[T]` (data-model), e `G/internal/api/query.go` com a leitura da *query* do research R4: `url.ParseQuery(RawQuery)` com erro → 400; valor que não é UTF-8 válido → 400; parâmetro repetido vale o **último**; `pagina` só com dígitos que estoura `int64` conta como além do fim. Registrar as rotas no `ServeMux` com padrões de método (`GET /v1/ufs/{uf}/municipios`). Ao final, T016 passa.
 - [ ] T019 [US1] Rodar `verificar.sh "experiments/go/localidades/localidades" -k "us1 or paridade or contrato_valido"` e registrar no diário de ergonomia o que exigiu ajuste para cumprir o contrato.
