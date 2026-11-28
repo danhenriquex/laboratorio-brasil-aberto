@@ -148,7 +148,7 @@ description: "Lista de tarefas do E7 — Serviço de localidades (IBGE), em Go"
 
 **Independent Test**: os cenários de `test_us1_ufs_municipios.py` e `test_paridade_ordenacao.py` (sem as buscas) passam contra o binário.
 
-- [ ] T016 [P] [US1] Escrever `G/internal/api/ufs_test.go` (`httptest` + IBGE simulado), com os casos do `test_api_ufs.py` do E1:
+- [X] T016 [P] [US1] Escrever `G/internal/api/ufs_test.go` (`httptest` + IBGE simulado), com os casos do `test_api_ufs.py` do E1:
   - 27 UFs ordenadas, com Acre primeiro;
   - `/v1/ufs/rj`, `/v1/ufs/33` e `/v1/ufs/%20RJ%20`;
   - `XX` e `99` dão 404, e `R1` dá 400, os três sem chamar o IBGE;
@@ -160,9 +160,9 @@ description: "Lista de tarefas do E7 — Serviço de localidades (IBGE), em Go"
   - **lição da T048:** com `Accept: application/xml`, `/v1/ufs` responde 200 em `application/json`;
   - **lição da T050:** `/v1/ufs;jsessionid=x` e `/v1/ufs/RJ;x=1/municipios` dão 404 sem consultar o IBGE;
   - JSON sem as sequências `\u003c` e `\u0026` (`SetEscapeHTML(false)`) e `paginacao` ausente em `/v1/ufs/{uf}`.
-- [ ] T017 [US1] Em `G/internal/servico/servico.go`, implementar `ListarUFs`, `ObterUF` (uma UF da tabela ausente no IBGE vira `RespostaInesperadaDaFonte`) e `ListarMunicipios(ctx, uf, pagina, itens)` (validar, resolver, buscar, ordenar e paginar).
-- [ ] T018 [US1] Criar `G/internal/api/ufs.go` com as três rotas e o envelope `Resposta[T]` (data-model), e `G/internal/api/query.go` com a leitura da *query* do research R4: `url.ParseQuery(RawQuery)` com erro → 400; valor que não é UTF-8 válido → 400; parâmetro repetido vale o **último**; `pagina` só com dígitos que estoura `int64` conta como além do fim. Registrar as rotas no `ServeMux` com padrões de método (`GET /v1/ufs/{uf}/municipios`). Ao final, T016 passa.
-- [ ] T019 [US1] Rodar `verificar.sh "experiments/go/localidades/localidades" -k "us1 or paridade or contrato_valido"` e registrar no diário de ergonomia o que exigiu ajuste para cumprir o contrato.
+- [X] T017 [US1] Em `G/internal/servico/servico.go`, implementar `ListarUFs`, `ObterUF` (uma UF da tabela ausente no IBGE vira `RespostaInesperadaDaFonte`) e `ListarMunicipios(ctx, uf, pagina, itens)` (validar, resolver, buscar, ordenar e paginar).
+- [X] T018 [US1] Criar `G/internal/api/ufs.go` com as três rotas e o envelope `Resposta[T]` (data-model), e `G/internal/api/query.go` com a leitura da *query* do research R4: `url.ParseQuery(RawQuery)` com erro → 400; valor que não é UTF-8 válido → 400; parâmetro repetido vale o **último**; `pagina` só com dígitos que estoura `int64` conta como além do fim. Registrar as rotas no `ServeMux` com padrões de método (`GET /v1/ufs/{uf}/municipios`). Ao final, T016 passa.
+- [X] T019 [US1] Rodar `verificar.sh "experiments/go/localidades/localidades" -k "us1 or paridade or contrato_valido"` e registrar no diário de ergonomia o que exigiu ajuste para cumprir o contrato.
 
 **Checkpoint**: US1 verificada pela mesma suíte do E1 e do E4. É o MVP do E7.
 
