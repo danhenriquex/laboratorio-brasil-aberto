@@ -38,7 +38,8 @@ Não adicione infraestrutura complexa antes de existir necessidade comprovada. P
 
 ## Additional Constraints
 
-- **Linguagens:** Python 3.11+ e Java (JDK de suporte longo, versão a confirmar no E4). TypeScript fica fora do escopo inicial.
+- **Linguagens:** Python 3.11+, Java 25 (LTS, confirmado no E4), Go e Rust. Para Go e Rust, vale a versão estável vigente, confirmada na documentação oficial no início de cada experimento e registrada no plano. TypeScript fica fora do escopo.
+- **Linguagem nova entra por experimento:** a primeira vez de uma linguagem no projeto é um experimento com pergunta, timebox e `RESULTS.md`, de preferência reimplementando um serviço que já tem contrato e suíte de caixa-preta, para comparar com a mesma régua. Um serviço permanente numa linguagem só existe com necessidade comprovada (princípio X).
 - **Padrões de serviço:** endpoints `/health` e `/metrics`, versionamento no caminho (`/v1/...`), paginação e filtros com convenção única, cabeçalho de correlação entre serviços.
 - **Dados:** registre licença e termos de uso de cada fonte. Dados acessíveis publicamente não são necessariamente livres de restrições.
 - **Ordem de construção:** entender as fontes, estabelecer os serviços, só então construir chatbot e RAG.
@@ -55,4 +56,4 @@ Não adicione infraestrutura complexa antes de existir necessidade comprovada. P
 
 Esta constituição prevalece sobre outras práticas do projeto. Alterações exigem registro da razão (em ADR quando afetarem a arquitetura) e atualização da versão abaixo. Complexidade adicional deve ser justificada contra o princípio X.
 
-**Version**: 1.0.0 | **Ratified**: 2026-11-14 | **Last Amended**: 2026-11-14
+**Version**: 1.1.0 | **Ratified**: 2026-11-14 | **Last Amended**: 2026-11-27
