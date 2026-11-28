@@ -163,11 +163,11 @@ description: "Lista de tarefas do E8 — Serviço de localidades (IBGE), em Rust
 
 ## Phase 9: Polish & Fechamento do experimento
 
-- [ ] T039 Verificar sem rede externa (SC-004), com o perfil do quickstart §3: `cargo test --offline` e a suíte de caixa-preta, os dois dentro do sandbox, mais um `curl` ao IBGE que precisa falhar no mesmo sandbox.
-- [ ] T040 Fazer a execução real contra o IBGE, conforme o quickstart §5, com as quatro implementações lado a lado recebendo os mesmos pedidos, e comparar os corpos ignorando só o `coletado_em`, a correlação e o `instance` do Spring.
-- [ ] T041 [P] Acrescentar a `docs/adr/0001-convencoes-comuns-de-api.md` uma seção "Confirmação no E8", com o que a quarta implementação mostrou.
-- [ ] T042 Escrever `specs/005-localidades-rust/RESULTS.md` a partir de `docs/templates/RESULTS.md`, com a resposta curta, a tabela das 9 medidas para as quatro implementações, a tabela das **8 lições** (FR-009, SC-006), as limitações (o E8 veio depois das outras três) e os próximos passos (os E2 e E3 do roteiro, e a decisão sobre qual implementação "se gradua").
-- [ ] T043 [P] Atualizar `docs/roteiro.md` com a data de conclusão do E8, e o painel de comparação (artefato "Localidades: Python × Java × Go") com a quarta coluna, se o usuário pedir.
+- [X] T039 Verificar sem rede externa (SC-004), com o perfil do quickstart §3: `cargo test --offline` e a suíte de caixa-preta, os dois dentro do sandbox, mais um `curl` ao IBGE que precisa falhar no mesmo sandbox.
+- [X] T040 Fazer a execução real contra o IBGE, conforme o quickstart §5, com as quatro implementações lado a lado recebendo os mesmos pedidos, e comparar os corpos ignorando só o `coletado_em`, a correlação e o `instance` do Spring.
+- [X] T041 [P] Acrescentar a `docs/adr/0001-convencoes-comuns-de-api.md` uma seção "Confirmação no E8", com o que a quarta implementação mostrou.
+- [X] T042 Escrever `specs/005-localidades-rust/RESULTS.md` a partir de `docs/templates/RESULTS.md`, com a resposta curta, a tabela das 9 medidas para as quatro implementações, a tabela das **8 lições** (FR-009, SC-006), as limitações (o E8 veio depois das outras três) e os próximos passos (os E2 e E3 do roteiro, e a decisão sobre qual implementação "se gradua").
+- [X] T043 [P] Atualizar `docs/roteiro.md` com a data de conclusão do E8, e o painel de comparação (artefato "Localidades: Python × Java × Go") com a quarta coluna, se o usuário pedir.
 
 ---
 
