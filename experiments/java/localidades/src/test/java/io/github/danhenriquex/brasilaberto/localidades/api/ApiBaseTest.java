@@ -84,6 +84,16 @@ class ApiBaseTest {
         Apoio.assertProblema(mvc.perform(post("/health")).andReturn(), 404, "nao-encontrado");
     }
 
+    /** T050: com ";" no caminho, a rota não casa (no E1 o segmento "health;x" não é "health"). */
+    @Test
+    void parametroDeCaminhoNaoCasaComARota() throws Exception {
+        var r = Apoio.pedidoCru(porta, "GET", "/health;x", "X-Correlation-Id: pv-123");
+        assertThat(r.status()).as(r.corpo()).isEqualTo(404);
+        assertThat(r.cabecalho("Content-Type")).startsWith("application/problem+json");
+        assertThat(r.cabecalho("X-Correlation-Id")).isEqualTo("pv-123");
+        assertThat(r.json().get("type").asString()).isEqualTo("urn:brasil-aberto:problema:nao-encontrado");
+    }
+
     /** T047: o TRACE passa pelo Tomcat e pelo Spring como os outros métodos, e nada do pedido volta ecoado. */
     @Test
     void traceTambemE404SemEco() throws Exception {

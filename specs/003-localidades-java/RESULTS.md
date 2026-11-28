@@ -25,13 +25,13 @@ As mesmas do E1: a API de localidades do IBGE e a [ficha da fonte](../../discove
 A partir da raiz do repositório, com o JDK 25 instalado:
 
 ```bash
-(cd experiments/java/localidades && ./mvnw -q test)                       # 157 testes
+(cd experiments/java/localidades && ./mvnw -q test)                       # 161 testes
 (cd experiments/java/localidades && ./mvnw -q package -DskipTests)
 contracts/localidades/verificacao/verificar.sh "java -jar experiments/java/localidades/target/localidades.jar"   # 53 cenários
 specs/003-localidades-java/medicao/medir.sh                                # comparação E1 × E4
 ```
 
-A suíte tinha 53 cenários no fechamento; com as convergências, passou a 78 (veja abaixo).
+A suíte tinha 53 cenários no fechamento; com as convergências, passou a 82 (veja abaixo).
 
 ```text
 ```
@@ -121,6 +121,11 @@ A suíte ganhou 13 cenários (`test_accept_e_ignorado`, com 3 rotas e 4 valores 
 A **quarta convergência** sondou a configuração na partida e achou uma lacuna pequena, corrigida na issue #59:
 - **T049 (LOW):** o `@Positive` deixava escapar três valores. Com prazo `Infinity`, o serviço subia sem prazo, na prática. Com validade `Infinity`, não subia, mas mostrava um *stack trace* de `long overflow` no lugar da mensagem clara. Com `0.0001`, positivo mas arredondado para 0 ms, também falhava com *stack trace*. Agora prazo e validade ficam entre 1 ms e 10⁹ s (uns 31 anos, o que ainda cabe no relógio em nanossegundos), e o erro sai no relatório do Spring (*Property / Value / Reason*). Não muda a suíte compartilhada, que não testa a partida.
 - **No E1:** o E1 também sobe com prazo `nan` ou `inf` e com validade `1e400`. É a mesma lacuna, no código do E1, e fica registrada como pendência dele.
+
+A **quinta convergência** olhou para a normalização de caminhos e achou uma lacuna, corrigida na issue #61:
+- **T050 (LOW):** o Tomcat e o Spring descartam os parâmetros de caminho (o trecho depois de `;`). Por isso, `GET /v1/ufs;jsessionid=x` devolvia a lista de UFs, e `GET /v1/ufs/RJ;x=1/municipios` devolvia os municípios do RJ. Pela RFC 3986, o `;` faz parte do segmento, e no E1 essas rotas não existem. Agora, com `;` no caminho, nenhuma rota casa, e a resposta é o 404 `nao-encontrado` de sempre. A correção foi feita no mesmo `DispatcherServlet` próprio da T047. A suíte ganhou 4 cenários (82 no total), que aceitam 400 ou 404, porque o E1 dá 400 quando o segmento com `;` é a UF.
+
+Desde a segunda rodada, as convergências acharam só casos de borda: `TRACE`, `Accept`, configuração infinita e `;` no caminho. Nenhum deles afeta o uso normal do serviço, e todos vieram de convenções implícitas do Tomcat e do Spring, o que é por si só um resultado do experimento.
 
 **Divergências que ficaram, porque a spec não as define:** `HEAD` e `OPTIONS` (o E4 aceita, e o E1 dá 404), barra no fim do caminho (o E1 redireciona, e o E4 dá 404) e `/v1/ufs/%2F` no E1, que responde 200 e merece uma olhada própria.
 
