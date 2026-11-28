@@ -1,0 +1,67 @@
+// Comando localidades: o serviço de localidades do E7. Lê a configuração LOCALIDADES_*, monta as peças e
+// sobe o servidor HTTP. Configuração inválida impede a partida, com a mensagem do E1 e código de saída 2.
+package main
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"strconv"
+	"syscall"
+	"time"
+
+	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/api"
+	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/config"
+	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/fonte"
+	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/operacao"
+	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/servico"
+)
+
+func main() {
+	os.Exit(executar())
+}
+
+func executar() int {
+	cfg, err := config.Carregar(os.Getenv)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "configuração inválida: %v\n", err)
+		return 2
+	}
+
+	cliente := fonte.NovoCliente(cfg.IBGEURL, cfg.PrazoFonte, func(ctx context.Context, _ string, segundos float64) {
+		operacao.EstadoDe(ctx).SomarFonte(segundos)
+	})
+	_ = servico.Novo(cliente, servico.Opcoes{Validade: cfg.Validade, ItensMax: cfg.ItensMax})
+
+	roteador := api.NovoRoteador(nil)
+	roteador.RotaHTTP("GET /health", http.HandlerFunc(operacao.Saude))
+
+	servidor := &http.Server{
+		Addr:              net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Porta)),
+		Handler:           roteador,
+		ReadHeaderTimeout: 10 * time.Second,
+	}
+
+	// Encerra com SIGTERM ou SIGINT, terminando os pedidos em andamento (o verificar.sh manda SIGTERM).
+	ctx, parar := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
+	defer parar()
+	erro := make(chan error, 1)
+	go func() { erro <- servidor.ListenAndServe() }()
+
+	select {
+	case err := <-erro:
+		if !errors.Is(err, http.ErrServerClosed) {
+			fmt.Fprintf(os.Stderr, "não foi possível subir o servidor: %v\n", err)
+			return 1
+		}
+	case <-ctx.Done():
+		encerrar, cancelar := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancelar()
+		_ = servidor.Shutdown(encerrar)
+	}
+	return 0
+}

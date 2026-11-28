@@ -72,7 +72,7 @@ O `URL.Query()` do Go descarta em silêncio os pares mal codificados, e o `Get` 
 ## R5. Formato da resposta e cabeçalho `Accept`
 
 - **Decision**: os handlers escrevem sempre `Content-Type: application/json` no sucesso e `application/problem+json` no erro, e o `Accept` é ignorado. O `net/http` não negocia conteúdo, então a lição da **T048** sai de graça. Um teste fixa isso mesmo assim.
-- **JSON:** `json.NewEncoder` com `SetEscapeHTML(false)`. O padrão do Go escaparia `<`, `>` e `&` como `<`, o que dá o mesmo valor JSON, mas texto diferente do E1 e do E4. Os campos saem na ordem das *structs*, e o `paginacao` some quando não se aplica (`omitempty` num ponteiro).
+- **JSON:** `json.NewEncoder` com `SetEscapeHTML(false)`. O padrão do Go escaparia `<`, `>` e `&` como `\u003c`, `\u003e` e `\u0026`, o que dá o mesmo valor JSON, mas texto diferente do E1 e do E4. Os campos saem na ordem das *structs*, e o `paginacao` some quando não se aplica (`omitempty` num ponteiro).
 
 ## R6. Cliente do IBGE e prazo total
 
