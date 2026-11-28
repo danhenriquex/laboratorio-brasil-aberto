@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use localidades::config;
 use localidades::fonte::Cliente;
-use localidades::operacao::estado_atual;
+use localidades::operacao::{Metricas, Registro, estado_atual, observador};
 use localidades::servico::{Opcoes, Servico};
 use localidades::topo::Topo;
 
@@ -20,14 +20,24 @@ async fn main() -> ExitCode {
         }
     };
 
-    let ao_medir = Arc::new(|_recurso: &str, segundos: f64| {
+    let metricas = Metricas::novas();
+    let m = metricas.clone();
+    let ao_medir = Arc::new(move |recurso: &str, segundos: f64| {
+        m.observar_fonte(recurso, segundos);
         if let Some(estado) = estado_atual() {
             estado.somar_fonte(segundos);
         }
     });
     let cliente = Cliente::novo(&cfg.ibge_url, cfg.prazo_fonte, Some(ao_medir));
     let servico = Servico::novo(cliente, Opcoes::do_sistema(cfg.validade, cfg.itens_max));
-    let app = localidades::app(servico, Topo::default());
+    let topo = Topo {
+        observar: Some(observador(
+            metricas.clone(),
+            Arc::new(Registro::na_saida_padrao()),
+        )),
+        metricas: Some(metricas),
+    };
+    let app = localidades::app(servico, topo);
 
     let endereco = format!("{}:{}", cfg.host, cfg.porta);
     let ouvinte = match tokio::net::TcpListener::bind(&endereco).await {
