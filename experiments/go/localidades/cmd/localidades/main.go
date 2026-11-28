@@ -35,10 +35,11 @@ func executar() int {
 	cliente := fonte.NovoCliente(cfg.IBGEURL, cfg.PrazoFonte, func(ctx context.Context, _ string, segundos float64) {
 		operacao.EstadoDe(ctx).SomarFonte(segundos)
 	})
-	_ = servico.Novo(cliente, servico.Opcoes{Validade: cfg.Validade, ItensMax: cfg.ItensMax})
+	servicoLocalidades := servico.Novo(cliente, servico.Opcoes{Validade: cfg.Validade, ItensMax: cfg.ItensMax})
 
 	roteador := api.NovoRoteador(nil)
 	roteador.RotaHTTP("GET /health", http.HandlerFunc(operacao.Saude))
+	api.RegistrarV1(roteador, servicoLocalidades)
 
 	servidor := &http.Server{
 		Addr:              net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Porta)),

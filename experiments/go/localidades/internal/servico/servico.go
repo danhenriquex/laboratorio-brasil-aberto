@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/dominio"
+	"github.com/danhenriquex/laboratorio-brasil-aberto/experiments/go/localidades/internal/erros"
 )
 
 const (
@@ -95,4 +96,71 @@ func (s *Servico) obter(ctx context.Context, _ string, b buscar) (obtido, error)
 		return obtido{}, err
 	}
 	return obtido{dados: dados, meta: NovaMeta(url, coletadoEm, false), cache: "falta"}, nil
+}
+
+// --- US1 ---
+
+func (s *Servico) estados(ctx context.Context) (obtido, error) {
+	return s.obter(ctx, "estados", func(ctx context.Context) (any, string, error) {
+		return s.fonte.Estados(ctx)
+	})
+}
+
+// ListarUFs devolve as 27 UFs ordenadas por nome.
+func (s *Servico) ListarUFs(ctx context.Context) (Resultado, error) {
+	o, err := s.estados(ctx)
+	if err != nil {
+		return Resultado{}, err
+	}
+	return Resultado{Dados: dominio.Ordenar(o.dados.([]dominio.UF)), Meta: o.meta, Cache: o.cache}, nil
+}
+
+// ObterUF resolve a sigla ou o código antes de consultar, para entrada inválida não chegar ao IBGE.
+func (s *Servico) ObterUF(ctx context.Context, param string) (Resultado, error) {
+	codigo, err := dominio.ResolverUF(param)
+	if err != nil {
+		return Resultado{}, err
+	}
+	o, err := s.estados(ctx)
+	if err != nil {
+		return Resultado{}, err
+	}
+	for _, uf := range o.dados.([]dominio.UF) {
+		if uf.Codigo == codigo {
+			return Resultado{Dados: uf, Meta: o.meta, Cache: o.cache}, nil
+		}
+	}
+	return Resultado{}, erros.RespostaInesperadaDaFonte("a UF %s não veio na lista de UFs do IBGE", codigo)
+}
+
+// ListarMunicipios valida, resolve a UF, consulta, filtra pelo nome (se houver), ordena e pagina, na
+// mesma ordem do E1. nome nil significa "sem filtro".
+func (s *Servico) ListarMunicipios(ctx context.Context, paramUF string, pagina int64, itens int, nome *string) (Resultado, error) {
+	if err := dominio.ValidarPaginacao(pagina, itens, s.opcoes.ItensMax); err != nil {
+		return Resultado{}, err
+	}
+	var filtro string
+	if nome != nil {
+		valido, err := dominio.ValidarNome(*nome)
+		if err != nil {
+			return Resultado{}, err
+		}
+		filtro = valido
+	}
+	codigo, err := dominio.ResolverUF(paramUF)
+	if err != nil {
+		return Resultado{}, err
+	}
+	o, err := s.obter(ctx, "estados/"+codigo+"/municipios", func(ctx context.Context) (any, string, error) {
+		return s.fonte.MunicipiosDaUF(ctx, codigo)
+	})
+	if err != nil {
+		return Resultado{}, err
+	}
+	municipios := o.dados.([]dominio.MunicipioResumido)
+	if nome != nil {
+		municipios = dominio.FiltrarPorNome(municipios, filtro)
+	}
+	p := dominio.Paginar(dominio.Ordenar(municipios), pagina, itens)
+	return Resultado{Dados: p.Itens, Meta: o.meta, Paginacao: &p.Paginacao, Cache: o.cache}, nil
 }
