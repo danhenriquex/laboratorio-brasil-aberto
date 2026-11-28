@@ -38,6 +38,14 @@ Escrito durante a implementação, e não de memória no fim (FR-007; research R
 
   **Decisão (atualiza o R3):** não há `Ouvinte` como no E7. Basta o `fallback` e o `method_not_allowed_fallback` do roteador levarem ao 404 do contrato, e a camada de topo pôr a correlação e o formato. Fica um cuidado: o extrator `Path` do axum decodifica o segmento e, com `%ZZ`, recusaria o pedido com a sua própria resposta de erro. A rejeição dele precisa virar `entrada-invalida`.
 
+## Consulta compartilhada e concorrência
+
+- **2026-11-28, US3:** a parte em que o modelo assíncrono do Rust mais pesou. Um futuro abandonado é cancelado (quando o cliente desiste, o hyper descarta o futuro do pedido), então a consulta ao IBGE não pode morar no futuro do pedido que a iniciou. A solução foi um `tokio::spawn` para a consulta e um `Shared` (do `futures`) sobre o resultado da tarefa, guardado num mapa de consultas em andamento. Quem chega durante a consulta clona o `Shared` e recebe o mesmo resultado, **inclusive o erro** (lição da T050 do E1).
+  - **O `task_local` não atravessa o `spawn`:** o estado do pedido, onde o tempo da fonte é anotado, precisou ser levado de forma explícita para a tarefa da consulta (`ESTADO.scope(estado, tarefa)`). No Go, o `context` fazia isso de graça; no E1, o `ContextVar` também atravessa o `create_task`.
+  - **O compilador ajudou:** o `Shared` exige que o resultado seja `Clone` e, para ir entre threads, `Send` e `Sync`. O tipo de erro e os dados (com `Arc`) precisaram satisfazer isso, e qualquer descuido virava erro de compilação, e não condição de corrida. O mesmo aconteceu no apoio de testes: um `get` que guardava uma referência à resposta através de um `await` não compilava ao rodar em outra tarefa.
+  - **Comparação:** no E1, foram 3 convergências até acertar; no E4, o `CompletableFuture` acertou de primeira; no E7, o `singleflight` resolveu numa chamada, verificado pelo `-race`. No E8, o desenho também veio pronto e os 8 cenários da US3 passaram de primeira, mas com mais peças à mão (mapa de consultas, `spawn`, `Shared` e o `scope` do estado). Em compensação, a ausência de corrida é garantida pelo compilador, e não por um teste.
+- **Cliente que desiste:** em Rust, o futuro do pedido é descartado inteiro, inclusive a camada de topo. Não há resposta nem linha de registro para esse pedido, o que é diferente do E7, que registrava 499. Fica anotado para a US5.
+
 ## Tratamento de erros
 
 - **2026-11-28, fundação:** o `ErroDominio` implementa `IntoResponse`, e os handlers devolvem `Result<_, ErroDominio>` com o operador `?`. É tão explícito quanto o erro como valor do Go, mas sem o `if err != nil` a cada chamada. A leitura do JSON do IBGE campo a campo saiu curta com um tipo de erro local (`Forma`) e `?`.

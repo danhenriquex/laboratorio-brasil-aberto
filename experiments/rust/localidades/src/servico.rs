@@ -6,6 +6,7 @@ use std::time::Duration;
 use serde::Serialize;
 use time::OffsetDateTime;
 
+use crate::cache::Cache;
 use crate::dominio::{
     Municipio, MunicipioResumido, Paginacao, Uf, filtrar_por_nome, ordenar, paginar, resolver_uf,
     validar_codigo_municipio, validar_nome, validar_paginacao,
@@ -98,6 +99,7 @@ impl Opcoes {
 pub struct Servico {
     pub(crate) fonte: Cliente,
     pub(crate) opcoes: Opcoes,
+    cache: Arc<Cache>,
 }
 
 /// Um recurso do IBGE já normalizado, com a procedência e o uso da cópia guardada.
@@ -109,20 +111,29 @@ pub(crate) struct Obtido {
 
 impl Servico {
     pub fn novo(fonte: Cliente, opcoes: Opcoes) -> Self {
-        Self { fonte, opcoes }
+        let cache = Cache::novo(
+            opcoes.agora.clone(),
+            opcoes.monotonico.clone(),
+            opcoes.validade,
+        );
+        Self {
+            fonte,
+            opcoes,
+            cache,
+        }
     }
 
-    /// Chama a fonte direto. A cópia guardada e a consulta compartilhada entram na US3 (T027).
-    pub(crate) async fn obter<F>(&self, _chave: String, buscar: F) -> Result<Obtido, ErroDominio>
+    /// Passa pela cópia guardada: o meta vem da entrada (coletado_em da consulta original e desatualizado),
+    /// e o resultado da cópia (acerto, falta, desatualizado) segue para as métricas e o registro.
+    pub(crate) async fn obter<F>(&self, chave: String, buscar: F) -> Result<Obtido, ErroDominio>
     where
         F: std::future::Future<Output = Result<(Dados, String), ErroDominio>> + Send + 'static,
     {
-        let coletado_em = (self.opcoes.agora)();
-        let (dados, url) = buscar.await?;
+        let e = self.cache.obter(chave, buscar).await?;
         Ok(Obtido {
-            dados,
-            meta: Meta::nova(url, coletado_em, false),
-            cache: "falta",
+            dados: e.dados,
+            meta: Meta::nova(e.url_fonte, e.coletado_em, e.desatualizado),
+            cache: e.resultado,
         })
     }
 }
