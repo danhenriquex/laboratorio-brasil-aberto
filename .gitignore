@@ -16,3 +16,6 @@ dist/
 
 # E7 (Go): binário gerado por go build
 experiments/go/localidades/localidades
+
+# E8 (Rust): saída do cargo
+experiments/rust/localidades/target/

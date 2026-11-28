@@ -1,0 +1,24 @@
+[package]
+name = "localidades"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.100"
+description = "E8 — serviço de localidades (IBGE) em Rust, mesmo contrato do E1, do E4 e do E7"
+publish = false
+
+[dependencies]
+axum = "0.8.9"
+caseless = "0.2.2"
+futures = "0.3.34"
+percent-encoding = "2.3.2"
+prometheus = "0.14.0"
+reqwest = "0.13.5"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+time = { version = "0.3.55", features = ["formatting", "macros"] }
+tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread", "net", "signal", "time", "sync"] }
+unicode-normalization = "0.1.26"
+uuid = { version = "1.29.3", features = ["v4"] }
+
+[dev-dependencies]
+tower = { version = "0.5.3", features = ["util"] }
