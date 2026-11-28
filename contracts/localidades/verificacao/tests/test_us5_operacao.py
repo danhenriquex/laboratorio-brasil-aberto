@@ -91,3 +91,21 @@ def test_accept_nao_muda_o_formato_do_erro(servico):
     r = servico.get("/v1/municipios/12ab", headers={"Accept": "application/xml"})
     validar(r, "GET", "/v1/municipios/{codigo}")
     assert r.status_code == 400
+
+
+@pytest.mark.parametrize("caminho", [
+    "/v1/ufs;jsessionid=x",
+    "/v1/ufs/RJ;x=1/municipios",
+    "/v1/municipios/3304557;v=1",
+    "/health;x",
+])
+def test_parametro_de_caminho_nao_casa_com_a_rota(servico, caminho):
+    """Convergência do E4 (T050): o ";" faz parte do segmento (RFC 3986); o caminho não casa com a rota sem ele.
+
+    O E1 responde 404 ou 400, conforme o segmento; o que não pode é devolver os dados da rota.
+    """
+    r = pedido_cru(servico, "GET", caminho, {"X-Correlation-Id": "ponto-e-virgula"})
+    assert r.status_code in (400, 404)
+    assert r.headers["content-type"].startswith("application/problem+json")
+    assert r.headers["X-Correlation-Id"] == "ponto-e-virgula"
+    assert r.json()["correlacao_id"] == "ponto-e-virgula"

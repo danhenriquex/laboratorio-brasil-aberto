@@ -182,4 +182,16 @@ class ApiUfsTest extends BaseApiTest {
         assertThat(r.getResponse().getContentType()).startsWith("application/json");
         assertThat(json(r).get("dados")).hasSize(27);
     }
+
+    /** T050: "/v1/ufs;jsessionid=x" e "/v1/ufs/RJ;x=1/municipios" não devolvem dados nem consultam o IBGE. */
+    @ParameterizedTest
+    @ValueSource(strings = {"/v1/ufs;jsessionid=x", "/v1/ufs/RJ;x=1/municipios", "/v1/ufs/RJ/municipios;x"})
+    void parametroDeCaminhoNaoCasaComARota(String caminho) throws Exception {
+        IBGE.servidor().resetAll();
+        var r = Apoio.pedidoCru(porta, "GET", caminho, "X-Correlation-Id: pv-456");
+        assertThat(r.status()).as(r.corpo()).isEqualTo(404);
+        assertThat(r.cabecalho("Content-Type")).startsWith("application/problem+json");
+        assertThat(r.json().get("correlacao_id").asString()).isEqualTo("pv-456");
+        assertThat(IBGE.pedidosTotais()).isZero();
+    }
 }
