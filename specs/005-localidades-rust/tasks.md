@@ -128,9 +128,9 @@ description: "Lista de tarefas do E8 — Serviço de localidades (IBGE), em Rust
 
 **Independent Test**: `test_us4_busca.py` e as buscas de `test_paridade_ordenacao.py` passam contra o binário.
 
-- [ ] T029 [P] [US4] Escrever `R/tests/busca.rs`, com os casos do `busca_test.go` do E7: `niteroi` e `NITERÓI`; `são` e `SAO` em SP, em ordem e paginados; sem resultado com `dados: []`; `a`, `"  a  "`, `""` e 61 caracteres → 400 sem consultar; duas buscas na mesma UF, uma consulta; e a lição da **T046** com `nome=%ZZ`, `nome=s%E3o` e `nome=%` crus → 400.
-- [ ] T030 [US4] Acrescentar o `nome` opcional a `listar_municipios` em `R/src/servico.rs` e à rota de `R/src/api.rs` (validar, filtrar, ordenar e paginar). Ao final, T029 passa.
-- [ ] T031 [US4] Rodar `verificar.sh "experiments/rust/localidades/target/release/localidades" -k "us4 or paridade"`.
+- [X] T029 [P] [US4] Escrever `R/tests/busca.rs`, com os casos do `busca_test.go` do E7: `niteroi` e `NITERÓI`; `são` e `SAO` em SP, em ordem e paginados; sem resultado com `dados: []`; `a`, `"  a  "`, `""` e 61 caracteres → 400 sem consultar; duas buscas na mesma UF, uma consulta; e a lição da **T046** com `nome=%ZZ`, `nome=s%E3o` e `nome=%` crus → 400.
+- [X] T030 [US4] Acrescentar o `nome` opcional a `listar_municipios` em `R/src/servico.rs` e à rota de `R/src/api.rs` (validar, filtrar, ordenar e paginar). Ao final, T029 passa.
+- [X] T031 [US4] Rodar `verificar.sh "experiments/rust/localidades/target/release/localidades" -k "us4 or paridade"`.
 
 ---
 
