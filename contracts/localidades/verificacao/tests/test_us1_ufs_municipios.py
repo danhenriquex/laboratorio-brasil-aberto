@@ -91,3 +91,22 @@ def test_rota_sem_versao(servico):
     r = servico.get("/ufs")
     assert r.status_code == 404
     assert r.headers["content-type"].startswith("application/problem+json")
+
+
+def test_pagina_muito_grande_e_pagina_alem_do_fim(servico):
+    """Convergência do E4 (T045): o contrato não limita `pagina`; um número enorme é só uma página vazia."""
+    r = servico.get("/v1/ufs/RJ/municipios", params={"pagina": "99999999999"})
+    validar(r, "GET", MUNICIPIOS)
+    assert r.status_code == 200
+    assert r.json()["dados"] == []
+    assert r.json()["paginacao"]["pagina"] == 99999999999
+    assert r.json()["paginacao"]["total"] == 92
+
+
+def test_parametro_repetido_vale_o_ultimo(servico):
+    """Convergência do E4 (T045): com `itens` repetido, vale o último valor, como no E1."""
+    r = servico.get("/v1/ufs/RJ/municipios", params=[("itens", "10"), ("itens", "20")])
+    validar(r, "GET", MUNICIPIOS)
+    assert r.status_code == 200
+    assert r.json()["paginacao"]["itens"] == 20
+    assert len(r.json()["dados"]) == 20

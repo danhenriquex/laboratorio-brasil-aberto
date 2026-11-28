@@ -1,8 +1,8 @@
 # ADR 0001: Convenções comuns de API entre serviços
 
-- **Status:** aceita no E1 (2026-11-26); a confirmar no E4
-- **Data:** 2026-11-14 (proposta) e 2026-11-26 (aceita)
-- **Experimento de origem:** E1 — serviço de localidades (`specs/002-servico-localidades/`). A ser confirmada pelo E4 (Java).
+- **Status:** aceita no E1 (2026-11-26) e confirmada no E4 (2026-11-27)
+- **Data:** 2026-11-14 (proposta), 2026-11-26 (aceita) e 2026-11-27 (confirmada)
+- **Experimentos de origem:** E1, serviço de localidades em Python (`specs/002-servico-localidades/`), e E4, o mesmo serviço em Java (`specs/003-localidades-java/`).
 
 ## Contexto
 Os serviços do laboratório serão escritos em Python e Java e consumidos por clientes diferentes (outros serviços e, mais tarde, um agente de IA). Sem convenções comuns, cada serviço responderia de um jeito, e o consumidor teria de tratar cada caso.
@@ -53,8 +53,13 @@ O E1 pôs a proposta à prova num serviço real e fechou os pontos que ela deixa
 ## Consequências
 - Mais trabalho no início de cada serviço. A fundação do E1 levou 20 das 47 tarefas, metade delas para a verificação. Em troca, consumidores simples e uma comparação justa entre linguagens.
 - Cada serviço precisa de um "falso" controlável da sua fonte para a suíte de caixa-preta.
-- **Pontos a revisitar no E4:**
-  - se o Java reproduz a regra de ordenação sem acento (NFKD + casefold) com o mesmo resultado;
-  - se o formato do `coletado_em` sai idêntico;
-  - se as bibliotecas Java de métricas permitem os mesmos nomes;
-  - como fica a ergonomia de cumprir um contrato escrito à mão.
+## Confirmação no E4 (Java, 2026-11-27)
+
+As convenções funcionaram numa segunda linguagem **sem mudar o contrato**. A mesma suíte de caixa-preta passou contra as duas implementações (53 cenários), e, contra o IBGE real, os corpos das respostas foram idênticos nos 7 pedidos comparados. Os pontos que esta ADR mandava revisitar:
+
+- **Ordenação sem acento:** o Java não tem `casefold`. `Normalizer` NFKD, remoção de `\p{Mn}` e `toLowerCase(Locale.ROOT)` deram a mesma ordem para os 645 municípios de SP e o mesmo resultado em 4 buscas. Um cenário de paridade na suíte passou a garantir isso.
+- **Formato do `coletado_em`:** `Instant.toString()` omite os milissegundos quando são zero e quebraria o padrão `\.\d{3}Z`. É preciso um formatador explícito. O schema do contrato pegaria a diferença.
+- **Nomes de métricas:** o Micrometer acrescenta o sufixo da unidade a um `Timer` (`_seconds`). Para manter `localidades_fonte_duracao_segundos`, use um `DistributionSummary` sem unidade. **Regra para os próximos serviços:** o contrato nomeia a métrica, e cada implementação escolhe o tipo que não altera o nome.
+- **Erros:** o `ProblemDetail` do Spring implementa a RFC 9457 nativamente e cumpriu o formato sem código próprio. A propriedade extra `instance`, que o Spring pode incluir, é aceita porque o schema `Problema` não fecha propriedades adicionais.
+- **Configuração:** o *relaxed binding* do Spring trata cada `_` da variável de ambiente como separador de nível. Variáveis como `LOCALIDADES_PRAZO_FONTE_S` precisam de mapeamento explícito (`${LOCALIDADES_PRAZO_FONTE_S:10}`) para manter os nomes comuns.
+- **Ergonomia de cumprir um contrato escrito à mão:** nas duas linguagens o contrato passou praticamente sem retrabalho. O custo maior foi a infraestrutura de verificação, feita uma vez e reaproveitada. A comparação completa está em `specs/003-localidades-java/RESULTS.md`.

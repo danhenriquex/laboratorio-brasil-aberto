@@ -6,11 +6,13 @@ Cada experimento é um ciclo do Spec Kit (specify, plan, tasks, implement) com u
 |---|---|---|---|
 | E0 | Inventário e conectividade das fontes | Python | Quais fontes respondem, com que autenticação e formato |
 | E1 | Serviço de localidades (IBGE) | Python | Contrato HTTP, cache, tratamento de erro, testes |
+| E4 | Serviço de localidades (IBGE), de novo | Java | Ergonomia: setup, testes e contratos, lado a lado com o E1 |
 | E2 | Séries do BCB | Python | Séries temporais, OData, estabilidade da API |
 | E3 | Proposições da Câmara | Python | Paginação, filtros, normalização |
-| E4 | Serviço de localidades (IBGE), de novo | Java | Ergonomia: setup, testes e contratos, lado a lado com o E1 |
 | E5 | Simulador de crédito (SAC e Price) | Java | Modelagem de domínio, precisão decimal, Strategy |
 | E6 | Portal da Transparência | Python | Chave, limite de requisições, fila e backoff |
+
+O E4 foi antecipado para logo depois do E1 (2026-11-27), para comparar a ergonomia com o E1 ainda fresco. A ordem de execução é a da tabela.
 
 Depois, com os serviços estabelecidos: ingestão agendada, MCP, RAG e chatbot.
 
