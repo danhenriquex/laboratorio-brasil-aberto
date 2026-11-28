@@ -1,6 +1,6 @@
 # Laboratório Brasil Aberto
 
-Laboratório pessoal para explorar dados públicos brasileiros e experimentar tecnologias (Python e Java). Leia `.specify/memory/constitution.md` antes de qualquer trabalho: ela é a fonte das regras do projeto.
+Laboratório pessoal para explorar dados públicos brasileiros e experimentar tecnologias (Python, Java, Go e Rust). Leia `.specify/memory/constitution.md` antes de qualquer trabalho: ela é a fonte das regras do projeto.
 
 ## Como trabalhar aqui
 - Responda em português do Brasil.
@@ -19,7 +19,7 @@ Laboratório pessoal para explorar dados públicos brasileiros e experimentar te
 ## Estrutura
 - `specs/`: uma pasta por experimento (criada pelo Spec Kit)
 - `discovery/`: catálogo, fichas e relatórios das fontes
-- `experiments/python/` e `experiments/java/`: código dos experimentos
+- `experiments/<linguagem>/` (`python`, `java`, `go`, `rust`): código dos experimentos
 - `services/`: serviços que "se graduam" dos experimentos
 - `contracts/`: especificações OpenAPI
 - `docs/`: roteiro, prompts, templates e ADRs

@@ -1,8 +1,8 @@
 # ADR 0001: Convenções comuns de API entre serviços
 
-- **Status:** aceita no E1 (2026-11-26) e confirmada no E4 (2026-11-27)
-- **Data:** 2026-11-14 (proposta), 2026-11-26 (aceita) e 2026-11-27 (confirmada)
-- **Experimentos de origem:** E1, serviço de localidades em Python (`specs/002-servico-localidades/`), e E4, o mesmo serviço em Java (`specs/003-localidades-java/`).
+- **Status:** aceita no E1 (2026-11-26) e confirmada no E4 (2026-11-27) e no E7 (2026-11-28)
+- **Data:** 2026-11-14 (proposta), 2026-11-26 (aceita), 2026-11-27 e 2026-11-28 (confirmada)
+- **Experimentos de origem:** E1, serviço de localidades em Python (`specs/002-servico-localidades/`), E4, o mesmo serviço em Java (`specs/003-localidades-java/`), e E7, o mesmo serviço em Go (`specs/004-localidades-go/`).
 
 ## Contexto
 Os serviços do laboratório serão escritos em Python e Java e consumidos por clientes diferentes (outros serviços e, mais tarde, um agente de IA). Sem convenções comuns, cada serviço responderia de um jeito, e o consumidor teria de tratar cada caso.
@@ -63,3 +63,15 @@ As convenções funcionaram numa segunda linguagem **sem mudar o contrato**. A m
 - **Erros:** o `ProblemDetail` do Spring implementa a RFC 9457 nativamente e cumpriu o formato sem código próprio. A propriedade extra `instance`, que o Spring pode incluir, é aceita porque o schema `Problema` não fecha propriedades adicionais.
 - **Configuração:** o *relaxed binding* do Spring trata cada `_` da variável de ambiente como separador de nível. Variáveis como `LOCALIDADES_PRAZO_FONTE_S` precisam de mapeamento explícito (`${LOCALIDADES_PRAZO_FONTE_S:10}`) para manter os nomes comuns.
 - **Ergonomia de cumprir um contrato escrito à mão:** nas duas linguagens o contrato passou praticamente sem retrabalho. O custo maior foi a infraestrutura de verificação, feita uma vez e reaproveitada. A comparação completa está em `specs/003-localidades-java/RESULTS.md`.
+
+## Confirmação no E7 (Go, 2026-11-28)
+
+As convenções funcionaram numa terceira linguagem, de novo **sem mudar o contrato**. A suíte de caixa-preta, que já tinha 82 cenários depois das convergências do E4, passou inteira contra o E7. Contra o IBGE real, os corpos das três implementações foram idênticos nos 8 pedidos comparados. O que o E7 acrescentou:
+
+- **Ordenação sem acento:** o `cases.Fold()` do `golang.org/x/text` é um *casefold* de verdade, como o do Python. Com NFKD e a remoção das marcas, deu a mesma ordem dos 645 municípios de SP sem ajuste.
+- **Formato do `coletado_em`:** a mesma armadilha do Java, com outro nome. O `time.RFC3339Nano` corta os zeros à direita, e foi preciso um *layout* fixo com milissegundos (`2006-01-02T15:04:05.000Z07:00`).
+- **Nomes de métricas:** o `client_golang` não acrescenta sufixo de unidade, e o nome do contrato saiu direto. A regra do E4 se confirma: o contrato nomeia a métrica, e cada implementação escolhe o tipo que não altera o nome.
+- **Erros:** sem suporte nativo à RFC 9457 na biblioteca padrão, o `problem+json` foi montado à mão, como no E1, num adaptador único. **Novo achado:** o formato único de erro depende também da camada abaixo do framework. O `net/http` recusa um caminho com escape inválido antes de qualquer handler, com 400 em texto puro, e foi preciso sanear a linha do pedido num `net.Listener` próprio. No E4, o Tomcat tinha feito o mesmo. **Regra para os próximos serviços:** a suíte de caixa-preta deve sempre ter cenários de entrada mal formada (caminho, *query*, método, `Accept`), porque é ali que cada pilha HTTP foge do contrato do seu jeito.
+- **Configuração:** a leitura das variáveis `LOCALIDADES_*` foi escrita à mão, com as mesmas mensagens do E1. O `strconv.ParseFloat` aceita `NaN` e `Inf`, que precisaram ser recusados explicitamente (a mesma lacuna da T049 do E4).
+- **Comparação completa:** `specs/004-localidades-go/RESULTS.md`.
+
