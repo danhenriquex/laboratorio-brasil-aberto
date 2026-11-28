@@ -155,9 +155,9 @@ description: "Lista de tarefas do E8 — Serviço de localidades (IBGE), em Rust
 
 **Independent Test**: a tabela comparativa do `RESULTS.md` fica preenchida para as quatro implementações, com data e método.
 
-- [ ] T036 [US6] Criar `specs/005-localidades-rust/medicao/medir.py` e `medir.sh` a partir dos do E7, acrescentando o E8: build `cargo build --release` (com o `target/` frio e quente), suíte `cargo test`, subida pelo binário otimizado, artefato = tamanho do binário, linhas `.rs` de produção e de teste, e dependências diretas lidas do `Cargo.toml`. A tabela de saída passa a ter quatro colunas.
-- [ ] T037 [US6] Rodar o `medir.sh` na mesma máquina e no mesmo dia, com os caches dos quatro ecossistemas populados, e guardar a saída em `specs/005-localidades-rust/medicao/resultado-AAAA-MM-DD.md`.
-- [ ] T038 [US6] Consolidar o `specs/005-localidades-rust/ergonomia.md` numa nota de 1 a 5 com justificativa para cada ponto do FR-007, ao lado das notas do E1, do E4 e do E7. Toda diferença citada traz a medida e o contexto (FR-008).
+- [X] T036 [US6] Criar `specs/005-localidades-rust/medicao/medir.py` e `medir.sh` a partir dos do E7, acrescentando o E8: build `cargo build --release` (com o `target/` frio e quente), suíte `cargo test`, subida pelo binário otimizado, artefato = tamanho do binário, linhas `.rs` de produção e de teste, e dependências diretas lidas do `Cargo.toml`. A tabela de saída passa a ter quatro colunas.
+- [X] T037 [US6] Rodar o `medir.sh` na mesma máquina e no mesmo dia, com os caches dos quatro ecossistemas populados, e guardar a saída em `specs/005-localidades-rust/medicao/resultado-AAAA-MM-DD.md`.
+- [X] T038 [US6] Consolidar o `specs/005-localidades-rust/ergonomia.md` numa nota de 1 a 5 com justificativa para cada ponto do FR-007, ao lado das notas do E1, do E4 e do E7. Toda diferença citada traz a medida e o contexto (FR-008).
 
 ---
 
