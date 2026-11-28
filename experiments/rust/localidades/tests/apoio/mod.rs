@@ -348,18 +348,21 @@ impl Ambiente {
             .oneshot(req.body(Body::empty()).unwrap())
             .await
             .unwrap();
-        let cab = |n: &str| {
-            r.headers()
-                .get(n)
-                .and_then(|v| v.to_str().ok())
-                .unwrap_or("")
-                .to_string()
+        // Os cabeçalhos são lidos antes do await, para o futuro não guardar uma referência à resposta.
+        let (status, tipo, correlacao) = {
+            let cab = |n: &str| {
+                r.headers()
+                    .get(n)
+                    .and_then(|v| v.to_str().ok())
+                    .unwrap_or("")
+                    .to_string()
+            };
+            (
+                r.status().as_u16(),
+                cab("content-type"),
+                cab("x-correlation-id"),
+            )
         };
-        let (status, tipo, correlacao) = (
-            r.status().as_u16(),
-            cab("content-type"),
-            cab("x-correlation-id"),
-        );
         let bytes = axum::body::to_bytes(r.into_body(), usize::MAX)
             .await
             .unwrap();

@@ -2,6 +2,7 @@
 //! aqui para os testes de integração em `tests/`.
 
 pub mod api;
+pub mod cache;
 pub mod config;
 pub mod dominio;
 pub mod erros;
