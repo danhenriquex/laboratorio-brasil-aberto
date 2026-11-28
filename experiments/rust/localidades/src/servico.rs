@@ -8,7 +8,7 @@ use time::OffsetDateTime;
 
 use crate::dominio::{
     Municipio, MunicipioResumido, Paginacao, Uf, filtrar_por_nome, ordenar, paginar, resolver_uf,
-    validar_nome, validar_paginacao,
+    validar_codigo_municipio, validar_nome, validar_paginacao,
 };
 use crate::erros::ErroDominio;
 use crate::fonte::Cliente;
@@ -207,6 +207,32 @@ impl Servico {
             dados: p.itens,
             meta: o.meta,
             paginacao: Some(p.paginacao),
+            cache: o.cache,
+        })
+    }
+}
+
+// --- US2 ---
+
+impl Servico {
+    /// Valida o código antes de consultar o IBGE.
+    pub async fn obter_municipio(&self, codigo: &str) -> Result<Resultado<Municipio>, ErroDominio> {
+        let codigo = validar_codigo_municipio(codigo)?;
+        let fonte = self.fonte.clone();
+        let c = codigo.clone();
+        let o = self
+            .obter(format!("municipios/{codigo}"), async move {
+                let (municipio, url) = fonte.municipio(&c).await?;
+                Ok((Dados::Municipio(Arc::new(municipio)), url))
+            })
+            .await?;
+        let Dados::Municipio(municipio) = o.dados else {
+            return Err(ErroDominio::interno());
+        };
+        Ok(Resultado {
+            dados: municipio.as_ref().clone(),
+            meta: o.meta,
+            paginacao: None,
             cache: o.cache,
         })
     }
