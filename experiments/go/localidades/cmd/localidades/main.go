@@ -33,13 +33,17 @@ func executar() int {
 		return 2
 	}
 
-	cliente := fonte.NovoCliente(cfg.IBGEURL, cfg.PrazoFonte, func(ctx context.Context, _ string, segundos float64) {
+	metricas := operacao.NovasMetricas()
+	registro := operacao.NovoRegistro(os.Stdout)
+	cliente := fonte.NovoCliente(cfg.IBGEURL, cfg.PrazoFonte, func(ctx context.Context, recurso string, segundos float64) {
+		metricas.ObservarFonte(recurso, segundos)
 		operacao.EstadoDe(ctx).SomarFonte(segundos)
 	})
 	servicoLocalidades := servico.Novo(cliente, servico.Opcoes{Validade: cfg.Validade, ItensMax: cfg.ItensMax})
 
-	roteador := api.NovoRoteador(nil)
+	roteador := api.NovoRoteador(operacao.Observador(metricas, registro))
 	roteador.RotaHTTP("GET /health", http.HandlerFunc(operacao.Saude))
+	roteador.RotaHTTP("GET /metrics", metricas.Handler())
 	api.RegistrarV1(roteador, servicoLocalidades)
 
 	servidor := &http.Server{
