@@ -1,6 +1,6 @@
 # Laboratório Brasil Aberto
 
-Laboratório pessoal para explorar o Brasil por meio de dados públicos e fontes oficiais, e experimentar tecnologias em Python e Java com desenvolvimento orientado por especificação ([Spec Kit](https://github.com/github/spec-kit)).
+Laboratório pessoal para explorar o Brasil por meio de dados públicos e fontes oficiais, e experimentar tecnologias em Python, Java, Go e Rust com desenvolvimento orientado por especificação ([Spec Kit](https://github.com/github/spec-kit)).
 
 Explorar → coletar → entender → experimentar → comparar → decidir.
 
